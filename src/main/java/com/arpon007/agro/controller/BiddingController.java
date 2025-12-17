@@ -26,10 +26,10 @@ public class BiddingController {
     }
 
     /**
-     * Place a new bid on a crop (Buyers and Admins)
+     * Place a new bid on a crop (Buyers, Farmers, and Admins)
      */
     @PostMapping("/{cropId}")
-    @PreAuthorize("hasAnyRole('BUYER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'FARMER', 'ADMIN')")
     public ResponseEntity<String> placeBid(
             @PathVariable Long cropId,
             @RequestBody Map<String, Object> payload,
@@ -64,7 +64,7 @@ public class BiddingController {
      * Get buyer's bids
      */
     @GetMapping("/my-bids")
-    @PreAuthorize("hasAnyRole('BUYER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'FARMER', 'ADMIN')")
     public ResponseEntity<List<Bid>> getMyBids(HttpServletRequest request) {
         Long userId = extractUserId(request);
         String role = extractRole(request);
@@ -126,7 +126,7 @@ public class BiddingController {
      * Buyer responds to counter-offer
      */
     @PutMapping("/{bidId}/buyer-respond")
-    @PreAuthorize("hasAnyRole('BUYER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('BUYER', 'FARMER', 'ADMIN')")
     public ResponseEntity<String> buyerRespond(
             @PathVariable Long bidId,
             @RequestBody Map<String, Object> payload,

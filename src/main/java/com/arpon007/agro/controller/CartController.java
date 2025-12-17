@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cart")
-@PreAuthorize("hasRole('GENERAL_CUSTOMER')")
+@PreAuthorize("hasAnyRole('GENERAL_CUSTOMER', 'ADMIN', 'FARMER', 'AGRONOMIST')")
 public class CartController {
 
     private final CartRepository cartRepository;

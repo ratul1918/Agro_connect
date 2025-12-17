@@ -161,11 +161,10 @@ const Navbar: React.FC = () => {
                         </div>
 
                         {/* Cart Icon - For logged in users */}
-                        {isAuthenticated && (
-                            <Link to="/cart" className="relative text-gray-700 hover:text-green-600 p-2">
-                                <ShoppingCart className="h-5 w-5" />
-                            </Link>
-                        )}
+                        {/* Cart Icon - Visible to everyone */}
+                        <Link to="/cart" className="relative text-gray-700 hover:text-green-600 p-2">
+                            <ShoppingCart className="h-5 w-5" />
+                        </Link>
 
                         {isAuthenticated && user ? (
                             <>

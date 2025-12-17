@@ -25,7 +25,9 @@ const ProductDetailsPage: React.FC = () => {
     const isB2B = product?.marketplaceType === 'B2B';
     const isBuyer = user?.role === 'ROLE_BUYER';
     const isAdmin = user?.role === 'ROLE_ADMIN';
-    const canBid = (isBuyer || isAdmin) && isB2B;
+    const isFarmer = user?.role === 'ROLE_FARMER';
+    const canBid = user && (isBuyer || isAdmin || isFarmer);
+    const canBuyB2B = canBid; // Only authorized B2B roles can buy && isB2B;
 
     useEffect(() => {
         fetchProduct();
@@ -56,13 +58,45 @@ const ProductDetailsPage: React.FC = () => {
     };
 
     const handleAddToCart = async () => {
+        setAddingToCart(true);
+        const quantityInKg = unit === 'gram' ? quantity / 1000 : quantity;
+
         if (!user) {
-            navigate('/auth?tab=login');
+            // Guest Cart Logic
+            try {
+                const guestCart = JSON.parse(localStorage.getItem('guest_cart') || '[]');
+
+                // Check if item exists
+                const existingItemIndex = guestCart.findIndex((item: any) => item.cropId === product.id);
+
+                if (existingItemIndex >= 0) {
+                    guestCart[existingItemIndex].quantity += quantityInKg;
+                } else {
+                    guestCart.push({
+                        cropId: product.id,
+                        cropTitle: product.title,
+                        cropImage: product.images?.[0],
+                        price: product.price, // Uses minPrice as adjusted by backend/frontend
+                        quantity: quantityInKg,
+                        unit: product.unit,
+                        maxQuantity: product.maxRetailQty || 100,
+                        farmerName: product.farmerName
+                    });
+                }
+
+                localStorage.setItem('guest_cart', JSON.stringify(guestCart));
+                success('Added to guest cart! Login to checkout.');
+            } catch (err) {
+                console.error(err);
+                error('Failed to add to cart');
+            } finally {
+                setAddingToCart(false);
+            }
             return;
         }
-        setAddingToCart(true);
+
+        // Logged In Logic
         try {
-            const quantityInKg = unit === 'gram' ? quantity / 1000 : quantity;
             await axios.post('/cart/items', {
                 cropId: product.id,
                 quantity: quantityInKg
@@ -235,14 +269,20 @@ const ProductDetailsPage: React.FC = () => {
                                 {isB2B ? (
                                     // B2B Buttons: Buy Now + Place Bid (NO Add to Cart)
                                     <>
-                                        <Button
-                                            onClick={handleBuy}
-                                            disabled={buying || quantity > product.quantity || orderPlaced || (product.minWholesaleQty && quantity < product.minWholesaleQty)}
-                                            className="w-full bg-blue-600 hover:bg-blue-700 h-14 text-lg font-bold shadow-lg shadow-blue-200 rounded-xl transition-all transform hover:scale-[1.02]"
-                                        >
-                                            {buying ? <Loader2 className="animate-spin mr-2" /> : <ShoppingCart className="mr-2 w-5 h-5" />}
-                                            Buy Now
-                                        </Button>
+                                        {canBuyB2B ? (
+                                            <Button
+                                                onClick={handleBuy}
+                                                disabled={buying || quantity > product.quantity || orderPlaced || (product.minWholesaleQty && quantity < product.minWholesaleQty)}
+                                                className="w-full bg-blue-600 hover:bg-blue-700 h-14 text-lg font-bold shadow-lg shadow-blue-200 rounded-xl transition-all transform hover:scale-[1.02]"
+                                            >
+                                                {buying ? <Loader2 className="animate-spin mr-2" /> : <ShoppingCart className="mr-2 w-5 h-5" />}
+                                                Buy Now
+                                            </Button>
+                                        ) : (
+                                            <div className="w-full p-4 bg-gray-100 rounded-xl text-center text-gray-500">
+                                                View Only (B2B Marketplace)
+                                            </div>
+                                        )}
 
                                         {canBid && (
                                             <Button
@@ -257,7 +297,7 @@ const ProductDetailsPage: React.FC = () => {
 
                                         {!canBid && !user && (
                                             <p className="text-center text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
-                                                <Link to="/auth?tab=login" className="underline font-semibold">Login as Buyer</Link> to place bids and negotiate prices
+                                                <Link to="/auth?tab=login" className="underline font-semibold">Login as Buyer</Link> to buy or negotiate
                                             </p>
                                         )}
                                     </>
