@@ -1,0 +1,739 @@
+{
+    "info": {
+        "_postman_id": "agro-connect-api",
+        "name": "Agro Connect API",
+        "description": "API collection for Agro Connect - Smart Agriculture Marketplace",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8080/api",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set('token', jsonData.token);",
+                                    "    console.log('Token saved:', jsonData.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@agro.com\",\n    \"password\": \"admin123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login with email and password. Returns JWT token."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Signup - Farmer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"fullName\": \"Test Farmer\",\n    \"email\": \"farmer@test.com\",\n    \"password\": \"test123\",\n    \"phone\": \"01700000000\",\n    \"country\": \"Bangladesh\",\n    \"division\": \"Dhaka\",\n    \"district\": \"Dhaka\",\n    \"upazila\": \"Dhanmondi\",\n    \"thana\": \"Dhanmondi\",\n    \"postCode\": \"1205\",\n    \"role\": \"FARMER\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/signup",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "signup"
+                            ]
+                        },
+                        "description": "Register a new farmer user"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Signup - Buyer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"fullName\": \"Test Buyer\",\n    \"email\": \"buyer@test.com\",\n    \"password\": \"test123\",\n    \"phone\": \"01800000000\",\n    \"country\": \"Bangladesh\",\n    \"division\": \"Chittagong\",\n    \"district\": \"Chittagong\",\n    \"upazila\": \"Kotwali\",\n    \"thana\": \"Kotwali\",\n    \"postCode\": \"4000\",\n    \"role\": \"BUYER\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/signup",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "signup"
+                            ]
+                        },
+                        "description": "Register a new buyer user"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Signup - International Buyer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"fullName\": \"International Buyer\",\n    \"email\": \"intbuyer@test.com\",\n    \"password\": \"test123\",\n    \"phone\": \"+1234567890\",\n    \"country\": \"USA\",\n    \"division\": \"\",\n    \"district\": \"\",\n    \"upazila\": \"\",\n    \"thana\": \"\",\n    \"postCode\": \"\",\n    \"role\": \"BUYER\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/signup",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "signup"
+                            ]
+                        },
+                        "description": "Register an international buyer (non-Bangladesh)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Current User",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "me"
+                            ]
+                        },
+                        "description": "Get current logged in user info"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Profile",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"fullName\": \"Updated Name\",\n    \"phone\": \"01900000000\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "profile"
+                            ]
+                        },
+                        "description": "Update user profile"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Forgot Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"farmer@test.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/forgot-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "forgot-password"
+                            ]
+                        },
+                        "description": "Request password reset email"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Crops",
+            "item": [
+                {
+                    "name": "Get All Crops",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/crops",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "crops"
+                            ]
+                        },
+                        "description": "Get all crop listings (public)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Crop by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/crops/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "crops",
+                                "1"
+                            ]
+                        },
+                        "description": "Get a specific crop by ID"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Add Crop (Farmer Only)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "title",
+                                    "value": "Fresh Rice",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "High quality rice from Dhaka",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "cropTypeId",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "quantity",
+                                    "value": "1000",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "unit",
+                                    "value": "kg",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "minPrice",
+                                    "value": "50",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "location",
+                                    "value": "Dhaka",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/crops",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "crops"
+                            ]
+                        },
+                        "description": "Add a new crop listing (requires FARMER role)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Admin",
+            "item": [
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "users"
+                            ]
+                        },
+                        "description": "Get all users (Admin only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete User",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/users/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "users",
+                                "1"
+                            ]
+                        },
+                        "description": "Delete a user by ID (Admin only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get All Crops (Admin)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/crops",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "crops"
+                            ]
+                        },
+                        "description": "Get all crops for admin management"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get System Config",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/config",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "config"
+                            ]
+                        },
+                        "description": "Get system configuration (Admin only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update System Config",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"ai_provider\": \"openrouter\",\n    \"ai_model\": \"google/gemini-2.0-flash-exp:free\",\n    \"ai_system_prompt\": \"You are Drac Agro AI, an expert agricultural advisor.\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/config",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "config"
+                            ]
+                        },
+                        "description": "Update system configuration (Admin only)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Bidding",
+            "item": [
+                {
+                    "name": "Place Bid",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"amount\": 55\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/bids/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "bids",
+                                "1"
+                            ]
+                        },
+                        "description": "Place a bid on a crop"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Bids for Crop",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/bids/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "bids",
+                                "1"
+                            ]
+                        },
+                        "description": "Get all bids for a specific crop"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "AI Chat",
+            "item": [
+                {
+                    "name": "Chat with AI",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"query\": \"How to grow rice in Bangladesh?\",\n    \"lang\": \"en\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/ai/chat",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "ai",
+                                "chat"
+                            ]
+                        },
+                        "description": "Chat with Agro AI (Bangla or English)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Chat with AI (Bangla)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"query\": \"ধান চাষ করার পদ্ধতি কি?\",\n    \"lang\": \"bn\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/ai/chat",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "ai",
+                                "chat"
+                            ]
+                        },
+                        "description": "Chat with Agro AI in Bangla"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Orders",
+            "item": [
+                {
+                    "name": "Create Order",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"cropId\": 1,\n    \"quantity\": 100\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/orders/create",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "orders",
+                                "create"
+                            ]
+                        },
+                        "description": "Create a new order"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Features",
+            "item": [
+                {
+                    "name": "Get Subsidy Schemes",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/features/subsidy/schemes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "features",
+                                "subsidy",
+                                "schemes"
+                            ]
+                        },
+                        "description": "Get available subsidy schemes"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Apply for Export",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"cropDetails\": \"Fresh Rice - 1000kg\",\n    \"quantity\": 1000,\n    \"destinationCountry\": \"India\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/features/export/apply",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "features",
+                                "export",
+                                "apply"
+                            ]
+                        },
+                        "description": "Apply for crop export"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Add Review",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"targetUserId\": 2,\n    \"rating\": 5,\n    \"comment\": \"Great farmer! High quality crops.\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/features/review",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "features",
+                                "review"
+                            ]
+                        },
+                        "description": "Add a review for a user"
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}

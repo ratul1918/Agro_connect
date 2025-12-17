@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #16a34a;
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .content {
+            padding: 30px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .details-table th,
+        .details-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+
+        .details-table th {
+            background-color: #f9f9f9;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #16a34a;
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .footer {
+            background: #f9fafb;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Order Confirmed!</h1>
+        </div>
+        <div class="content">
+            <h2>Thank you for your purchase</h2>
+            <p>Hello {{name}},</p>
+            <p>Your order #{{order_id}} has been successfully placed. We've notified the farmer and they will process
+                your order soon.</p>
+
+            <h3>Order Details</h3>
+            <table class="details-table">
+                <tr>
+                    <th>Product</th>
+                    <td>{{product_name}}</td>
+                </tr>
+                <tr>
+                    <th>Quantity</th>
+                    <td>{{quantity}} {{unit}}</td>
+                </tr>
+                <tr>
+                    <th>Total Base Price</th>
+                    <td>৳{{total_amount}}</td>
+                </tr>
+                <tr>
+                    <th>20% Advance Paid</th>
+                    <td>৳{{advance_amount}}</td>
+                </tr>
+                <tr>
+                    <th>Due Amount</th>
+                    <td>৳{{due_amount}}</td>
+                </tr>
+            </table>
+
+            <p>You can track your order status in your dashboard.</p>
+            <p><strong>Note:</strong> The remaining due amount must be paid upon delivery or as per agreement with the
+                farmer.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 AgroConnect. All rights reserved.</p>
+            <p>Questions? Contact us at support@agroconnect.com</p>
+        </div>
+    </div>
+</body>
+
+</html>

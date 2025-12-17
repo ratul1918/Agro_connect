@@ -1,0 +1,109 @@
+package com.arpon007.agro.controller;
+
+import com.arpon007.agro.model.Crop;
+import com.arpon007.agro.model.Order;
+import com.arpon007.agro.model.User;
+import com.arpon007.agro.repository.CropRepository;
+import com.arpon007.agro.repository.OrderRepository;
+import com.arpon007.agro.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/shop")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+public class ShopController {
+
+    @Autowired
+    private CropRepository cropRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private UserRepository userRepository;
+
+    @GetMapping("/products")
+    public List<Crop> getProducts() {
+        return cropRepository.findAllRetail();
+    }
+
+    @GetMapping("/crop-types")
+    public ResponseEntity<?> getCropTypes() {
+        try {
+            return ResponseEntity.ok(cropRepository.getAllCropTypes());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", e.getMessage(), "trace", e.getStackTrace()[0].toString()));
+        }
+    }
+
+    @GetMapping("/products/{id}")
+    public ResponseEntity<Crop> getProduct(@PathVariable Long id) {
+        return cropRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/orders")
+    public ResponseEntity<?> placeOrder(@RequestBody Map<String, Object> payload,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body("User not authenticated");
+        }
+
+        try {
+            Long cropId = Long.valueOf(payload.get("cropId").toString());
+            BigDecimal quantity = new BigDecimal(payload.get("quantity").toString());
+
+            Optional<User> userOpt = userRepository.findByEmail(userDetails.getUsername());
+            if (userOpt.isEmpty())
+                return ResponseEntity.badRequest().body("User not found");
+            User buyer = userOpt.get();
+
+            Optional<Crop> cropOpt = cropRepository.findById(cropId);
+            if (cropOpt.isEmpty())
+                return ResponseEntity.badRequest().body("Crop not found");
+            Crop crop = cropOpt.get();
+
+            if (crop.getQuantity().compareTo(quantity) < 0) {
+                return ResponseEntity.badRequest().body("Not enough stock");
+            }
+
+            // Calculate Amount
+            BigDecimal price = crop.getCalculatedRetailPrice();
+            if (price == null) {
+                return ResponseEntity.badRequest().body("Price not available");
+            }
+            BigDecimal totalAmount = price.multiply(quantity);
+
+            Order order = new Order();
+            order.setBuyerId(buyer.getId());
+            order.setFarmerId(crop.getFarmerId());
+            order.setCropId(crop.getId());
+            order.setTotalAmount(totalAmount);
+            order.setAdvanceAmount(BigDecimal.ZERO); // COD
+            order.setDueAmount(totalAmount);
+            order.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+
+            // Save Order
+            Long orderId = orderRepository.createOrder(order);
+            orderRepository.updateStatus(orderId, "PENDING_DELIVERY");
+
+            // Update Stock
+            cropRepository.updateStock(cropId, crop.getQuantity().subtract(quantity));
+
+            return ResponseEntity.ok(Map.of("message", "Order placed successfully", "orderId", orderId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error processing order: " + e.getMessage());
+        }
+    }
+}
