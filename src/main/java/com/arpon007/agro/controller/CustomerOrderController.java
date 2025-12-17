@@ -30,13 +30,16 @@ public class CustomerOrderController {
     private final CropRepository cropRepository;
     private final OrderRepository orderRepository;
     private final WalletService walletService;
+    private final com.arpon007.agro.repository.AppConfigRepository appConfigRepository;
 
     public CustomerOrderController(CartRepository cartRepository, CropRepository cropRepository,
-            OrderRepository orderRepository, WalletService walletService) {
+            OrderRepository orderRepository, WalletService walletService,
+            com.arpon007.agro.repository.AppConfigRepository appConfigRepository) {
         this.cartRepository = cartRepository;
         this.cropRepository = cropRepository;
         this.orderRepository = orderRepository;
         this.walletService = walletService;
+        this.appConfigRepository = appConfigRepository;
     }
 
     /**
@@ -51,6 +54,7 @@ public class CustomerOrderController {
             String mobile = payload.get("mobile").toString();
             String address = payload.get("address").toString();
             String paymentMethod = payload.get("paymentMethod").toString(); // BKASH, BANK, CASH
+            String deliveryLocation = payload.getOrDefault("deliveryLocation", "dhaka").toString();
 
             // Get cart with items
             Cart cart = cartRepository.getCartWithItems(userDetails.getId());
@@ -99,16 +103,29 @@ public class CustomerOrderController {
                 cropRepository.updateStock(crop.getId(), newQuantity);
             }
 
-            // Debit wallet
-            try {
-                walletService.debitWallet(
-                        userDetails.getId(),
-                        grandTotal,
-                        com.arpon007.agro.model.Transaction.TransactionSource.ORDER_PAYMENT,
-                        "Payment for " + orderIds.size() + " order(s)");
-            } catch (IllegalArgumentException e) {
-                // Rollback will happen automatically due to @Transactional
-                return ResponseEntity.badRequest().body(Map.of("message", "Payment failed: " + e.getMessage()));
+            // Add Delivery Charge
+            String configKey = "delivery_charge_" + deliveryLocation; // delivery_charge_dhaka or
+                                                                      // delivery_charge_outside
+            String defaultCharge = "dhaka".equalsIgnoreCase(deliveryLocation) ? "70" : "130";
+            BigDecimal deliveryFee = new BigDecimal(appConfigRepository.getValue(configKey, defaultCharge));
+
+            grandTotal = grandTotal.add(deliveryFee);
+
+            // Debit wallet - ONLY if using Wallet/Online payment
+            if ("WALLET".equalsIgnoreCase(paymentMethod) || "ONLINE".equalsIgnoreCase(paymentMethod)) {
+                try {
+                    walletService.debitWallet(
+                            userDetails.getId(),
+                            grandTotal,
+                            com.arpon007.agro.model.Transaction.TransactionSource.ORDER_PAYMENT,
+                            "Payment for " + orderIds.size() + " order(s) + Delivery Fee");
+                } catch (IllegalArgumentException e) {
+                    // Rollback will happen automatically due to @Transactional
+                    return ResponseEntity.badRequest().body(Map.of("message", "Payment failed: " + e.getMessage()));
+                }
+            } else {
+                // For COD/Cash, we don't debit wallet.
+                // Assuming success for now.
             }
 
             // Clear cart after successful checkout
@@ -118,6 +135,7 @@ public class CustomerOrderController {
                     "message", "Order placed successfully",
                     "orderIds", orderIds,
                     "totalAmount", grandTotal.toString(),
+                    "deliveryFee", deliveryFee,
                     "paymentMethod", paymentMethod));
         } catch (Exception e) {
             return ResponseEntity.badRequest()

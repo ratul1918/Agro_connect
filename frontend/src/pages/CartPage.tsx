@@ -47,7 +47,7 @@ const CartPage: React.FC = () => {
                     cropId: item.cropId,
                     title: item.cropTitle,
                     image: item.cropImage,
-                    price: item.price,
+                    price: item.currentPrice || item.priceAtAddition || 0,
                     quantity: item.quantity,
                     unit: item.unit || 'kg',
                     maxQuantity: item.maxQuantity || 100, // Fallback

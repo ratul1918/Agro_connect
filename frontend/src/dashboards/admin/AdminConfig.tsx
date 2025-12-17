@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
-import { Bot, Settings, Save } from 'lucide-react';
+import { Bot, Settings, Save, Truck } from 'lucide-react';
 
 interface AdminConfigProps {
     config: any;
@@ -141,6 +141,51 @@ const AdminConfig: React.FC<AdminConfigProps> = ({
                         <p className="text-xs text-muted-foreground">
                             Define how the AI should behave and respond to users
                         </p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Customer Logistics Card */}
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-green-100">
+                            <Truck className="h-5 w-5 text-green-700" />
+                        </div>
+                        <div>
+                            <CardTitle>Customer Logistics</CardTitle>
+                            <CardDescription>Manage delivery charges and shipping settings</CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="del-dhaka">Delivery Charge (Inside Dhaka)</Label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-2.5 text-gray-500">৳</span>
+                                <input
+                                    id="del-dhaka"
+                                    type="number"
+                                    className="w-full h-10 pl-8 pr-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    value={config.delivery_charge_dhaka || '70'}
+                                    onChange={(e) => setConfig({ ...config, delivery_charge_dhaka: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="del-outside">Delivery Charge (Outside Dhaka)</Label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-2.5 text-gray-500">৳</span>
+                                <input
+                                    id="del-outside"
+                                    type="number"
+                                    className="w-full h-10 pl-8 pr-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    value={config.delivery_charge_outside || '130'}
+                                    onChange={(e) => setConfig({ ...config, delivery_charge_outside: e.target.value })}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

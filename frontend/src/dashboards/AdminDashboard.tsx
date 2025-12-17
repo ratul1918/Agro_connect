@@ -3,7 +3,7 @@ import { getAllUsers, deleteUser, deleteCropAdmin, updateCrop } from '../api/end
 import { useNotification } from '../context/NotificationContext';
 import { useConfirm, usePrompt } from '../components/ConfirmDialog';
 import api from '../api/axios';
-import { Menu } from 'lucide-react';
+import { Menu, Settings } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 
 // Sub-components

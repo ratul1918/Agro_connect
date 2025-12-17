@@ -62,7 +62,7 @@ public class CartRepository {
 
     // Get all cart items
     public List<CartItem> getCartItems(Long cartId) {
-        String sql = "SELECT ci.*, c.title as crop_title, c.retail_price as current_price, " +
+        String sql = "SELECT ci.*, c.title as crop_title, c.min_price as current_price, " +
                 "(SELECT image_url FROM crop_images WHERE crop_id = c.id LIMIT 1) as crop_image " +
                 "FROM cart_items ci " +
                 "JOIN crops c ON ci.crop_id = c.id " +
@@ -103,7 +103,7 @@ public class CartRepository {
 
     // Get cart item by ID
     public CartItem getCartItemById(Long itemId) {
-        String sql = "SELECT ci.*, c.title as crop_title, c.retail_price as current_price, " +
+        String sql = "SELECT ci.*, c.title as crop_title, c.min_price as current_price, " +
                 "(SELECT image_url FROM crop_images WHERE crop_id = c.id LIMIT 1) as crop_image " +
                 "FROM cart_items ci " +
                 "JOIN crops c ON ci.crop_id = c.id " +

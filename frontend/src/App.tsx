@@ -18,6 +18,8 @@ import BlogsPage from './pages/BlogsPage';
 import BlogDetailPage from './pages/BlogDetailPage';
 import ProductDetailsPage from './pages/ProductDetailsPage';
 import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import OrdersPage from './pages/OrdersPage';
 import ProfilePage from './pages/ProfilePage';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 
@@ -77,6 +79,8 @@ function App() {
             <Route path="/marketplace/b2b" element={<PublicLayout><B2BMarketplacePage /></PublicLayout>} />
             <Route path="/crop/:id" element={<PublicLayout><ProductDetailsPage /></PublicLayout>} />
             <Route path="/cart" element={<PublicLayout><CartPage /></PublicLayout>} />
+            <Route path="/checkout" element={<PublicLayout><CheckoutPage /></PublicLayout>} />
+            <Route path="/orders" element={<PublicLayout><OrdersPage /></PublicLayout>} />
             <Route path="/market-prices" element={<PublicLayout><MarketPricesPage /></PublicLayout>} />
             <Route path="/blogs" element={<PublicLayout><BlogsPage /></PublicLayout>} />
             <Route path="/blogs/:id" element={<PublicLayout><BlogDetailPage /></PublicLayout>} />
