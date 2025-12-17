@@ -61,6 +61,31 @@ public class OrderController {
             String farmerName = farmer != null ? farmer.getFullName() : "Farmer #" + order.getFarmerId();
             String cropTitle = crop != null ? crop.getTitle() : "Crop #" + order.getCropId();
 
+            // Determine if B2B logic applies
+            boolean isB2B = crop != null
+                    && (crop.getMarketplaceType() == com.arpon007.agro.model.Crop.MarketplaceType.B2B
+                            || crop.getMarketplaceType() == com.arpon007.agro.model.Crop.MarketplaceType.BOTH);
+            // Default to B2B if unsure, or strictly check Retail
+            if (crop != null && crop.getMarketplaceType() == com.arpon007.agro.model.Crop.MarketplaceType.RETAIL) {
+                isB2B = false;
+            }
+
+            String platformFeeSection = "";
+            String advancePaymentSection = "";
+
+            if (isB2B) {
+                BigDecimal platformFee = order.getTotalAmount().multiply(new BigDecimal("0.01"));
+                platformFeeSection = "<div class=\"totals-row\"><span>Platform Fee (1%)</span><span>৳"
+                        + platformFee.setScale(2, java.math.RoundingMode.HALF_UP).toString() + "</span></div>";
+                advancePaymentSection = "<div class=\"totals-row\" style=\"color: #ef4444;\"><span>Advance Payment Note:</span><span>-৳"
+                        + order.getAdvanceAmount().toString() + "</span></div>";
+            } else {
+                // Retail: No platform fee, No advance payment display (handled in Due usually,
+                // ensuring clarity)
+                // If Retail, Total Amount is typically the Due Amount if not paid?
+                // For now, hiding advance section as requested.
+            }
+
             String html = template
                     .replace("{{customer_name}}", buyerName)
                     .replace("{{customer_email}}", buyerEmail)
@@ -76,8 +101,8 @@ public class OrderController {
                     .replace("{{price_per_unit}}", order.getTotalAmount().toString())
                     .replace("{{total_item_price}}", order.getTotalAmount().toString())
                     .replace("{{subtotal}}", order.getTotalAmount().toString())
-                    .replace("{{platform_fee}}", order.getTotalAmount().multiply(new BigDecimal("0.02")).toString())
-                    .replace("{{advance_payment}}", order.getAdvanceAmount().toString())
+                    .replace("{{platform_fee_section}}", platformFeeSection)
+                    .replace("{{advance_payment_section}}", advancePaymentSection)
                     .replace("{{total_due}}", order.getDueAmount().toString());
 
             return ResponseEntity.ok(html);

@@ -240,14 +240,8 @@
                     <span>Subtotal</span>
                     <span>৳{{subtotal}}</span>
                 </div>
-                <div class="totals-row">
-                    <span>Platform Fee (2%)</span>
-                    <span>৳{{platform_fee}}</span>
-                </div>
-                <div class="totals-row" style="color: #ef4444;">
-                    <span>Advance Payment (20%)</span>
-                    <span>-৳{{advance_payment}}</span>
-                </div>
+                {{platform_fee_section}}
+                {{advance_payment_section}}
                 <div class="totals-row final">
                     <span>Total Due</span>
                     <span>৳{{total_due}}</span>
