@@ -10,9 +10,10 @@ import { ThemeToggle } from '../../components/ThemeToggle';
 interface AdminSidebarProps {
     activeTab: string;
     setActiveTab: (tab: string) => void;
+    pendingOrdersCount?: number;
 }
 
-const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, setActiveTab }) => {
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, setActiveTab, pendingOrdersCount }) => {
     const { logout } = useAuth();
     const navigate = useNavigate();
 
@@ -53,7 +54,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, setActiveTab }) 
                                 onClick={() => setActiveTab(item.id)}
                             >
                                 {item.icon}
-                                <span className="font-medium">{item.label}</span>
+                                <span className="font-medium flex-1">{item.label}</span>
+                                {item.id === 'orders' && pendingOrdersCount !== undefined && pendingOrdersCount > 0 && (
+                                    <span className="badge badge-sm badge-error text-white animate-pulse">
+                                        {pendingOrdersCount}
+                                    </span>
+                                )}
                             </a>
                         </li>
                     ))}

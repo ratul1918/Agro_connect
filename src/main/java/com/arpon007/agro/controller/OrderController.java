@@ -19,39 +19,59 @@ public class OrderController {
 
     private final OrderRepository orderRepository;
     private final JwtUtil jwtUtil;
-
     private final WalletService walletService;
-
     private final ResourceLoader resourceLoader;
+    private final com.arpon007.agro.repository.UserRepository userRepository;
+    private final com.arpon007.agro.repository.CropRepository cropRepository;
+    private final com.arpon007.agro.service.InvoiceService invoiceService;
 
     public OrderController(OrderRepository orderRepository, JwtUtil jwtUtil, WalletService walletService,
-            ResourceLoader resourceLoader) {
+            ResourceLoader resourceLoader,
+            com.arpon007.agro.repository.UserRepository userRepository,
+            com.arpon007.agro.repository.CropRepository cropRepository,
+            com.arpon007.agro.service.InvoiceService invoiceService) {
         this.orderRepository = orderRepository;
         this.jwtUtil = jwtUtil;
         this.walletService = walletService;
         this.resourceLoader = resourceLoader;
+        this.userRepository = userRepository;
+        this.cropRepository = cropRepository;
+        this.invoiceService = invoiceService;
     }
 
     @GetMapping(value = "/{id}/invoice", produces = "text/html")
     public ResponseEntity<String> getInvoice(@PathVariable Long id) {
         try {
             Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+            com.arpon007.agro.model.User buyer = userRepository.findById(order.getBuyerId()).orElse(null);
+            com.arpon007.agro.model.User farmer = userRepository.findById(order.getFarmerId()).orElse(null);
+            com.arpon007.agro.model.Crop crop = cropRepository.findById(order.getCropId()).orElse(null);
 
             org.springframework.core.io.Resource resource = resourceLoader
                     .getResource("classpath:templates/email/invoice.html");
             String template = org.springframework.util.StreamUtils.copyToString(resource.getInputStream(),
                     java.nio.charset.StandardCharsets.UTF_8);
 
+            String buyerName = buyer != null ? buyer.getFullName() : "Buyer #" + order.getBuyerId();
+            String buyerEmail = buyer != null ? buyer.getEmail() : "N/A";
+            String buyerMobile = order.getCustomerMobile() != null ? order.getCustomerMobile()
+                    : (buyer != null ? buyer.getPhone() : "N/A");
+            String buyerAddress = order.getCustomerAddress() != null ? order.getCustomerAddress() : "N/A";
+
+            String farmerName = farmer != null ? farmer.getFullName() : "Farmer #" + order.getFarmerId();
+            String cropTitle = crop != null ? crop.getTitle() : "Crop #" + order.getCropId();
+
             String html = template
-                    .replace("{{customer_name}}", "Buyer #" + order.getBuyerId())
-                    .replace("{{customer_email}}", "buyer" + order.getBuyerId() + "@example.com")
-                    .replace("{{customer_address}}", "Dhaka, Bangladesh")
+                    .replace("{{customer_name}}", buyerName)
+                    .replace("{{customer_email}}", buyerEmail)
+                    .replace("{{customer_phone}}", buyerMobile)
+                    .replace("{{customer_address}}", buyerAddress)
                     .replace("{{invoice_number}}", "INV-" + order.getId())
                     .replace("{{date}}", new java.text.SimpleDateFormat("dd MMM yyyy").format(new java.util.Date()))
                     .replace("{{order_id}}", String.valueOf(order.getId()))
-                    .replace("{{product_name}}", "Crop #" + order.getCropId())
-                    .replace("{{farmer_name}}", "Farmer #" + order.getFarmerId())
-                    .replace("{{quantity}}", "1")
+                    .replace("{{product_name}}", cropTitle)
+                    .replace("{{farmer_name}}", farmerName)
+                    .replace("{{quantity}}", "1") // Quantity handling to be improved later
                     .replace("{{unit}}", "Unit")
                     .replace("{{price_per_unit}}", order.getTotalAmount().toString())
                     .replace("{{total_item_price}}", order.getTotalAmount().toString())
@@ -69,9 +89,6 @@ public class OrderController {
     @GetMapping(value = "/{id}/invoice/pdf", produces = "application/pdf")
     public ResponseEntity<byte[]> getInvoicePDF(@PathVariable Long id) {
         try {
-            com.arpon007.agro.service.InvoiceService invoiceService = new com.arpon007.agro.service.InvoiceService(
-                    orderRepository);
-
             byte[] pdfBytes = invoiceService.generateInvoicePDFBytes(id);
 
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();

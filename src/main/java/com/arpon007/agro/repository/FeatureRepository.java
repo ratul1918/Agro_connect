@@ -122,6 +122,9 @@ public class FeatureRepository {
                        o.crop_id as cropId, o.total_amount as totalAmount,
                        o.advance_amount as advanceAmount, o.due_amount as dueAmount,
                        o.status, o.created_at as createdAt,
+                       o.customer_mobile as customerMobile,
+                       o.customer_address as customerAddress,
+                       o.delivery_status as deliveryStatus,
                        buyer.full_name as buyerName, buyer.email as buyerEmail,
                        farmer.full_name as farmerName, farmer.email as farmerEmail,
                        c.title as cropTitle

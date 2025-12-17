@@ -393,7 +393,11 @@ const AdminDashboard: React.FC = () => {
                     </main>
                 </div>
 
-                <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+                <AdminSidebar
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    pendingOrdersCount={orders.filter(o => o.status === 'PENDING' || o.deliveryStatus === 'PENDING').length}
+                />
 
                 {ConfirmDialog}
                 {PromptDialog}
