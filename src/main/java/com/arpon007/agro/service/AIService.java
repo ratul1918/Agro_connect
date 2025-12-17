@@ -33,16 +33,29 @@ public class AIService {
     }
 
     public String getResponse(String userQuery, boolean isBangla) {
-        String provider = configRepository.getValue("ai_provider", "openrouter");
+        String provider = configRepository.getValue("ai_provider", "gemini");
 
         try {
-            if ("google".equalsIgnoreCase(provider)) {
+            // Check if API keys are configured
+            if ("google".equalsIgnoreCase(provider) || "gemini".equalsIgnoreCase(provider)) {
+                if (geminiKey == null || geminiKey.isEmpty()) {
+                    return isBangla
+                            ? "দুঃখিত, AI সেবা কনফিগার করা হয়নি। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।"
+                            : "Sorry, AI service is not configured. Please contact the administrator.";
+                }
                 return callGoogleGemini(userQuery, isBangla);
+            } else {
+                if (openRouterKey == null || openRouterKey.isEmpty()) {
+                    return isBangla
+                            ? "দুঃখিত, AI সেবা কনফিগার করা হয়নি। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।"
+                            : "Sorry, AI service is not configured. Please contact the administrator.";
+                }
+                return callOpenRouter(userQuery, isBangla);
             }
-            return callOpenRouter(userQuery, isBangla);
         } catch (Exception e) {
             e.printStackTrace();
-            return isBangla ? "দুঃখিত, আমি এখন উত্তর দিতে পারছি না।" : "Sorry, I cannot answer right now.";
+            return isBangla ? "দুঃখিত, আমি এখন উত্তর দিতে পারছি না। পরে আবার চেষ্টা করুন।"
+                    : "Sorry, I cannot answer right now. Please try again later.";
         }
     }
 

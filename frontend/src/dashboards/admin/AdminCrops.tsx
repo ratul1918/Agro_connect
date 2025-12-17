@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Trash2, Edit, Plus, Filter } from 'lucide-react';
+import { Trash2, Edit, Plus, Filter, XCircle, CheckCircle } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 
 interface AdminCropsProps {
     crops: any[];
     handleDeleteCrop: (id: number) => void;
     handleEditCrop: (crop: any) => void;
+    handleStockOut: (id: number) => void;
+    handleBackInStock: (id: number) => void;
     handleBulkUpdate: () => void;
     bulkSettings: any;
     setBulkSettings: (settings: any) => void;
@@ -13,7 +15,7 @@ interface AdminCropsProps {
 }
 
 const AdminCrops: React.FC<AdminCropsProps> = ({
-    crops, handleDeleteCrop, handleEditCrop,
+    crops, handleDeleteCrop, handleEditCrop, handleStockOut, handleBackInStock,
     handleBulkUpdate, bulkSettings, setBulkSettings, loading
 }) => {
     const [filter, setFilter] = useState('');
@@ -109,6 +111,7 @@ const AdminCrops: React.FC<AdminCropsProps> = ({
                                     <th>Stock</th>
                                     <th>Price/Unit</th>
                                     <th className="text-right">Actions</th>
+                                    <th>Stock</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -141,6 +144,25 @@ const AdminCrops: React.FC<AdminCropsProps> = ({
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
+                                        </td>
+                                        <td>
+                                            {crop.isSold ? (
+                                                <button
+                                                    className="btn btn-xs btn-success gap-1"
+                                                    onClick={() => handleBackInStock(crop.id)}
+                                                >
+                                                    <CheckCircle className="w-3 h-3" />
+                                                    Restock
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className="btn btn-xs btn-warning gap-1"
+                                                    onClick={() => handleStockOut(crop.id)}
+                                                >
+                                                    <XCircle className="w-3 h-3" />
+                                                    Stock Out
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

@@ -73,9 +73,8 @@ public class CustomerOrderController {
                             .body(Map.of("message", "Insufficient stock for " + crop.getTitle()));
                 }
 
-                // Calculate item total
-                BigDecimal price = crop.getRetailPrice() != null ? crop.getRetailPrice()
-                        : crop.getCalculatedRetailPrice();
+                // Calculate item total - use exact price set by farmer
+                BigDecimal price = crop.getMinPrice();
                 BigDecimal itemTotal = price.multiply(item.getQuantity());
                 grandTotal = grandTotal.add(itemTotal);
 

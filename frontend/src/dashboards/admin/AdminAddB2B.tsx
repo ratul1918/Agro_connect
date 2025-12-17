@@ -21,6 +21,7 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
         quantity: '',
         unit: 'kg',
         minPrice: '',
+        minWholesaleQty: '',
         location: '',
     });
     const [images, setImages] = useState<FileList | null>(null);
@@ -28,10 +29,15 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validate minimum quantity for B2B
+        // Validate quantity
         const qty = parseFloat(formData.quantity);
-        if (qty < 80) {
-            error('B2B products must have minimum 80kg quantity');
+        const minQty = parseFloat(formData.minWholesaleQty);
+        if (minQty > qty) {
+            error('Minimum order quantity cannot exceed available quantity');
+            return;
+        }
+        if (minQty <= 0) {
+            error('Minimum order quantity must be greater than 0');
             return;
         }
 
@@ -44,6 +50,7 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
         data.append('quantity', formData.quantity);
         data.append('unit', formData.unit);
         data.append('minPrice', formData.minPrice);
+        data.append('minWholesaleQty', formData.minWholesaleQty);
         data.append('location', formData.location);
         data.append('marketType', 'B2B'); // Mark as B2B
 
@@ -56,7 +63,7 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
         try {
             await addCrop(data);
             success('B2B product added successfully!');
-            setFormData({ title: '', description: '', cropTypeId: '1', quantity: '', unit: 'kg', minPrice: '', location: '' });
+            setFormData({ title: '', description: '', cropTypeId: '1', quantity: '', unit: 'kg', minPrice: '', minWholesaleQty: '', location: '' });
             setImages(null);
             onSuccess();
         } catch (err: any) {
@@ -105,7 +112,7 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div className="form-control">
                                 <label className="label">
                                     <span className="label-text font-medium">Category</span>
@@ -126,15 +133,29 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Quantity (Wholesale)</span>
-                                    <span className="label-text-alt text-blue-600">Min 80kg</span>
+                                    <span className="label-text font-medium">Available Quantity</span>
                                 </label>
                                 <Input
                                     type="number"
-                                    placeholder="100"
+                                    placeholder="500"
                                     value={formData.quantity}
                                     onChange={e => setFormData({ ...formData, quantity: e.target.value })}
-                                    min="80"
+                                    min="1"
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text font-medium">Min Order Qty</span>
+                                    <span className="label-text-alt text-blue-600">Default in cart</span>
+                                </label>
+                                <Input
+                                    type="number"
+                                    placeholder="80"
+                                    value={formData.minWholesaleQty}
+                                    onChange={e => setFormData({ ...formData, minWholesaleQty: e.target.value })}
+                                    min="1"
                                     required
                                 />
                             </div>
@@ -200,7 +221,7 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
 
                         <div className="alert alert-info bg-blue-50 border-blue-200">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6 text-blue-600"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span className="text-blue-800">B2B products are for wholesale/bulk orders (minimum 80kg)</span>
+                            <span className="text-blue-800">B2B products are for wholesale/bulk orders. Set your custom minimum order quantity.</span>
                         </div>
 
                         <Button

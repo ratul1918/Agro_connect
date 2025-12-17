@@ -72,6 +72,49 @@ public class CropRepository {
         return crop;
     }
 
+    /**
+     * Update an existing crop
+     */
+    public Crop update(Crop crop) {
+        String sql = "UPDATE crops SET farmer_id = ?, title = ?, description = ?, crop_type_id = ?, " +
+                "quantity = ?, unit = ?, min_price = ?, wholesale_price = ?, min_wholesale_qty = ?, " +
+                "retail_price = ?, min_retail_qty = ?, max_retail_qty = ?, profit_margin_percent = ?, " +
+                "fixed_cost_per_unit = ?, location = ?, marketplace_type = ? WHERE id = ?";
+
+        jdbcTemplate.update(sql,
+                crop.getFarmerId(),
+                crop.getTitle(),
+                crop.getDescription(),
+                crop.getCropTypeId(),
+                crop.getQuantity(),
+                crop.getUnit(),
+                crop.getMinPrice(),
+                crop.getWholesalePrice(),
+                crop.getMinWholesaleQty(),
+                crop.getRetailPrice(),
+                crop.getMinRetailQty(),
+                crop.getMaxRetailQty(),
+                crop.getProfitMarginPercent(),
+                crop.getFixedCostPerUnit(),
+                crop.getLocation(),
+                crop.getMarketplaceType() != null ? crop.getMarketplaceType().name() : "BOTH",
+                crop.getId());
+
+        // Update images if provided
+        if (crop.getImages() != null && !crop.getImages().isEmpty()) {
+            // Delete old images
+            jdbcTemplate.update("DELETE FROM crop_images WHERE crop_id = ?", crop.getId());
+
+            // Insert new images
+            String imgSql = "INSERT INTO crop_images (crop_id, image_url) VALUES (?, ?)";
+            for (String url : crop.getImages()) {
+                jdbcTemplate.update(imgSql, crop.getId(), url);
+            }
+        }
+
+        return crop;
+    }
+
     public List<Crop> findAll(boolean isBangla) {
         // Fetch crop type name based on language
         String typeCol = isBangla ? "ct.name_bn" : "ct.name_en";
@@ -180,6 +223,7 @@ public class CropRepository {
                 "JOIN users u ON c.farmer_id = u.id " +
                 "JOIN crop_type ct ON c.crop_type_id = ct.id " +
                 "WHERE c.is_sold = FALSE " +
+                "AND c.marketplace_type = 'RETAIL' " +
                 "ORDER BY c.created_at DESC";
 
         List<Crop> crops = jdbcTemplate.query(sql, new CropRowMapper());
@@ -219,14 +263,14 @@ public class CropRepository {
     }
 
     /**
-     * Get crops by marketplace type (B2B, RETAIL, or BOTH)
+     * Get crops by marketplace type (B2B or RETAIL only - no BOTH)
      */
     public List<Crop> findByMarketplaceType(String marketplaceType) {
         String sql = "SELECT c.*, u.full_name as farmer_name, ct.name_en as type_name " +
                 "FROM crops c " +
                 "JOIN users u ON c.farmer_id = u.id " +
                 "JOIN crop_type ct ON c.crop_type_id = ct.id " +
-                "WHERE c.is_sold = FALSE AND (c.marketplace_type = ? OR c.marketplace_type = 'BOTH') " +
+                "WHERE c.is_sold = FALSE AND c.marketplace_type = ? " +
                 "ORDER BY c.created_at DESC";
 
         List<Crop> crops = jdbcTemplate.query(sql, new CropRowMapper(), marketplaceType);
@@ -246,5 +290,21 @@ public class CropRepository {
     public void updateMarketplaceType(Long cropId, String marketplaceType) {
         String sql = "UPDATE crops SET marketplace_type = ? WHERE id = ?";
         jdbcTemplate.update(sql, marketplaceType, cropId);
+    }
+
+    /**
+     * Mark crop as sold out (stock out)
+     */
+    public void markAsSoldOut(Long cropId) {
+        String sql = "UPDATE crops SET is_sold = TRUE WHERE id = ?";
+        jdbcTemplate.update(sql, cropId);
+    }
+
+    /**
+     * Mark crop as available (back in stock)
+     */
+    public void markAsAvailable(Long cropId) {
+        String sql = "UPDATE crops SET is_sold = FALSE WHERE id = ?";
+        jdbcTemplate.update(sql, cropId);
     }
 }

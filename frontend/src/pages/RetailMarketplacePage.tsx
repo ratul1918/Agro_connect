@@ -6,7 +6,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../compone
 import { Search, Filter, MapPin, ShoppingCart, Store, Plus } from 'lucide-react';
 import axios from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
 
 interface Product {
     id: number;
@@ -27,7 +26,6 @@ interface Product {
 
 const RetailMarketplacePage: React.FC = () => {
     const { user } = useAuth();
-    const { t } = useLanguage();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -51,7 +49,8 @@ const RetailMarketplacePage: React.FC = () => {
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('/shop/products');
+            // Explicitly fetch RETAIL products only
+            const res = await axios.get('/crops', { params: { marketplaceType: 'RETAIL' } });
             console.log('Fetched retail products:', res.data);
             setProducts(res.data);
         } catch (error) {
@@ -211,8 +210,16 @@ const RetailMarketplacePage: React.FC = () => {
                                 {filteredProducts.map((product) => (
                                     <Link to={`/crop/${product.id}`} key={product.id}>
                                         <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                                            <div className="h-48 bg-gradient-to-br from-orange-100 to-orange-200 rounded-t-lg flex items-center justify-center">
-                                                <span className="text-7xl">{getCropEmoji(product.cropTypeName)}</span>
+                                            <div className="h-48 bg-gradient-to-br from-orange-100 to-orange-200 rounded-t-lg flex items-center justify-center overflow-hidden">
+                                                {product.images && product.images.length > 0 ? (
+                                                    <img
+                                                        src={`http://localhost:8080${product.images[0]}`}
+                                                        alt={product.title}
+                                                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                                                    />
+                                                ) : (
+                                                    <span className="text-7xl">{getCropEmoji(product.cropTypeName)}</span>
+                                                )}
                                             </div>
                                             <CardContent className="pt-4">
                                                 <div className="flex items-center justify-between mb-2">
@@ -231,20 +238,12 @@ const RetailMarketplacePage: React.FC = () => {
                                                     <div className="flex items-center justify-between">
                                                         <div>
                                                             <p className="text-orange-600 font-bold text-lg">
-                                                                ৳{product.retailPrice || product.minPrice}/{product.unit}
-                                                            </p>
-                                                            <p className="text-xs text-orange-500 font-medium">
-                                                                {(product.minRetailQty || 0.1) >= 1
-                                                                    ? `${product.minRetailQty || 0.1} - ${product.maxRetailQty || 10} ${product.unit}`
-                                                                    : `${((product.minRetailQty || 0.1) * 1000).toFixed(0)}gm - ${product.maxRetailQty || 10} ${product.unit}`
-                                                                }
+                                                                ৳{product.minPrice}/{product.unit}
                                                             </p>
                                                         </div>
                                                         <div className="text-right">
-                                                            <p className="text-xs text-gray-400 line-through">
-                                                                ৳{Math.round((product.retailPrice || product.minPrice) * 1.1)}/{product.unit}
-                                                            </p>
-                                                            <p className="text-xs text-green-600 font-medium">Save 10%</p>
+                                                            <p className="text-xs text-gray-500">Available</p>
+                                                            <p className="font-semibold text-gray-700">{product.quantity} {product.unit}</p>
                                                         </div>
                                                     </div>
                                                 </div>

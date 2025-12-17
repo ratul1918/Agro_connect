@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Menu, X, User, LogOut, Leaf, BarChart3, Globe, Palette } from 'lucide-react';
+import { Menu, X, User, LogOut, Leaf, BarChart3, Globe, Palette, ShoppingCart } from 'lucide-react';
 
 const Navbar: React.FC = () => {
     const { user, isAuthenticated, logout } = useAuth();
@@ -159,6 +159,13 @@ const Navbar: React.FC = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Cart Icon - For logged in users */}
+                        {isAuthenticated && (
+                            <Link to="/cart" className="relative text-gray-700 hover:text-green-600 p-2">
+                                <ShoppingCart className="h-5 w-5" />
+                            </Link>
+                        )}
 
                         {isAuthenticated && user ? (
                             <>

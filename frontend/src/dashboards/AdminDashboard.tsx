@@ -132,6 +132,26 @@ const AdminDashboard: React.FC = () => {
         }, true);
     };
 
+    const handleStockOut = async (id: number) => {
+        showConfirm('Mark as Stock Out?', 'Product will be hidden from marketplace.', async () => {
+            try {
+                await api.put(`/admin/crops/${id}/stock-out`);
+                success('Product marked as stock out');
+                fetchData();
+            }
+            catch { error('Failed to update stock status'); }
+        }, true);
+    };
+
+    const handleBackInStock = async (id: number) => {
+        try {
+            await api.put(`/admin/crops/${id}/back-in-stock`);
+            success('Product is back in stock');
+            fetchData();
+        }
+        catch { error('Failed to update stock status'); }
+    };
+
     const handleBulkUpdate = async () => {
         showConfirm('Apply Bulk Settings?', 'Update all crops?', async () => {
             setLoading(true);
@@ -319,6 +339,8 @@ const AdminDashboard: React.FC = () => {
                                     crops={crops}
                                     handleDeleteCrop={handleDeleteCrop}
                                     handleEditCrop={setEditingCrop}
+                                    handleStockOut={handleStockOut}
+                                    handleBackInStock={handleBackInStock}
                                     handleBulkUpdate={handleBulkUpdate}
                                     bulkSettings={bulkSettings}
                                     setBulkSettings={setBulkSettings}
@@ -464,6 +486,28 @@ const AdminDashboard: React.FC = () => {
                                         />
                                     </div>
                                 </div>
+
+                                {/* Show existing images */}
+                                {editingCrop.images && editingCrop.images.length > 0 && (
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text">Current Images</span>
+                                        </label>
+                                        <div className="flex gap-2 flex-wrap">
+                                            {editingCrop.images.map((img: string, idx: number) => (
+                                                <img
+                                                    key={idx}
+                                                    src={`http://localhost:8080${img}`}
+                                                    alt={`Product ${idx + 1}`}
+                                                    className="w-20 h-20 object-cover rounded border"
+                                                />
+                                            ))}
+                                        </div>
+                                        <label className="label">
+                                            <span className="label-text-alt text-gray-500">Note: Image editing not supported yet</span>
+                                        </label>
+                                    </div>
+                                )}
 
                                 <div className="modal-action">
                                     <button

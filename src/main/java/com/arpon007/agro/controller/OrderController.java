@@ -66,6 +66,25 @@ public class OrderController {
         }
     }
 
+    @GetMapping(value = "/{id}/invoice/pdf", produces = "application/pdf")
+    public ResponseEntity<byte[]> getInvoicePDF(@PathVariable Long id) {
+        try {
+            com.arpon007.agro.service.InvoiceService invoiceService = new com.arpon007.agro.service.InvoiceService(
+                    orderRepository);
+
+            byte[] pdfBytes = invoiceService.generateInvoicePDFBytes(id);
+
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=invoice-" + id + ".pdf");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(null);
+        }
+    }
+
     @PostMapping("/create")
     @PreAuthorize("hasRole('BUYER')")
     public ResponseEntity<String> createOrder(@RequestBody Map<String, Object> payload, HttpServletRequest request) {

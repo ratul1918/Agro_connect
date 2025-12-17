@@ -74,18 +74,10 @@ public class Crop {
         this.images = images;
     }
 
-    // Helper method to calculate retail price if not set
+    // Helper method - returns minPrice directly (no calculations)
     public BigDecimal getCalculatedRetailPrice() {
-        if (retailPrice != null) {
-            return retailPrice;
-        }
-        // Calculate: wholesalePrice + (wholesalePrice * profitMargin/100) + fixedCost
-        BigDecimal basePrice = wholesalePrice != null ? wholesalePrice : minPrice;
-        BigDecimal margin = profitMarginPercent != null ? profitMarginPercent : new BigDecimal("25");
-        BigDecimal fixedCost = fixedCostPerUnit != null ? fixedCostPerUnit : new BigDecimal("5");
-
-        BigDecimal profitAmount = basePrice.multiply(margin).divide(new BigDecimal("100"));
-        return basePrice.add(profitAmount).add(fixedCost);
+        // No calculations - return exact price set by farmer
+        return minPrice;
     }
 
     public Long getId() {

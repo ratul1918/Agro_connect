@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
-import { Search, Filter, MapPin, TrendingUp, Package, Plus } from 'lucide-react';
+import { Search, Filter, MapPin, TrendingUp, Package, Plus, ShoppingCart } from 'lucide-react';
 import axios from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
+import BidModal from '../components/BidModal';
 
 interface Crop {
     id: number;
@@ -30,11 +31,15 @@ const B2BMarketplacePage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [showBidModal, setShowBidModal] = useState(false);
+    const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
 
     const isFarmer = user?.role === 'ROLE_FARMER';
     const isBuyer = user?.role === 'ROLE_BUYER';
     const isAdmin = user?.role === 'ROLE_ADMIN';
-    const canAddProduct = isFarmer || isAdmin; // Both farmers and admins can add products
+    const canAddProduct = isFarmer || isAdmin;
+    // Only buyers and admins can buy from B2B
+    const canBuyB2B = isBuyer || isAdmin;
 
     const categories = [
         "All", "Rice & Grains", "Vegetables", "Fruits", "Spices", "Pulses", "Fish"
@@ -51,7 +56,8 @@ const B2BMarketplacePage: React.FC = () => {
     const fetchCrops = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('/crops');
+            // Explicitly fetch B2B products only
+            const res = await axios.get('/crops', { params: { marketplaceType: 'B2B' } });
             console.log('Fetched B2B crops:', res.data);
             setCrops(res.data);
         } catch (error) {
@@ -236,8 +242,16 @@ const B2BMarketplacePage: React.FC = () => {
                                                 Wholesale
                                             </div>
 
-                                            <div className="h-48 bg-gradient-to-br from-blue-100 to-blue-200 rounded-t-lg flex items-center justify-center">
-                                                <span className="text-7xl">{getCropEmoji(crop.cropTypeName)}</span>
+                                            <div className="h-48 bg-gradient-to-br from-blue-100 to-blue-200 rounded-t-lg flex items-center justify-center overflow-hidden">
+                                                {crop.images && crop.images.length > 0 ? (
+                                                    <img
+                                                        src={`http://localhost:8080${crop.images[0]}`}
+                                                        alt={crop.title}
+                                                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                                                    />
+                                                ) : (
+                                                    <span className="text-7xl">{getCropEmoji(crop.cropTypeName)}</span>
+                                                )}
                                             </div>
                                             <CardContent className="pt-4">
                                                 <div className="flex items-center justify-between mb-2">
@@ -257,11 +271,13 @@ const B2BMarketplacePage: React.FC = () => {
                                                     <div className="flex items-center justify-between">
                                                         <div>
                                                             <p className="text-blue-600 font-bold text-lg">
-                                                                ৳{crop.wholesalePrice || crop.minPrice}/{crop.unit}
+                                                                ৳{crop.minPrice}/{crop.unit}
                                                             </p>
-                                                            <p className="text-xs text-blue-500 font-medium">
-                                                                Min: {crop.minWholesaleQty || 80} {crop.unit}
-                                                            </p>
+                                                            {crop.minWholesaleQty && (
+                                                                <p className="text-xs text-blue-500 font-medium">
+                                                                    Min Order: {crop.minWholesaleQty} {crop.unit}
+                                                                </p>
+                                                            )}
                                                         </div>
                                                         <div className="text-right">
                                                             <p className="text-xs text-gray-500">Available</p>
@@ -273,10 +289,33 @@ const B2BMarketplacePage: React.FC = () => {
                                                 <p className="text-xs text-gray-400 mt-2">by {crop.farmerName}</p>
                                             </CardContent>
                                             <CardFooter className="pt-0">
-                                                <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                                                    <TrendingUp className="h-4 w-4 mr-2" />
-                                                    Place Bid (Min {crop.minWholesaleQty || 80}kg)
-                                                </Button>
+                                                {canBuyB2B ? (
+                                                    <div className="flex gap-2 w-full">
+                                                        <Link to={`/crop/${crop.id}`} className="flex-1">
+                                                            <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                                                                <ShoppingCart className="h-4 w-4 mr-1" />
+                                                                Buy
+                                                            </Button>
+                                                        </Link>
+                                                        <Button
+                                                            variant="outline"
+                                                            className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                setSelectedCrop(crop);
+                                                                setShowBidModal(true);
+                                                            }}
+                                                        >
+                                                            <TrendingUp className="h-4 w-4 mr-1" />
+                                                            Bid
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <Button variant="outline" className="w-full" disabled>
+                                                        View Only (Buyers can bid)
+                                                    </Button>
+                                                )}
                                             </CardFooter>
                                         </Card>
                                     </Link>
@@ -286,6 +325,19 @@ const B2BMarketplacePage: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Bid Modal */}
+            {selectedCrop && (
+                <BidModal
+                    isOpen={showBidModal}
+                    onClose={() => {
+                        setShowBidModal(false);
+                        setSelectedCrop(null);
+                    }}
+                    crop={selectedCrop}
+                    onSuccess={() => fetchCrops()}
+                />
+            )}
         </div>
     );
 };

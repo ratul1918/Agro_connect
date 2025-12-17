@@ -8,12 +8,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.arpon007.agro.model.Crop;
@@ -44,10 +39,12 @@ public class CropController {
             @RequestParam("unit") String unit,
             @RequestParam("minPrice") BigDecimal minPrice,
             @RequestParam(value = "wholesalePrice", required = false) BigDecimal wholesalePrice,
+            @RequestParam(value = "minWholesaleQty", required = false) BigDecimal minWholesaleQty,
             @RequestParam(value = "retailPrice", required = false) BigDecimal retailPrice,
             @RequestParam(value = "profitMarginPercent", required = false) BigDecimal profitMarginPercent,
             @RequestParam(value = "fixedCostPerUnit", required = false) BigDecimal fixedCostPerUnit,
             @RequestParam("location") String location,
+            @RequestParam(value = "marketType", required = false) String marketType,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             HttpServletRequest request) throws IOException {
         try {
@@ -85,10 +82,18 @@ public class CropController {
             crop.setUnit(unit);
             crop.setMinPrice(minPrice);
             crop.setWholesalePrice(wholesalePrice);
+            crop.setMinWholesaleQty(minWholesaleQty);
             crop.setRetailPrice(retailPrice);
             crop.setProfitMarginPercent(profitMarginPercent);
             crop.setFixedCostPerUnit(fixedCostPerUnit);
             crop.setLocation(location);
+
+            // Set marketplace type - B2B or RETAIL
+            if (marketType != null && !marketType.isEmpty()) {
+                crop.setMarketplaceType(Crop.MarketplaceType.valueOf(marketType.toUpperCase()));
+            } else {
+                crop.setMarketplaceType(Crop.MarketplaceType.RETAIL); // Default to RETAIL
+            }
 
             return ResponseEntity.ok(cropService.addCrop(crop, images));
         } catch (Exception e) {
@@ -165,7 +170,9 @@ public class CropController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Crop>> getAllCrops(HttpServletRequest request) {
+    public ResponseEntity<List<Crop>> getAllCrops(
+            @RequestParam(value = "marketplaceType", required = false) String marketplaceType,
+            HttpServletRequest request) {
         boolean isBangla = true;
         String userRole = null;
 
@@ -183,7 +190,19 @@ public class CropController {
             // Guest or error, default Bangla
         }
 
-        List<Crop> crops = cropService.getAllCrops(isBangla);
+        List<Crop> crops;
+
+        // If explicit marketplaceType is provided, use it
+        if (marketplaceType != null && !marketplaceType.isEmpty()) {
+            crops = cropService.getCropsByMarketplaceType(marketplaceType.toUpperCase(), isBangla);
+        } else {
+            // Fallback to role-based filtering
+            if ("ROLE_BUYER".equals(userRole)) {
+                crops = cropService.getCropsByMarketplaceType("B2B", isBangla);
+            } else {
+                crops = cropService.getCropsByMarketplaceType("RETAIL", isBangla);
+            }
+        }
 
         // Adjust prices based on user role
         for (Crop crop : crops) {
@@ -240,54 +259,30 @@ public class CropController {
         Map<String, Object> pricing = new HashMap<>();
 
         if ("ROLE_BUYER".equals(userRole)) {
-            // Wholesale pricing for buyers
+            // Wholesale pricing for buyers - use exact price set
             pricing.put("priceType", "WHOLESALE");
-            pricing.put("price", crop.getWholesalePrice() != null ? crop.getWholesalePrice() : crop.getMinPrice());
-            pricing.put("minQuantity",
-                    crop.getMinWholesaleQty() != null ? crop.getMinWholesaleQty() : new BigDecimal("80"));
+            pricing.put("price", crop.getMinPrice());
+            pricing.put("minQuantity", crop.getMinWholesaleQty());
             pricing.put("maxQuantity", crop.getQuantity());
             pricing.put("unit", crop.getUnit());
-            pricing.put("message", "Minimum order: "
-                    + (crop.getMinWholesaleQty() != null ? crop.getMinWholesaleQty() : "80") + " " + crop.getUnit());
+            pricing.put("message", "Wholesale price: ৳" + crop.getMinPrice() + "/" + crop.getUnit());
         } else {
-            // Retail pricing for general customers
+            // Retail pricing for general customers - use exact price set
             pricing.put("priceType", "RETAIL");
-            pricing.put("price", crop.getCalculatedRetailPrice());
-            pricing.put("minQuantity", crop.getMinRetailQty() != null ? crop.getMinRetailQty() : new BigDecimal("0.1"));
-            pricing.put("maxQuantity", crop.getMaxRetailQty() != null ? crop.getMaxRetailQty() : new BigDecimal("10"));
+            pricing.put("price", crop.getMinPrice());
+            pricing.put("minQuantity", crop.getMinRetailQty());
+            pricing.put("maxQuantity", crop.getMaxRetailQty());
             pricing.put("unit", crop.getUnit());
-            pricing.put("message", "Order between " + (crop.getMinRetailQty() != null ? crop.getMinRetailQty() : "0.1")
-                    + " - " + (crop.getMaxRetailQty() != null ? crop.getMaxRetailQty() : "10") + " " + crop.getUnit());
+            pricing.put("message", "Retail price: ৳" + crop.getMinPrice() + "/" + crop.getUnit());
         }
 
         return ResponseEntity.ok(pricing);
     }
 
     /**
-     * Adjust crop price based on user role
-     * BUYER sees wholesale price, others see retail price
+     * No price adjustment - show exact price entered
      */
     private void adjustPriceForRole(Crop crop, String userRole) {
-        if ("ROLE_BUYER".equals(userRole)) {
-            // Buyers see wholesale price
-            if (crop.getWholesalePrice() != null) {
-                crop.setMinPrice(crop.getWholesalePrice());
-            }
-            // Set minimum quantity for wholesale
-            if (crop.getMinWholesaleQty() == null) {
-                crop.setMinWholesaleQty(new BigDecimal("80"));
-            }
-        } else {
-            // General customers and guests see retail price
-            BigDecimal retailPrice = crop.getCalculatedRetailPrice();
-            crop.setMinPrice(retailPrice);
-            // Set quantity limits for retail
-            if (crop.getMinRetailQty() == null) {
-                crop.setMinRetailQty(new BigDecimal("0.1"));
-            }
-            if (crop.getMaxRetailQty() == null) {
-                crop.setMaxRetailQty(new BigDecimal("10"));
-            }
-        }
+        // No adjustments - show exact price as entered
     }
 }

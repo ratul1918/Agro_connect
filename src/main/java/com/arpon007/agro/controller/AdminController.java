@@ -507,8 +507,6 @@ public class AdminController {
         }
     }
 
-    // ==================== INCOME TRACKING ====================
-
     /**
      * Get total platform income
      */
@@ -521,6 +519,36 @@ public class AdminController {
                     "currency", "BDT"));
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of("totalIncome", "0", "currency", "BDT"));
+        }
+    }
+
+    // ==================== STOCK MANAGEMENT ====================
+
+    /**
+     * Mark crop as stock out (sold out)
+     */
+    @PutMapping("/crops/{id}/stock-out")
+    public ResponseEntity<?> markAsStockOut(@PathVariable Long id) {
+        try {
+            cropRepository.markAsSoldOut(id);
+            return ResponseEntity.ok(Map.of("message", "Product marked as stock out"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Failed to update stock status: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Mark crop as back in stock (available)
+     */
+    @PutMapping("/crops/{id}/back-in-stock")
+    public ResponseEntity<?> markAsBackInStock(@PathVariable Long id) {
+        try {
+            cropRepository.markAsAvailable(id);
+            return ResponseEntity.ok(Map.of("message", "Product marked as back in stock"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Failed to update stock status: " + e.getMessage()));
         }
     }
 }

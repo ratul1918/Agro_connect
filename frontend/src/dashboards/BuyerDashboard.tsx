@@ -239,7 +239,11 @@ const BuyerDashboard: React.FC = () => {
                                 <div key={crop.id} className="bg-white rounded-lg shadow hover:shadow-lg transition">
                                     <div className="h-48 bg-gray-200 w-full rounded-t overflow-hidden">
                                         {crop.images && crop.images.length > 0 ? (
-                                            <img src={`http://localhost:8080${crop.images[0]}`} alt={crop.title} className="w-full h-full object-cover" />
+                                            <img
+                                                src={`http://localhost:8080${crop.images[0]}`}
+                                                alt={crop.title}
+                                                className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                                            />
                                         ) : (
                                             <div className="flex items-center justify-center h-full text-gray-500">No Image</div>
                                         )}

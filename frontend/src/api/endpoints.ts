@@ -21,8 +21,16 @@ export const addCrop = (formData: FormData) => api.post('/crops', formData);
 export const updateCrop = (id: number, formData: FormData) => api.put(`/crops/${id}`, formData);
 
 // BIDDING APIs
-export const placeBid = (cropId: number, amount: number) => api.post(`/bids/${cropId}`, { amount });
-export const getBidsByCrop = (cropId: number) => api.get(`/bids/${cropId}`);
+export const placeBid = (cropId: number, amount: number, quantity: number) => api.post(`/bids/${cropId}`, { amount, quantity });
+export const getBidsByCrop = (cropId: number) => api.get(`/bids/crop/${cropId}`);
+export const getMyBids = () => api.get('/bids/my-bids');
+export const getFarmerBids = () => api.get('/bids/farmer-bids');
+export const getBidById = (bidId: number) => api.get(`/bids/${bidId}`);
+export const counterOfferBid = (bidId: number, counterPrice: number) => api.put(`/bids/${bidId}/counter`, { counterPrice });
+export const buyerRespondBid = (bidId: number, action: string, amount?: number) => api.put(`/bids/${bidId}/buyer-respond`, { action, amount });
+export const acceptBid = (bidId: number) => api.put(`/bids/${bidId}/accept`);
+export const rejectBid = (bidId: number) => api.put(`/bids/${bidId}/reject`);
+export const deleteBid = (bidId: number) => api.delete(`/bids/${bidId}`);
 
 // ORDER APIs
 export const createOrder = (data: any) => api.post('/orders/create', data);

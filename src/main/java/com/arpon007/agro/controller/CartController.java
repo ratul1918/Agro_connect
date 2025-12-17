@@ -75,7 +75,7 @@ public class CartController {
             }
 
             Cart cart = cartRepository.getOrCreateCart(userDetails.getId());
-            BigDecimal price = crop.getRetailPrice() != null ? crop.getRetailPrice() : crop.getCalculatedRetailPrice();
+            BigDecimal price = crop.getMinPrice();
 
             CartItem item = cartRepository.addItemToCart(cart.getId(), cropId, quantity, price);
 

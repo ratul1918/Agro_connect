@@ -122,11 +122,18 @@ CREATE TABLE IF NOT EXISTS bids (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     crop_id BIGINT NOT NULL,
     buyer_id BIGINT NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL, -- Buyer's proposed price per unit
+    quantity DECIMAL(10,2) NOT NULL DEFAULT 80.00, -- Quantity for this bid
+    farmer_counter_price DECIMAL(10,2), -- Farmer's counter-offer price
+    last_action_by ENUM('BUYER', 'FARMER') DEFAULT 'BUYER', -- Who acted last
     bid_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('PENDING', 'ACCEPTED', 'REJECTED') DEFAULT 'PENDING',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    status ENUM('PENDING', 'COUNTER_OFFER', 'ACCEPTED', 'REJECTED', 'DELETED') DEFAULT 'PENDING',
     FOREIGN KEY (crop_id) REFERENCES crops(id) ON DELETE CASCADE,
-    FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_crop_id (crop_id),
+    INDEX idx_buyer_id (buyer_id),
+    INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS orders (
@@ -678,5 +685,57 @@ CREATE TABLE IF NOT EXISTS platform_income (
     INDEX idx_order_id (order_id),
     INDEX idx_recorded_at (recorded_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =================================================================================
+-- MIGRATION: Add bidding columns to bids table
+-- =================================================================================
+
+-- Add quantity column to bids
+SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      AND TABLE_NAME = 'bids' 
+                      AND COLUMN_NAME = 'quantity');
+SET @sql = IF(@column_exists = 0, 
+    'ALTER TABLE bids ADD COLUMN quantity DECIMAL(10,2) NOT NULL DEFAULT 80.00 AFTER amount', 
+    'SELECT "quantity column already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Add farmer_counter_price column to bids
+SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      AND TABLE_NAME = 'bids' 
+                      AND COLUMN_NAME = 'farmer_counter_price');
+SET @sql = IF(@column_exists = 0, 
+    'ALTER TABLE bids ADD COLUMN farmer_counter_price DECIMAL(10,2) AFTER quantity', 
+    'SELECT "farmer_counter_price column already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Add last_action_by column to bids
+SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      AND TABLE_NAME = 'bids' 
+                      AND COLUMN_NAME = 'last_action_by');
+SET @sql = IF(@column_exists = 0, 
+    'ALTER TABLE bids ADD COLUMN last_action_by ENUM(''BUYER'', ''FARMER'') DEFAULT ''BUYER'' AFTER farmer_counter_price', 
+    'SELECT "last_action_by column already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Add updated_at column to bids
+SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      AND TABLE_NAME = 'bids' 
+                      AND COLUMN_NAME = 'updated_at');
+SET @sql = IF(@column_exists = 0, 
+    'ALTER TABLE bids ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER bid_time', 
+    'SELECT "updated_at column already exists"');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SET FOREIGN_KEY_CHECKS = 1;

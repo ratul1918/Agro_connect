@@ -87,7 +87,7 @@ public class CropService {
                 crop.setImages(imageUrls);
             }
         }
-        return cropRepository.save(crop);
+        return cropRepository.update(crop);
     }
 
     public List<Crop> getAllCrops(boolean isBangla) {
@@ -97,5 +97,10 @@ public class CropService {
     public Crop getCropById(Long id, boolean isBangla) {
         return cropRepository.findById(id, isBangla)
                 .orElseThrow(() -> new RuntimeException("Crop not found"));
+    }
+
+    public List<Crop> getCropsByMarketplaceType(String marketplaceType, boolean isBangla) {
+        // Get crops by marketplace type (will include BOTH as well)
+        return cropRepository.findByMarketplaceType(marketplaceType);
     }
 }

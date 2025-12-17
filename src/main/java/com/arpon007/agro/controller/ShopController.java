@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -22,12 +24,17 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class ShopController {
 
+    private static final Logger log = LoggerFactory.getLogger(ShopController.class);
+
     @Autowired
     private CropRepository cropRepository;
     @Autowired
     private OrderRepository orderRepository;
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private com.arpon007.agro.service.InvoiceService invoiceService;
 
     @GetMapping("/products")
     public List<Crop> getProducts() {
@@ -77,8 +84,8 @@ public class ShopController {
                 return ResponseEntity.badRequest().body("Not enough stock");
             }
 
-            // Calculate Amount
-            BigDecimal price = crop.getCalculatedRetailPrice();
+            // Calculate Amount - use exact price set by farmer
+            BigDecimal price = crop.getMinPrice();
             if (price == null) {
                 return ResponseEntity.badRequest().body("Price not available");
             }
@@ -100,7 +107,19 @@ public class ShopController {
             // Update Stock
             cropRepository.updateStock(cropId, crop.getQuantity().subtract(quantity));
 
-            return ResponseEntity.ok(Map.of("message", "Order placed successfully", "orderId", orderId));
+            // Generate invoice PDF automatically
+            try {
+                String invoicePath = invoiceService.generateInvoicePDF(orderId);
+                log.info("Invoice generated for order {}: {}", orderId, invoicePath);
+            } catch (Exception invoiceEx) {
+                log.error("Failed to generate invoice for order {}", orderId, invoiceEx);
+                // Don't fail the order if invoice generation fails
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Order placed successfully",
+                    "orderId", orderId,
+                    "invoiceUrl", "/api/orders/" + orderId + "/invoice/pdf"));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Error processing order: " + e.getMessage());
