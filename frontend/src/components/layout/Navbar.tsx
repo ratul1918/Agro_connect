@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Menu, X, User, LogOut, Leaf, BarChart3, Globe, Palette, ShoppingCart } from 'lucide-react';
+import { Menu, X, User, LogOut, Leaf, BarChart3, Globe, Palette, ShoppingCart, MessageSquare } from 'lucide-react';
+import api from '../../api/axios';
 
 const Navbar: React.FC = () => {
     const { user, isAuthenticated, logout } = useAuth();
@@ -13,6 +14,25 @@ const Navbar: React.FC = () => {
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
     const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Fetch unread message count
+    useEffect(() => {
+        if (isAuthenticated) {
+            const fetchUnreadCount = async () => {
+                try {
+                    const res = await api.get('/messages/chats');
+                    const total = res.data.reduce((sum: number, chat: any) => sum + (chat.unreadCount || 0), 0);
+                    setUnreadCount(total);
+                } catch {
+                    setUnreadCount(0);
+                }
+            };
+            fetchUnreadCount();
+            const interval = setInterval(fetchUnreadCount, 10000); // Poll every 10 seconds
+            return () => clearInterval(interval);
+        }
+    }, [isAuthenticated]);
 
     const handleLogout = () => {
         logout(); // AuthContext handles redirect to home
@@ -160,11 +180,22 @@ const Navbar: React.FC = () => {
                             )}
                         </div>
 
-                        {/* Cart Icon - For logged in users */}
                         {/* Cart Icon - Visible to everyone */}
                         <Link to="/cart" className="relative text-gray-700 hover:text-green-600 p-2">
                             <ShoppingCart className="h-5 w-5" />
                         </Link>
+
+                        {/* Messages Icon - For authenticated users */}
+                        {isAuthenticated && (
+                            <Link to="/messages" className="relative text-gray-700 hover:text-green-600 p-2">
+                                <MessageSquare className="h-5 w-5" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
+                            </Link>
+                        )}
 
                         {isAuthenticated && user ? (
                             <>
@@ -276,6 +307,19 @@ const Navbar: React.FC = () => {
                                         <span className="h-4 w-4 inline mr-2 text-center font-bold">A</span>
                                         {language === 'en' ? 'বাংলা' : 'English'}
                                     </button>
+                                    <Link
+                                        to="/messages"
+                                        className="flex items-center gap-2 py-2 text-gray-700 hover:text-green-600"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        <MessageSquare className="h-4 w-4" />
+                                        Messages
+                                        {unreadCount > 0 && (
+                                            <span className="bg-red-500 text-white text-xs font-bold rounded-full px-2">
+                                                {unreadCount}
+                                            </span>
+                                        )}
+                                    </Link>
                                     <Link
                                         to="/profile"
                                         className="block py-2 text-gray-700 hover:text-green-600"

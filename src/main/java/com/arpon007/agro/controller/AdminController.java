@@ -34,16 +34,19 @@ public class AdminController {
     private final CropRepository cropRepository;
     private final com.arpon007.agro.repository.AppConfigRepository appConfigRepository;
     private final com.arpon007.agro.repository.OrderRepository orderRepository;
+    private final com.arpon007.agro.service.WalletService walletService;
 
     public AdminController(UserRepository userRepository, FeatureRepository featureRepository,
             CropRepository cropRepository,
             com.arpon007.agro.repository.AppConfigRepository appConfigRepository,
-            com.arpon007.agro.repository.OrderRepository orderRepository) {
+            com.arpon007.agro.repository.OrderRepository orderRepository,
+            com.arpon007.agro.service.WalletService walletService) {
         this.userRepository = userRepository;
         this.featureRepository = featureRepository;
         this.cropRepository = cropRepository;
         this.appConfigRepository = appConfigRepository;
         this.orderRepository = orderRepository;
+        this.walletService = walletService;
     }
 
     // User Management
@@ -489,13 +492,21 @@ public class AdminController {
                 // Also update order status to COMPLETED
                 orderRepository.updateStatus(id, "COMPLETED");
 
-                // Record platform income (2% platform fee)
+                // Record platform income (2% platform fee) and credit farmer
                 if (!orderRepository.isIncomeRecorded(id)) {
                     com.arpon007.agro.model.Order order = orderRepository.findById(id).orElse(null);
                     if (order != null) {
                         java.math.BigDecimal platformFee = order.getTotalAmount()
                                 .multiply(new java.math.BigDecimal("0.02"));
                         orderRepository.recordPlatformIncome(id, platformFee, new java.math.BigDecimal("2.00"));
+
+                        // Credit farmer wallet (Total - Platform Fee)
+                        // Note: Depending on business logic, we credit the whole amount minus fee
+                        // assuming the platform collected everything (Advance + COD/Digital).
+                        java.math.BigDecimal amountToCredit = order.getTotalAmount().subtract(platformFee);
+                        walletService.creditWallet(order.getFarmerId(), amountToCredit,
+                                com.arpon007.agro.model.Transaction.TransactionSource.ORDER_PAYMENT,
+                                "Payment for Order #" + id);
                     }
                 }
             }

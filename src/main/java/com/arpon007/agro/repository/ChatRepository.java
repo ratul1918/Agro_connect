@@ -100,7 +100,7 @@ public class ChatRepository {
     }
 
     /**
-     * Send a bid notification message
+     * Send a bid notification message (for new bids from buyer to farmer)
      */
     public void sendBidMessage(Long buyerId, Long farmerId, String cropTitle, String amount, String quantity) {
         Long chatId = findOrCreateChat(buyerId, farmerId);
@@ -118,6 +118,28 @@ public class ChatRepository {
         message.setSenderId(buyerId);
         message.setContent(bidMessage);
         save(message);
+    }
+
+    /**
+     * Send a direct message between two users
+     */
+    public void sendDirectMessage(Long senderId, Long receiverId, String content) {
+        Long chatId = findOrCreateChat(senderId, receiverId);
+
+        ChatMessage message = new ChatMessage();
+        message.setChatId(chatId);
+        message.setSenderId(senderId);
+        message.setContent(content);
+        save(message);
+    }
+
+    /**
+     * Delete a chat and all its messages
+     */
+    public void deleteChat(Long chatId) {
+        // Messages will be cascade deleted due to FK constraint
+        String sql = "DELETE FROM chats WHERE id = ?";
+        jdbcTemplate.update(sql, chatId);
     }
 
     private static class ChatMessageRowMapper implements RowMapper<ChatMessage> {

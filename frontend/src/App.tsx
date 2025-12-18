@@ -6,10 +6,12 @@ import { Toaster } from 'react-hot-toast';
 
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';
+import NavOnlyLayout from './components/layout/NavOnlyLayout';
 
 // Public Pages
 import HomePage from './pages/HomePage';
 import AuthPage from './pages/AuthPage';
+import MessagesPage from './pages/MessagesPage';
 import RetailMarketplacePage from './pages/RetailMarketplacePage';
 import B2BMarketplacePage from './pages/B2BMarketplacePage';
 import MarketPricesPage from './pages/MarketPricesPage';
@@ -90,6 +92,7 @@ function App() {
             {/* Profile & Settings Routes (Protected) */}
             <Route path="/profile" element={<PublicLayout><PrivateRoute><ProfilePage /></PrivateRoute></PublicLayout>} />
             <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
+            <Route path="/messages" element={<PrivateRoute><NavOnlyLayout><MessagesPage /></NavOnlyLayout></PrivateRoute>} />
 
             {/* Auth Routes (no navbar/footer) */}
             <Route path="/auth" element={<AuthPage />} />

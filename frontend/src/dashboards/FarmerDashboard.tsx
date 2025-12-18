@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { addCrop, getMarketPrices } from '../api/endpoints';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Button } from '../components/ui/button';
@@ -6,7 +7,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { useNotification } from '../context/NotificationContext';
 import api from '../api/axios';
-import { Leaf, Package, Ship, FileCheck, Plus, BarChart3, Bot, MessageSquare, Users, Printer, BookOpen, Check, X, Trash2, Edit2, PackageX } from 'lucide-react';
+import { Leaf, Package, Ship, FileCheck, Plus, BarChart3, Bot, MessageSquare, Users, Printer, BookOpen, Check, X, Trash2, Edit2, PackageX, DollarSign, Wallet } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -15,6 +16,7 @@ import ChangePasswordPage from '../pages/ChangePasswordPage';
 import AIChatPage from '../pages/AIChatPage';
 import MessagesPage from '../pages/MessagesPage';
 import AgronomistDirectoryPage from '../pages/AgronomistDirectoryPage';
+import ConfirmModal from '../components/ConfirmModal';
 
 interface Order {
     id: number;
@@ -85,6 +87,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 
 const FarmerDashboard: React.FC = () => {
     const { success, error } = useNotification();
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
     const [orders, setOrders] = useState<Order[]>([]);
     const [exports, setExports] = useState<ExportApplication[]>([]);
@@ -93,6 +96,15 @@ const FarmerDashboard: React.FC = () => {
     const [marketPrices, setMarketPrices] = useState<MarketPrice[]>([]);
     const [blogs, setBlogs] = useState<Blog[]>([]);
     const [loading, setLoading] = useState(false);
+    const [walletBalance, setWalletBalance] = useState(0);
+    const [cashoutAmount, setCashoutAmount] = useState('');
+    const [confirmAction, setConfirmAction] = useState<{
+        show: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        variant?: 'default' | 'destructive';
+    }>({ show: false, title: '', message: '', onConfirm: () => { } });
 
     // Add Crop Form
     const [title, setTitle] = useState('');
@@ -116,7 +128,36 @@ const FarmerDashboard: React.FC = () => {
         fetchMyCrops();
         fetchMarketPrices();
         fetchBlogs();
+        fetchWalletBalance();
     }, []);
+
+    const fetchWalletBalance = async () => {
+        try {
+            const res = await api.get('/wallet/balance');
+            setWalletBalance(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleCashout = async () => {
+        try {
+            if (!cashoutAmount || parseFloat(cashoutAmount) <= 0) {
+                error('Please enter a valid amount');
+                return;
+            }
+            if (parseFloat(cashoutAmount) > walletBalance) {
+                error('Insufficient balance');
+                return;
+            }
+            await api.post('/wallet/cashout', { amount: parseFloat(cashoutAmount) });
+            success('Cashout request sent successfully');
+            setCashoutAmount('');
+            fetchWalletBalance();
+        } catch (err) {
+            error('Failed to request cashout');
+        }
+    };
 
     const fetchOrders = async () => {
         try {
@@ -228,36 +269,48 @@ const FarmerDashboard: React.FC = () => {
         }
     };
 
-    const handleAcceptOrder = async (orderId: number) => {
-        if (!window.confirm('আপনি কি এই অর্ডারটি গ্রহণ করতে চান?')) {
-            return;
-        }
-        setLoading(true);
-        try {
-            await api.put(`/features/farmer/orders/${orderId}/accept`);
-            success('অর্ডার গ্রহণ করা হয়েছে');
-            fetchOrders();
-        } catch (err) {
-            error('অর্ডার গ্রহণ ব্যর্থ হয়েছে');
-        } finally {
-            setLoading(false);
-        }
+    const handleAcceptOrder = (orderId: number) => {
+        setConfirmAction({
+            show: true,
+            title: 'অর্ডার গ্রহণ করুন',
+            message: 'আপনি কি এই অর্ডারটি গ্রহণ করতে চান?',
+            variant: 'default',
+            onConfirm: async () => {
+                setConfirmAction(prev => ({ ...prev, show: false }));
+                setLoading(true);
+                try {
+                    await api.put(`/features/farmer/orders/${orderId}/accept`);
+                    success('অর্ডার গ্রহণ করা হয়েছে');
+                    fetchOrders();
+                } catch (err) {
+                    error('অর্ডার গ্রহণ ব্যর্থ হয়েছে');
+                } finally {
+                    setLoading(false);
+                }
+            }
+        });
     };
 
-    const handleRejectOrder = async (orderId: number) => {
-        if (!window.confirm('আপনি কি এই অর্ডারটি প্রত্যাখ্যান করতে চান?')) {
-            return;
-        }
-        setLoading(true);
-        try {
-            await api.put(`/features/farmer/orders/${orderId}/reject`);
-            success('অর্ডার প্রত্যাখ্যান করা হয়েছে');
-            fetchOrders();
-        } catch (err) {
-            error('অর্ডার প্রত্যাখ্যান ব্যর্থ হয়েছে');
-        } finally {
-            setLoading(false);
-        }
+    const handleRejectOrder = (orderId: number) => {
+        setConfirmAction({
+            show: true,
+            title: 'অর্ডার প্রত্যাখ্যান করুন',
+            message: 'আপনি কি এই অর্ডারটি প্রত্যাখ্যান করতে চান?',
+            variant: 'destructive',
+            onConfirm: async () => {
+                setConfirmAction(prev => ({ ...prev, show: false }));
+                setLoading(true);
+                try {
+                    await api.put(`/features/farmer/orders/${orderId}/reject`);
+                    success('অর্ডার প্রত্যাখ্যান করা হয়েছে');
+                    fetchOrders();
+                } catch (err) {
+                    error('অর্ডার প্রত্যাখ্যান ব্যর্থ হয়েছে');
+                } finally {
+                    setLoading(false);
+                }
+            }
+        });
     };
 
     const handleBidAction = async (id: number, action: 'accept' | 'reject') => {
@@ -270,20 +323,26 @@ const FarmerDashboard: React.FC = () => {
         }
     };
 
-    const handleDeleteCrop = async (cropId: number) => {
-        if (!window.confirm('আপনি কি এই ফসলটি মুছে ফেলতে চান?')) {
-            return;
-        }
-        setLoading(true);
-        try {
-            await api.delete(`/crops/${cropId}`);
-            success('ফসল মুছে ফেলা হয়েছে');
-            fetchMyCrops();
-        } catch (err) {
-            error('ফসল মুছে ফেলা ব্যর্থ হয়েছে');
-        } finally {
-            setLoading(false);
-        }
+    const handleDeleteCrop = (cropId: number) => {
+        setConfirmAction({
+            show: true,
+            title: 'ফসল মুছে ফেলুন',
+            message: 'আপনি কি এই ফসলটি মুছে ফেলতে চান? এটি পুনরুদ্ধার করা যাবে না।',
+            variant: 'destructive',
+            onConfirm: async () => {
+                setConfirmAction(prev => ({ ...prev, show: false }));
+                setLoading(true);
+                try {
+                    await api.delete(`/crops/${cropId}`);
+                    success('ফসল মুছে ফেলা হয়েছে');
+                    fetchMyCrops();
+                } catch (err) {
+                    error('ফসল মুছে ফেলা ব্যর্থ হয়েছে');
+                } finally {
+                    setLoading(false);
+                }
+            }
+        });
     };
 
     const handleStockToggle = async (cropId: number, isSold: boolean) => {
@@ -365,7 +424,8 @@ const FarmerDashboard: React.FC = () => {
         { label: 'অর্ডার (Orders)', icon: Package, value: 'orders' },
         { label: 'রপ্তানি (Exports)', icon: Ship, value: 'exports' },
         { label: 'বিড (Bids)', icon: FileCheck, value: 'bids' },
-        { label: 'বার্তা (Messages)', icon: MessageSquare, value: 'messages' },
+        { label: 'বার্তা (Messages)', icon: MessageSquare, value: 'messages', onClick: () => navigate('/messages') },
+        { label: 'ওয়ালেট (Wallet)', icon: DollarSign, value: 'wallet' },
         { label: 'AI সহায়তা (AI Chat)', icon: Bot, value: 'ai-chat' },
     ];
 
@@ -379,11 +439,19 @@ const FarmerDashboard: React.FC = () => {
         return item ? item.label : 'Dashboard';
     };
 
+    const handleTabChange = (tab: string) => {
+        if (tab === 'messages') {
+            navigate('/messages');
+        } else {
+            setActiveTab(tab);
+        }
+    };
+
     return (
         <DashboardLayout
             sidebarItems={sidebarItems}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             title={getTitle()}
         >
             {/* Overview */}
@@ -716,6 +784,79 @@ const FarmerDashboard: React.FC = () => {
                 </>
             )}
 
+            {/* Wallet */}
+            {activeTab === 'wallet' && (
+                <div className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Wallet className="w-5 h-5" />
+                                    ওয়ালেট ব্যালেন্স (Available Balance)
+                                </CardTitle>
+                                <CardDescription>আপনার বর্তমান উত্তোলনযোগ্য ব্যালেন্স</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold text-green-600">৳{walletBalance}</div>
+                                <div className="mt-4 space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">টাকার পরিমাণ (Amount)</label>
+                                        <Input
+                                            type="number"
+                                            placeholder="উত্তোলন পরিমাণ লিখুন"
+                                            value={cashoutAmount}
+                                            onChange={e => setCashoutAmount(e.target.value)}
+                                        />
+                                    </div>
+                                    <Button onClick={handleCashout} disabled={!cashoutAmount || parseFloat(cashoutAmount) <= 0 || parseFloat(cashoutAmount) > walletBalance}>
+                                        নগদ উত্তোলন অনুরোধ (Request Cashout)
+                                    </Button>
+                                    <p className="text-xs text-muted-foreground">অ্যাডমিন অনুমোদনের পর টাকা আপনার অ্যাকাউন্টে জমা হবে।</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <DollarSign className="w-5 h-5" />
+                                    অপেক্ষমাণ আয় (Pending Income)
+                                </CardTitle>
+                                <CardDescription>অর্ডার সম্পন্ন হলে এই টাকা মূল ব্যালেন্সে যোগ হবে</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold text-yellow-600">
+                                    ৳{orders
+                                        .filter(o => o.status !== 'DELIVERED' && o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'REJECTED')
+                                        .reduce((sum, o) => sum + o.totalAmount, 0)
+                                        .toFixed(2)}
+                                </div>
+                                <div className="mt-4">
+                                    <h4 className="font-medium mb-2">সাম্প্রতিক পেন্ডিং অর্ডার:</h4>
+                                    <div className="space-y-2">
+                                        {orders
+                                            .filter(o => o.status !== 'DELIVERED' && o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'REJECTED')
+                                            .slice(0, 3)
+                                            .map(o => (
+                                                <div key={o.id} className="text-sm border-b pb-2">
+                                                    <div className="flex justify-between">
+                                                        <span>Order #{o.id}</span>
+                                                        <span className="font-bold">৳{o.totalAmount}</span>
+                                                    </div>
+                                                    <div className="text-muted-foreground text-xs">{o.status}</div>
+                                                </div>
+                                            ))}
+                                        {orders.filter(o => o.status !== 'DELIVERED' && o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'REJECTED').length === 0 && (
+                                            <p className="text-sm text-muted-foreground">কোন পেন্ডিং অর্ডার নেই</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            )}
+
             {/* Orders */}
             {activeTab === 'orders' && (
                 <Card>
@@ -963,6 +1104,16 @@ const FarmerDashboard: React.FC = () => {
 
             {/* AI Chat */}
             {activeTab === 'ai-chat' && <AIChatPage />}
+
+            {/* Confirm Modal */}
+            <ConfirmModal
+                isOpen={confirmAction.show}
+                title={confirmAction.title}
+                message={confirmAction.message}
+                variant={confirmAction.variant}
+                onConfirm={confirmAction.onConfirm}
+                onCancel={() => setConfirmAction(prev => ({ ...prev, show: false }))}
+            />
         </DashboardLayout>
     );
 };

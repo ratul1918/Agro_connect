@@ -19,6 +19,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
     const [searchMobile, setSearchMobile] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+    const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean; orderId: number | null }>({ show: false, orderId: null });
 
     // Filter by status
     const statusFiltered = filter === 'ALL'
@@ -304,12 +305,12 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
                                             <label className="label"><span className="label-text">Order Status</span></label>
                                             <select
                                                 className={`select select-bordered w-full ${selectedOrder.status === 'PENDING' ? 'select-warning' :
-                                                        selectedOrder.status === 'PENDING_ADVANCE' ? 'select-warning' :
-                                                            selectedOrder.status === 'CONFIRMED' ? 'select-info' :
-                                                                selectedOrder.status === 'IN_TRANSIT' ? 'select-info' :
-                                                                    selectedOrder.status === 'DELIVERED' ? 'select-success' :
-                                                                        selectedOrder.status === 'COMPLETED' ? 'select-success' :
-                                                                            'select-error'
+                                                    selectedOrder.status === 'PENDING_ADVANCE' ? 'select-warning' :
+                                                        selectedOrder.status === 'CONFIRMED' ? 'select-info' :
+                                                            selectedOrder.status === 'IN_TRANSIT' ? 'select-info' :
+                                                                selectedOrder.status === 'DELIVERED' ? 'select-success' :
+                                                                    selectedOrder.status === 'COMPLETED' ? 'select-success' :
+                                                                        'select-error'
                                                     }`}
                                                 value={selectedOrder.status}
                                                 onChange={(e) => handleStatusChange(selectedOrder.id, e.target.value)}
@@ -328,11 +329,11 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
                                             <label className="label"><span className="label-text">Delivery Status</span></label>
                                             <select
                                                 className={`select select-bordered w-full ${!selectedOrder.deliveryStatus || selectedOrder.deliveryStatus === 'PENDING' ? 'select-warning' :
-                                                        selectedOrder.deliveryStatus === 'PROCESSING' ? 'select-info' :
-                                                            selectedOrder.deliveryStatus === 'SHIPPED' ? 'select-info' :
-                                                                selectedOrder.deliveryStatus === 'OUT_FOR_DELIVERY' ? 'select-primary' :
-                                                                    selectedOrder.deliveryStatus === 'DELIVERED' ? 'select-success' :
-                                                                        'select-error'
+                                                    selectedOrder.deliveryStatus === 'PROCESSING' ? 'select-info' :
+                                                        selectedOrder.deliveryStatus === 'SHIPPED' ? 'select-info' :
+                                                            selectedOrder.deliveryStatus === 'OUT_FOR_DELIVERY' ? 'select-primary' :
+                                                                selectedOrder.deliveryStatus === 'DELIVERED' ? 'select-success' :
+                                                                    'select-error'
                                                     }`}
                                                 value={selectedOrder.deliveryStatus || 'PENDING'}
                                                 onChange={(e) => handleDeliveryStatusChange(selectedOrder.id, e.target.value)}
@@ -418,17 +419,42 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
                                     </button>
                                     <button
                                         className="btn btn-error btn-outline flex-1 gap-2"
-                                        onClick={() => {
-                                            if (window.confirm('Delete this order? Cannot be undone.')) {
-                                                handleDeleteOrder(selectedOrder.id);
-                                                setSelectedOrder(null);
-                                            }
-                                        }}
+                                        onClick={() => setDeleteConfirm({ show: true, orderId: selectedOrder.id })}
                                     >
                                         <Trash2 className="w-4 h-4" /> Delete Order
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm.show && (
+                <div className="modal modal-open">
+                    <div className="modal-box">
+                        <h3 className="font-bold text-lg">Delete Order</h3>
+                        <p className="py-4">Are you sure you want to delete this order? This action cannot be undone.</p>
+                        <div className="modal-action">
+                            <button
+                                className="btn btn-ghost"
+                                onClick={() => setDeleteConfirm({ show: false, orderId: null })}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-error"
+                                onClick={() => {
+                                    if (deleteConfirm.orderId) {
+                                        handleDeleteOrder(deleteConfirm.orderId);
+                                        setSelectedOrder(null);
+                                    }
+                                    setDeleteConfirm({ show: false, orderId: null });
+                                }}
+                            >
+                                Delete
+                            </button>
                         </div>
                     </div>
                 </div>

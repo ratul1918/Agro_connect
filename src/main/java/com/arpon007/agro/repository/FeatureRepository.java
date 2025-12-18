@@ -216,6 +216,7 @@ public class FeatureRepository {
     public List<Map<String, Object>> getBidsByBuyer(Long buyerId) {
         String sql = """
                 SELECT b.id, b.crop_id as cropId, b.amount, b.bid_time as bidTime, b.status,
+                       b.quantity, b.farmer_counter_price as farmerCounterPrice,
                        c.title as cropTitle, farmer.full_name as farmerName
                 FROM bids b
                 LEFT JOIN crops c ON b.crop_id = c.id
@@ -234,6 +235,7 @@ public class FeatureRepository {
         String sql = """
                 SELECT b.id, b.crop_id as cropId, b.buyer_id as buyerId,
                        b.amount, b.bid_time as bidTime, b.status,
+                       b.quantity, b.farmer_counter_price as farmerCounterPrice,
                        buyer.full_name as buyerName, buyer.email as buyerEmail,
                        c.title as cropTitle
                 FROM bids b

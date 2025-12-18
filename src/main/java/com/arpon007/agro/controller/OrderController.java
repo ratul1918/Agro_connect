@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -24,12 +25,14 @@ public class OrderController {
     private final com.arpon007.agro.repository.UserRepository userRepository;
     private final com.arpon007.agro.repository.CropRepository cropRepository;
     private final com.arpon007.agro.service.InvoiceService invoiceService;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     public OrderController(OrderRepository orderRepository, JwtUtil jwtUtil, WalletService walletService,
             ResourceLoader resourceLoader,
             com.arpon007.agro.repository.UserRepository userRepository,
             com.arpon007.agro.repository.CropRepository cropRepository,
-            com.arpon007.agro.service.InvoiceService invoiceService) {
+            com.arpon007.agro.service.InvoiceService invoiceService,
+            org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         this.orderRepository = orderRepository;
         this.jwtUtil = jwtUtil;
         this.walletService = walletService;
@@ -37,6 +40,7 @@ public class OrderController {
         this.userRepository = userRepository;
         this.cropRepository = cropRepository;
         this.invoiceService = invoiceService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @GetMapping(value = "/{id}/invoice", produces = "text/html")
@@ -129,6 +133,7 @@ public class OrderController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('BUYER')")
+    @Transactional
     public ResponseEntity<String> createOrder(@RequestBody Map<String, Object> payload, HttpServletRequest request) {
         String token = request.getHeader("Authorization").substring(7);
         Long buyerId = jwtUtil.extractClaim(token, claims -> claims.get("userId", Long.class));
@@ -136,6 +141,9 @@ public class OrderController {
         Long farmerId = Long.valueOf(payload.get("farmerId").toString());
         Long cropId = Long.valueOf(payload.get("cropId").toString());
         BigDecimal totalAmount = new BigDecimal(payload.get("totalAmount").toString());
+        String customerMobile = payload.get("customerMobile") != null ? payload.get("customerMobile").toString() : null;
+        String customerAddress = payload.get("customerAddress") != null ? payload.get("customerAddress").toString()
+                : null;
 
         // 20% Advance logic
         BigDecimal advance = totalAmount.multiply(new BigDecimal("0.20"));
@@ -157,10 +165,84 @@ public class OrderController {
         order.setTotalAmount(totalAmount);
         order.setAdvanceAmount(advance);
         order.setDueAmount(due);
+        order.setCustomerMobile(customerMobile);
+        order.setCustomerAddress(customerAddress);
         order.setStatus(com.arpon007.agro.model.Order.OrderStatus.PENDING); // Ensure status is set
 
         Long orderId = orderRepository.createOrder(order);
 
         return ResponseEntity.ok("Order placed successfully. ID: " + orderId);
+    }
+
+    @PostMapping("/from-bid")
+    @PreAuthorize("hasRole('BUYER')")
+    @Transactional
+    public ResponseEntity<?> createOrderFromBid(@RequestBody Map<String, Object> payload, HttpServletRequest request) {
+        try {
+            String token = request.getHeader("Authorization").substring(7);
+            Long buyerId = jwtUtil.extractClaim(token, claims -> {
+                Object idObj = claims.get("userId");
+                if (idObj instanceof Integer) {
+                    return ((Integer) idObj).longValue();
+                } else if (idObj instanceof Long) {
+                    return (Long) idObj;
+                } else {
+                    return Long.parseLong(String.valueOf(idObj));
+                }
+            });
+
+            Long bidId = Long.valueOf(payload.get("bidId").toString());
+            Long cropId = Long.valueOf(payload.get("cropId").toString());
+            BigDecimal quantity = new BigDecimal(payload.get("quantity").toString());
+            BigDecimal pricePerUnit = new BigDecimal(payload.get("pricePerUnit").toString());
+            BigDecimal totalAmount = new BigDecimal(payload.get("totalAmount").toString());
+            BigDecimal advanceAmount = new BigDecimal(payload.get("advanceAmount").toString());
+            String customerAddress = payload.get("customerAddress").toString();
+            String customerMobile = payload.get("customerMobile").toString();
+
+            System.out.println("Processing Bid Order: " + bidId + ", Qty: " + quantity + ", Price: " + pricePerUnit);
+
+            // Get crop to find farmer
+            com.arpon007.agro.model.Crop crop = cropRepository.findById(cropId).orElse(null);
+            if (crop == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Crop not found"));
+            }
+
+            // Check and debit wallet for advance payment
+            try {
+                walletService.debitWallet(buyerId, advanceAmount,
+                        com.arpon007.agro.model.Transaction.TransactionSource.ORDER_PAYMENT,
+                        "Advance payment for Bid Order #" + bidId);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "অপর্যাপ্ত ব্যালেন্স। আপনার ওয়ালেটে যোগ করুন।"));
+            }
+
+            // Create order
+            Order order = new Order();
+            order.setBuyerId(buyerId);
+            order.setFarmerId(crop.getFarmerId());
+            order.setCropId(cropId);
+            order.setTotalAmount(totalAmount);
+            order.setAdvanceAmount(advanceAmount);
+            order.setDueAmount(totalAmount.subtract(advanceAmount));
+            order.setCustomerAddress(customerAddress);
+            order.setCustomerMobile(customerMobile);
+            order.setStatus(com.arpon007.agro.model.Order.OrderStatus.CONFIRMED);
+
+            Long orderId = orderRepository.createOrder(order);
+
+            // Mark bid as completed/ordered using injected JdbcTemplate
+            String updateBidSql = "UPDATE bids SET status = 'ORDERED' WHERE id = ?";
+            this.jdbcTemplate.update(updateBidSql, bidId);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Order created successfully!",
+                    "orderId", orderId,
+                    "advancePaid", advanceAmount));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("message", "Order failed: " + e.getMessage()));
+        }
     }
 }

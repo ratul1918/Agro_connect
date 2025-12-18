@@ -217,11 +217,22 @@ public class BiddingController {
         // Auto-add to buyer's cart with agreed price
         try {
             Crop crop = cropService.getCropById(bid.getCropId(), false);
+            System.out.println(
+                    "DEBUG: Accepting bid " + bidId + " for crop " + (crop != null ? crop.getTitle() : "null"));
+
             if (crop != null) {
                 Cart buyerCart = cartRepository.getOrCreateCart(bid.getBuyerId());
+                System.out.println("DEBUG: Got cart " + buyerCart.getId() + " for buyer " + bid.getBuyerId());
+
                 BigDecimal agreedPrice = bid.getFarmerCounterPrice() != null ? bid.getFarmerCounterPrice()
                         : bid.getAmount();
-                cartRepository.addItemToCart(buyerCart.getId(), bid.getCropId(), bid.getQuantity(), agreedPrice);
+                BigDecimal quantity = bid.getQuantity() != null ? bid.getQuantity() : BigDecimal.ONE;
+
+                System.out.println("DEBUG: Adding to cart - cropId: " + bid.getCropId() + ", qty: " + quantity
+                        + ", price: " + agreedPrice);
+
+                cartRepository.addItemToCart(buyerCart.getId(), bid.getCropId(), quantity, agreedPrice);
+                System.out.println("DEBUG: Item added to cart successfully!");
 
                 // Create notification for buyer
                 String notificationMsg = String.format(
@@ -230,17 +241,24 @@ public class BiddingController {
                                 "পরিমাণ: %s কেজি\n" +
                                 "মূল্য: ৳%s/কেজি\n\n" +
                                 "পণ্যটি আপনার কার্টে যোগ করা হয়েছে। চেকআউট করতে কার্টে যান।",
-                        crop.getTitle(), bid.getQuantity(), agreedPrice);
+                        crop.getTitle(), quantity, agreedPrice);
 
                 String notifSql = "INSERT INTO notifications (user_id, message_bn, type) VALUES (?, ?, 'BID')";
                 jdbcTemplate.update(notifSql, bid.getBuyerId(), notificationMsg);
 
-                // Send message to buyer
-                chatRepository.sendBidMessage(userId, bid.getBuyerId(), crop.getTitle(),
-                        "✅ বিড গৃহীত! মূল্য: ৳" + agreedPrice + "/কেজি। পণ্যটি আপনার কার্টে যোগ করা হয়েছে।", "");
+                // Send message to buyer's inbox
+                String inboxMessage = String.format(
+                        "✅ বিড গৃহীত হয়েছে!\n\n" +
+                                "ফসল: %s\n" +
+                                "পরিমাণ: %s কেজি\n" +
+                                "মূল্য: ৳%s/কেজি\n\n" +
+                                "পণ্যটি আপনার কার্টে যোগ করা হয়েছে। চেকআউট করতে কার্টে যান।",
+                        crop.getTitle(), quantity, agreedPrice);
+                chatRepository.sendDirectMessage(userId, bid.getBuyerId(), inboxMessage);
             }
         } catch (Exception e) {
             System.err.println("Failed to add to cart: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return ResponseEntity.ok("Bid accepted and added to buyer's cart");
@@ -269,6 +287,34 @@ public class BiddingController {
         }
 
         bidRepository.rejectBid(bidId);
+
+        // Send notification and message to buyer about rejection
+        try {
+            Crop crop = cropService.getCropById(bid.getCropId(), false);
+            if (crop != null) {
+                String notificationMsg = String.format(
+                        "❌ দুঃখিত! আপনার বিড প্রত্যাখ্যাত হয়েছে।\n\n" +
+                                "ফসল: %s\n" +
+                                "আপনার প্রস্তাবিত মূল্য: ৳%s/কেজি\n\n" +
+                                "আপনি অন্য ফসলে বিড করতে পারেন।",
+                        crop.getTitle(), bid.getAmount());
+
+                String notifSql = "INSERT INTO notifications (user_id, message_bn, type) VALUES (?, ?, 'BID')";
+                jdbcTemplate.update(notifSql, bid.getBuyerId(), notificationMsg);
+
+                // Send message to buyer's inbox
+                String inboxMessage = String.format(
+                        "❌ বিড প্রত্যাখ্যাত হয়েছে\n\n" +
+                                "ফসল: %s\n" +
+                                "আপনার প্রস্তাবিত মূল্য: ৳%s/কেজি\n\n" +
+                                "দুঃখিত, কৃষক আপনার প্রস্তাবিত মূল্য গ্রহণ করেননি। আপনি অন্য ফসলে বিড করতে পারেন।",
+                        crop.getTitle(), bid.getAmount());
+                chatRepository.sendDirectMessage(userId, bid.getBuyerId(), inboxMessage);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to send rejection notification: " + e.getMessage());
+        }
+
         return ResponseEntity.ok("Bid rejected");
     }
 

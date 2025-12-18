@@ -132,6 +132,22 @@ public class MessageController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Delete a chat (conversation)
+     */
+    @DeleteMapping("/chats/{chatId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Object>> deleteChat(
+            @PathVariable Long chatId,
+            HttpServletRequest request) {
+        Long userId = extractUserId(request);
+        if (!chatRepository.isUserInChat(chatId, userId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Not authorized"));
+        }
+        chatRepository.deleteChat(chatId);
+        return ResponseEntity.ok(Map.of("message", "Chat deleted successfully"));
+    }
+
     private Long extractUserId(HttpServletRequest request) {
         String token = request.getHeader("Authorization").substring(7);
         return jwtUtil.extractClaim(token, claims -> {
