@@ -6,7 +6,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { useNotification } from '../context/NotificationContext';
 import api from '../api/axios';
-import { Leaf, Package, Ship, FileCheck, Plus, BarChart3, Bot, MessageSquare, Users, Printer, BookOpen, Check, X, Trash2 } from 'lucide-react';
+import { Leaf, Package, Ship, FileCheck, Plus, BarChart3, Bot, MessageSquare, Users, Printer, BookOpen, Check, X, Trash2, Edit2, PackageX } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -147,7 +147,7 @@ const FarmerDashboard: React.FC = () => {
 
     const fetchMyCrops = async () => {
         try {
-            const res = await api.get('/crops');
+            const res = await api.get('/crops/my');
             setMyCrops(res.data);
         } catch (err) {
             setMyCrops([]);
@@ -177,6 +177,7 @@ const FarmerDashboard: React.FC = () => {
 
     const handleAddCrop = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (loading) return; // Prevent duplicate submissions
         setLoading(true);
         const formData = new FormData();
         formData.append('title', title);
@@ -186,6 +187,7 @@ const FarmerDashboard: React.FC = () => {
         formData.append('unit', unit);
         formData.append('minPrice', price);
         formData.append('location', location);
+        formData.append('marketType', 'B2B');
 
         if (images) {
             for (let i = 0; i < images.length; i++) {
@@ -284,6 +286,65 @@ const FarmerDashboard: React.FC = () => {
         }
     };
 
+    const handleStockToggle = async (cropId: number, isSold: boolean) => {
+        setLoading(true);
+        try {
+            if (isSold) {
+                await api.put(`/crops/${cropId}/back-in-stock`);
+                success('ফসল আবার উপলব্ধ করা হয়েছে');
+            } else {
+                await api.put(`/crops/${cropId}/stock-out`);
+                success('ফসল স্টক আউট করা হয়েছে');
+            }
+            fetchMyCrops();
+        } catch (err) {
+            error('স্ট্যাটাস পরিবর্তন ব্যর্থ হয়েছে');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Edit crop state
+    const [editingCrop, setEditingCrop] = useState<MyCrop | null>(null);
+    const [editTitle, setEditTitle] = useState('');
+    const [editQty, setEditQty] = useState('');
+    const [editPrice, setEditPrice] = useState('');
+    const [editLocation, setEditLocation] = useState('');
+
+    const handleEditCrop = (crop: MyCrop) => {
+        setEditingCrop(crop);
+        setEditTitle(crop.title);
+        setEditQty(String(crop.quantity));
+        setEditPrice(String(crop.minPrice));
+        setEditLocation('');
+    };
+
+    const handleUpdateCrop = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingCrop) return;
+        setLoading(true);
+        const formData = new FormData();
+        formData.append('title', editTitle);
+        formData.append('description', '');
+        formData.append('cropTypeId', '1');
+        formData.append('quantity', editQty);
+        formData.append('unit', editingCrop.unit || 'kg');
+        formData.append('minPrice', editPrice);
+        formData.append('location', editLocation || 'Bangladesh');
+        try {
+            await api.put(`/crops/${editingCrop.id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            success('ফসল আপডেট করা হয়েছে');
+            setEditingCrop(null);
+            fetchMyCrops();
+        } catch (err) {
+            error('ফসল আপডেট ব্যর্থ হয়েছে');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const getStatusColor = (status: string) => {
         switch (status?.toUpperCase()) {
             case 'APPROVED': case 'COMPLETED': case 'DELIVERED': case 'ACCEPTED':
@@ -301,12 +362,10 @@ const FarmerDashboard: React.FC = () => {
         { label: 'সারাংশ (Overview)', icon: BarChart3, value: 'overview' },
         { label: 'ফসল যোগ করুন (Add Crop)', icon: Plus, value: 'add-crop' },
         { label: 'আমার ফসল (My Crops)', icon: Leaf, value: 'my-crops' },
-        { label: 'কৃষিবিদ খুঁজুন (Find Agronomist)', icon: Users, value: 'find-agronomist' },
-        { label: 'বার্তা (Messages)', icon: MessageSquare, value: 'messages' },
         { label: 'অর্ডার (Orders)', icon: Package, value: 'orders' },
         { label: 'রপ্তানি (Exports)', icon: Ship, value: 'exports' },
         { label: 'বিড (Bids)', icon: FileCheck, value: 'bids' },
-        { label: 'ব্লগ ও টিপস (Blogs & Tips)', icon: BookOpen, value: 'blogs' },
+        { label: 'বার্তা (Messages)', icon: MessageSquare, value: 'messages' },
         { label: 'AI সহায়তা (AI Chat)', icon: Bot, value: 'ai-chat' },
     ];
 
@@ -542,52 +601,119 @@ const FarmerDashboard: React.FC = () => {
 
             {/* My Crops */}
             {activeTab === 'my-crops' && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>আমার ফসলের তালিকা</CardTitle>
-                        <CardDescription>আপনার যোগ করা সকল ফসলের তালিকা।</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>নাম</TableHead>
-                                        <TableHead>পরিমাণ</TableHead>
-                                        <TableHead>মূল্য</TableHead>
-                                        <TableHead>স্ট্যাটাস</TableHead>
-                                        <TableHead className="text-right">Action</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {myCrops.map(crop => (
-                                        <TableRow key={crop.id}>
-                                            <TableCell className="font-medium">{crop.title}</TableCell>
-                                            <TableCell>{crop.quantity} {crop.unit}</TableCell>
-                                            <TableCell>৳{crop.minPrice}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={crop.isSold ? "secondary" : "outline"} className={crop.isSold ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"}>
-                                                    {crop.isSold ? 'বিক্রিত' : 'উপলব্ধ'}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                    onClick={() => handleDeleteCrop(crop.id)}
-                                                    disabled={loading}
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
-                                            </TableCell>
+                <>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>আমার ফসলের তালিকা</CardTitle>
+                            <CardDescription>আপনার যোগ করা সকল ফসলের তালিকা।</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>নাম</TableHead>
+                                            <TableHead>পরিমাণ</TableHead>
+                                            <TableHead>মূল্য</TableHead>
+                                            <TableHead>স্ট্যাটাস</TableHead>
+                                            <TableHead className="text-right">Action</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {myCrops.map(crop => (
+                                            <TableRow key={crop.id}>
+                                                <TableCell className="font-medium">{crop.title}</TableCell>
+                                                <TableCell>{crop.quantity} {crop.unit}</TableCell>
+                                                <TableCell>৳{crop.minPrice}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant={crop.isSold ? "secondary" : "outline"} className={crop.isSold ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"}>
+                                                        {crop.isSold ? 'বিক্রিত' : 'উপলব্ধ'}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex gap-1 justify-end">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                            onClick={() => handleEditCrop(crop)}
+                                                            disabled={loading}
+                                                            title="সম্পাদনা করুন"
+                                                        >
+                                                            <Edit2 className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className={crop.isSold ? "text-green-600 hover:text-green-700 hover:bg-green-50" : "text-orange-600 hover:text-orange-700 hover:bg-orange-50"}
+                                                            onClick={() => handleStockToggle(crop.id, crop.isSold)}
+                                                            disabled={loading}
+                                                            title={crop.isSold ? "স্টক ইন করুন" : "স্টক আউট করুন"}
+                                                        >
+                                                            <PackageX className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                            onClick={() => handleDeleteCrop(crop.id)}
+                                                            disabled={loading}
+                                                            title="মুছে ফেলুন"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Edit Crop Modal */}
+                    {editingCrop && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                            <Card className="w-full max-w-md mx-4">
+                                <CardHeader>
+                                    <CardTitle>ফসল সম্পাদনা করুন</CardTitle>
+                                    <CardDescription>ফসলের তথ্য পরিবর্তন করুন</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <form onSubmit={handleUpdateCrop} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">ফসলের নাম</label>
+                                            <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} required />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">পরিমাণ</label>
+                                                <Input type="number" value={editQty} onChange={e => setEditQty(e.target.value)} required />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">মূল্য (টাকা)</label>
+                                                <Input type="number" value={editPrice} onChange={e => setEditPrice(e.target.value)} required />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">অবস্থান</label>
+                                            <Input value={editLocation} onChange={e => setEditLocation(e.target.value)} placeholder="জেলা/উপজেলা" />
+                                        </div>
+                                        <div className="flex gap-2 pt-4">
+                                            <Button type="submit" disabled={loading} className="flex-1 bg-green-600 hover:bg-green-700">
+                                                {loading ? 'আপডেট হচ্ছে...' : 'আপডেট করুন'}
+                                            </Button>
+                                            <Button type="button" variant="outline" onClick={() => setEditingCrop(null)} className="flex-1">
+                                                বাতিল
+                                            </Button>
+                                        </div>
+                                    </form>
+                                </CardContent>
+                            </Card>
                         </div>
-                    </CardContent>
-                </Card>
+                    )}
+                </>
             )}
 
             {/* Orders */}

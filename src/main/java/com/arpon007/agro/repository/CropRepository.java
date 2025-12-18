@@ -307,4 +307,38 @@ public class CropRepository {
         String sql = "UPDATE crops SET is_sold = FALSE WHERE id = ?";
         jdbcTemplate.update(sql, cropId);
     }
+
+    /**
+     * Get crops by farmer ID
+     */
+    public List<Crop> findByFarmerId(Long farmerId) {
+        String sql = "SELECT c.*, u.full_name as farmer_name, ct.name_en as type_name " +
+                "FROM crops c " +
+                "JOIN users u ON c.farmer_id = u.id " +
+                "JOIN crop_type ct ON c.crop_type_id = ct.id " +
+                "WHERE c.farmer_id = ? " +
+                "ORDER BY c.created_at DESC";
+
+        List<Crop> crops = jdbcTemplate.query(sql, new CropRowMapper(), farmerId);
+
+        // Populate images for each crop
+        String imgSql = "SELECT image_url FROM crop_images WHERE crop_id = ?";
+        for (Crop crop : crops) {
+            List<String> images = jdbcTemplate.queryForList(imgSql, String.class, crop.getId());
+            crop.setImages(images);
+        }
+        return crops;
+    }
+
+    /**
+     * Delete a crop by ID
+     */
+    public void deleteById(Long cropId) {
+        // First delete crop images
+        String deleteImagesSql = "DELETE FROM crop_images WHERE crop_id = ?";
+        jdbcTemplate.update(deleteImagesSql, cropId);
+        // Then delete the crop
+        String deleteCropSql = "DELETE FROM crops WHERE id = ?";
+        jdbcTemplate.update(deleteCropSql, cropId);
+    }
 }

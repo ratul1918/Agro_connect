@@ -83,21 +83,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     <div className="border-t">
                         <nav className="space-y-1 px-2 py-3">
                             <Link
-                                to="/profile"
+                                to="/settings"
                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                title={!isSidebarOpen ? "Profile" : undefined}
-                            >
-                                <User className="h-5 w-5 flex-shrink-0" />
-                                {isSidebarOpen && <span>Profile</span>}
-                            </Link>
-                            <button
-                                onClick={() => onTabChange('change-password')}
-                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                title={!isSidebarOpen ? "Change Password" : undefined}
+                                title={!isSidebarOpen ? "Settings" : undefined}
                             >
                                 <KeyRound className="h-5 w-5 flex-shrink-0" />
-                                {isSidebarOpen && <span>Change Password</span>}
-                            </button>
+                                {isSidebarOpen && <span>সেটিংস (Settings)</span>}
+                            </Link>
                             <button
                                 onClick={handleLogout}
                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 text-destructive hover:bg-destructive/10"
@@ -111,15 +103,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
                     {/* Theme Selector */}
                     <ThemeSelectorSidebar isSidebarOpen={isSidebarOpen} />
-
-                    <div className="p-4 border-t">
-                        <button
-                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            className="w-full flex items-center justify-center p-2 rounded-md hover:bg-muted text-muted-foreground transition-colors"
-                        >
-                            {isSidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                        </button>
-                    </div>
                 </aside>
 
                 {/* Mobile Sidebar Overlay */}

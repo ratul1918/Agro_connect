@@ -28,14 +28,17 @@ public class InvoiceService {
     private final OrderRepository orderRepository;
     private final com.arpon007.agro.repository.UserRepository userRepository;
     private final com.arpon007.agro.repository.CropRepository cropRepository;
+    private final org.springframework.core.io.ResourceLoader resourceLoader;
     private final String INVOICE_DIR = "invoices/";
 
     public InvoiceService(OrderRepository orderRepository,
             com.arpon007.agro.repository.UserRepository userRepository,
-            com.arpon007.agro.repository.CropRepository cropRepository) {
+            com.arpon007.agro.repository.CropRepository cropRepository,
+            org.springframework.core.io.ResourceLoader resourceLoader) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.cropRepository = cropRepository;
+        this.resourceLoader = resourceLoader;
         try {
             Files.createDirectories(Paths.get(INVOICE_DIR));
         } catch (IOException e) {
@@ -44,103 +47,95 @@ public class InvoiceService {
     }
 
     /**
-     * Generate PDF invoice and return as byte array for download
+     * Generate HTML Invoice String (Centralized Logic)
      */
-    public byte[] generateInvoicePDFBytes(Long orderId) {
+    public String generateInvoiceHtml(Long orderId) {
         try {
-            Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new RuntimeException("Order not found"));
-
+            Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
             com.arpon007.agro.model.User buyer = userRepository.findById(order.getBuyerId()).orElse(null);
             com.arpon007.agro.model.User farmer = userRepository.findById(order.getFarmerId()).orElse(null);
             com.arpon007.agro.model.Crop crop = cropRepository.findById(order.getCropId()).orElse(null);
 
+            org.springframework.core.io.Resource resource = resourceLoader
+                    .getResource("classpath:templates/email/invoice.html");
+            String template = org.springframework.util.StreamUtils.copyToString(resource.getInputStream(),
+                    java.nio.charset.StandardCharsets.UTF_8);
+
+            String buyerName = buyer != null ? buyer.getFullName() : "Buyer #" + order.getBuyerId();
+            String buyerEmail = buyer != null ? buyer.getEmail() : "N/A";
+            String buyerMobile = order.getCustomerMobile() != null ? order.getCustomerMobile()
+                    : (buyer != null ? buyer.getPhone() : "N/A");
+            String buyerAddress = order.getCustomerAddress() != null ? order.getCustomerAddress() : "N/A";
+
+            String farmerName = farmer != null ? farmer.getFullName() : "Farmer #" + order.getFarmerId();
+            String cropTitle = crop != null ? crop.getTitle() : "Crop #" + order.getCropId();
+
+            // Determine if B2B logic applies
+            boolean isB2B = crop != null
+                    && (crop.getMarketplaceType() == com.arpon007.agro.model.Crop.MarketplaceType.B2B
+                            || crop.getMarketplaceType() == com.arpon007.agro.model.Crop.MarketplaceType.BOTH);
+            // Strictly check Retail to disable B2B features
+            if (crop != null && crop.getMarketplaceType() == com.arpon007.agro.model.Crop.MarketplaceType.RETAIL) {
+                isB2B = false;
+            }
+
+            String platformFeeSection = "";
+            String advancePaymentSection = "";
+
+            if (isB2B) {
+                BigDecimal platformFee = order.getTotalAmount().multiply(new BigDecimal("0.01"));
+                platformFeeSection = "<div class=\"totals-row\"><span>Platform Fee (1%)</span><span>৳"
+                        + platformFee.setScale(2, java.math.RoundingMode.HALF_UP).toString() + "</span></div>";
+                advancePaymentSection = "<div class=\"totals-row\" style=\"color: #ef4444;\"><span>Advance Payment (20%)</span><span>-৳"
+                        + order.getAdvanceAmount().toString() + "</span></div>";
+            } else {
+                // Retail: No platform fee, No advance payment display
+            }
+
+            return template
+                    .replace("{{customer_name}}", buyerName)
+                    .replace("{{customer_email}}", buyerEmail)
+                    .replace("{{customer_phone}}", buyerMobile)
+                    .replace("{{customer_address}}", buyerAddress)
+                    .replace("{{invoice_number}}", "INV-" + order.getId())
+                    .replace("{{date}}", new SimpleDateFormat("dd MMM yyyy").format(new Date()))
+                    .replace("{{order_id}}", String.valueOf(order.getId()))
+                    .replace("{{product_name}}", cropTitle)
+                    .replace("{{farmer_name}}", farmerName)
+                    .replace("{{quantity}}", "1") // Quantity handling placeholder
+                    .replace("{{unit}}", "Unit")
+                    .replace("{{price_per_unit}}", order.getTotalAmount().toString())
+                    .replace("{{total_item_price}}", order.getTotalAmount().toString())
+                    .replace("{{subtotal}}", order.getTotalAmount().toString())
+                    .replace("{{platform_fee_section}}", platformFeeSection)
+                    .replace("{{advance_payment_section}}", advancePaymentSection)
+                    .replace("{{total_due}}", order.getDueAmount().toString());
+
+        } catch (Exception e) {
+            log.error("Error generating invoice HTML for order {}", orderId, e);
+            throw new RuntimeException("Error generating invoice HTML: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Generate PDF invoice using HTML-to-PDF conversion
+     */
+    public byte[] generateInvoicePDFBytes(Long orderId) {
+        try {
+            String htmlContent = generateInvoiceHtml(orderId);
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            PdfWriter writer = new PdfWriter(baos);
-            PdfDocument pdf = new PdfDocument(writer);
-            Document document = new Document(pdf);
+            com.itextpdf.html2pdf.HtmlConverter.convertToPdf(htmlContent, baos);
 
-            // Header
-            Paragraph header = new Paragraph("INVOICE")
-                    .setFontSize(24)
-                    .setBold()
-                    .setTextAlignment(TextAlignment.CENTER);
-            document.add(header);
-
-            // Company Info
-            document.add(new Paragraph("Agro Connect")
-                    .setFontSize(16)
-                    .setBold());
-            document.add(new Paragraph("Smart Agriculture Marketplace").setFontSize(10));
-            document.add(new Paragraph("Dhaka, Bangladesh").setFontSize(10));
-            document.add(new Paragraph(" "));
-
-            // Invoice Info Table
-            Table infoTable = new Table(2);
-            infoTable.addCell(new Paragraph("Invoice Details").setBold());
-            infoTable.addCell(new Paragraph("Customer Details").setBold());
-
-            infoTable.addCell(
-                    "Invoice #: INV-" + orderId + "\nDate: " + new SimpleDateFormat("dd MMM yyyy").format(new Date()));
-
-            String customerInfo = "Name: " + (buyer != null ? buyer.getFullName() : "Unknown") + "\n" +
-                    "Phone: "
-                    + (order.getCustomerMobile() != null ? order.getCustomerMobile()
-                            : (buyer != null ? buyer.getPhone() : "N/A"))
-                    + "\n" +
-                    "Address: " + (order.getCustomerAddress() != null ? order.getCustomerAddress() : "N/A");
-            infoTable.addCell(customerInfo);
-
-            document.add(infoTable);
-            document.add(new Paragraph(" "));
-
-            // Order Details Table
-            Table orderTable = new Table(4);
-            orderTable.addHeaderCell("Product");
-            orderTable.addHeaderCell("Seller");
-            orderTable.addHeaderCell("Unit");
-            orderTable.addHeaderCell("Amount");
-
-            orderTable.addCell(crop != null ? crop.getTitle() : "Crop #" + order.getCropId());
-            orderTable.addCell(farmer != null ? farmer.getFullName() : "Farmer #" + order.getFarmerId());
-            orderTable.addCell("1 Unit"); // Defaulting to 1 as quantity isn't clearly tracked in order table yet
-            orderTable.addCell("৳" + order.getTotalAmount().toString());
-
-            document.add(orderTable);
-            document.add(new Paragraph(" "));
-
-            // Payment Summary
-            Table summaryTable = new Table(2);
-            summaryTable.addCell("Subtotal:");
-            summaryTable.addCell("৳" + order.getTotalAmount().toString());
-
-            summaryTable.addCell("Advance Payment:");
-            summaryTable.addCell("৳" + order.getAdvanceAmount().toString());
-
-            summaryTable.addCell(new Paragraph("Due Amount:").setBold());
-            summaryTable.addCell(new Paragraph("৳" + order.getDueAmount().toString()).setBold());
-
-            document.add(summaryTable);
-            document.add(new Paragraph(" "));
-
-            // Footer
-            document.add(new Paragraph("Thank you for your order!")
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setItalic());
-
-            document.close();
             return baos.toByteArray();
-
         } catch (Exception e) {
             log.error("Failed to generate invoice PDF bytes for order {}", orderId, e);
             throw new RuntimeException("Failed to generate invoice: " + e.getMessage());
         }
     }
 
-    // Kept for backward compatibility but using new logic
+    // Kept for backward compatibility
     public String generateInvoicePDF(Long orderId) {
-        // Simplified to avoid duplication, redirecting logic not needed for now as we
-        // use bytes mostly
         return "";
     }
 }

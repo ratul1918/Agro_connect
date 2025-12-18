@@ -21,6 +21,7 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrdersPage from './pages/OrdersPage';
 import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 
 // Dashboard Pages
@@ -86,8 +87,9 @@ function App() {
             <Route path="/blogs/:id" element={<PublicLayout><BlogDetailPage /></PublicLayout>} />
             <Route path="/about" element={<PublicLayout><AboutPage /></PublicLayout>} />
 
-            {/* Profile Route (Protected) */}
+            {/* Profile & Settings Routes (Protected) */}
             <Route path="/profile" element={<PublicLayout><PrivateRoute><ProfilePage /></PrivateRoute></PublicLayout>} />
+            <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
 
             {/* Auth Routes (no navbar/footer) */}
             <Route path="/auth" element={<AuthPage />} />

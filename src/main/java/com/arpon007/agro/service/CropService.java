@@ -103,4 +103,23 @@ public class CropService {
         // Get crops by marketplace type (will include BOTH as well)
         return cropRepository.findByMarketplaceType(marketplaceType);
     }
+
+    public List<Crop> getCropsByFarmerId(Long farmerId) {
+        return cropRepository.findByFarmerId(farmerId);
+    }
+
+    @Transactional
+    public void markAsSold(Long cropId) {
+        cropRepository.markAsSoldOut(cropId);
+    }
+
+    @Transactional
+    public void markAsAvailable(Long cropId) {
+        cropRepository.markAsAvailable(cropId);
+    }
+
+    @Transactional
+    public void deleteCrop(Long cropId) {
+        cropRepository.deleteById(cropId);
+    }
 }

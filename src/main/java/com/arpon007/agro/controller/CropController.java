@@ -92,7 +92,13 @@ public class CropController {
             if (marketType != null && !marketType.isEmpty()) {
                 crop.setMarketplaceType(Crop.MarketplaceType.valueOf(marketType.toUpperCase()));
             } else {
-                crop.setMarketplaceType(Crop.MarketplaceType.RETAIL); // Default to RETAIL
+                // Default based on role
+                String userRole = jwtUtil.extractClaim(token, claims -> claims.get("role", String.class));
+                if ("ROLE_FARMER".equals(userRole)) {
+                    crop.setMarketplaceType(Crop.MarketplaceType.B2B);
+                } else {
+                    crop.setMarketplaceType(Crop.MarketplaceType.RETAIL);
+                }
             }
 
             return ResponseEntity.ok(cropService.addCrop(crop, images));
@@ -212,6 +218,40 @@ public class CropController {
         return ResponseEntity.ok(crops);
     }
 
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('FARMER')")
+    public ResponseEntity<List<Crop>> getMyCrops(HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).build();
+            }
+
+            String token = authHeader.substring(7);
+            Long userId = jwtUtil.extractClaim(token, claims -> {
+                Object idObj = claims.get("userId");
+                if (idObj == null)
+                    return null;
+                if (idObj instanceof Integer) {
+                    return ((Integer) idObj).longValue();
+                } else if (idObj instanceof Long) {
+                    return (Long) idObj;
+                } else {
+                    return Long.parseLong(String.valueOf(idObj));
+                }
+            });
+
+            if (userId == null) {
+                return ResponseEntity.status(401).build();
+            }
+
+            return ResponseEntity.ok(cropService.getCropsByFarmerId(userId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Crop> getCrop(@PathVariable Long id, HttpServletRequest request) {
         boolean isBangla = true;
@@ -284,5 +324,50 @@ public class CropController {
      */
     private void adjustPriceForRole(Crop crop, String userRole) {
         // No adjustments - show exact price as entered
+    }
+
+    /**
+     * Mark crop as stock out (sold out) - for farmers
+     */
+    @PutMapping("/{id}/stock-out")
+    @PreAuthorize("hasAnyRole('FARMER', 'ADMIN')")
+    public ResponseEntity<?> markStockOut(@PathVariable Long id) {
+        try {
+            cropService.markAsSold(id);
+            return ResponseEntity.ok(Map.of("message", "Product marked as stock out"));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Failed to update stock status: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Mark crop as back in stock (available) - for farmers
+     */
+    @PutMapping("/{id}/back-in-stock")
+    @PreAuthorize("hasAnyRole('FARMER', 'ADMIN')")
+    public ResponseEntity<?> markBackInStock(@PathVariable Long id) {
+        try {
+            cropService.markAsAvailable(id);
+            return ResponseEntity.ok(Map.of("message", "Product marked as back in stock"));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Failed to update stock status: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Delete a crop - for farmers/admin
+     */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('FARMER', 'ADMIN')")
+    public ResponseEntity<?> deleteCrop(@PathVariable Long id) {
+        try {
+            cropService.deleteCrop(id);
+            return ResponseEntity.ok(Map.of("message", "Crop deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Failed to delete crop: " + e.getMessage()));
+        }
     }
 }

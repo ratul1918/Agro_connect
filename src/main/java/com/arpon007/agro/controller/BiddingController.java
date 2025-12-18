@@ -1,10 +1,16 @@
 package com.arpon007.agro.controller;
 
 import com.arpon007.agro.model.Bid;
+import com.arpon007.agro.model.Cart;
+import com.arpon007.agro.model.Crop;
 import com.arpon007.agro.repository.BidRepository;
+import com.arpon007.agro.repository.CartRepository;
+import com.arpon007.agro.repository.ChatRepository;
 import com.arpon007.agro.security.JwtUtil;
+import com.arpon007.agro.service.CropService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,11 +24,20 @@ import java.util.Optional;
 public class BiddingController {
 
     private final BidRepository bidRepository;
+    private final ChatRepository chatRepository;
+    private final CartRepository cartRepository;
+    private final CropService cropService;
     private final JwtUtil jwtUtil;
+    private final JdbcTemplate jdbcTemplate;
 
-    public BiddingController(BidRepository bidRepository, JwtUtil jwtUtil) {
+    public BiddingController(BidRepository bidRepository, ChatRepository chatRepository,
+            CartRepository cartRepository, CropService cropService, JwtUtil jwtUtil, JdbcTemplate jdbcTemplate) {
         this.bidRepository = bidRepository;
+        this.chatRepository = chatRepository;
+        this.cartRepository = cartRepository;
+        this.cropService = cropService;
         this.jwtUtil = jwtUtil;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     /**
@@ -48,6 +63,22 @@ public class BiddingController {
         bid.setQuantity(quantity);
 
         bidRepository.placeBid(bid);
+
+        // Send automatic message to farmer
+        try {
+            Crop crop = cropService.getCropById(cropId, false);
+            if (crop != null && crop.getFarmerId() != null) {
+                chatRepository.sendBidMessage(
+                        userId,
+                        crop.getFarmerId(),
+                        crop.getTitle(),
+                        amount.toString(),
+                        quantity.toString());
+            }
+        } catch (Exception e) {
+            // Log but don't fail the bid if message fails
+            System.err.println("Failed to send bid message: " + e.getMessage());
+        }
 
         return ResponseEntity.ok("Bid placed successfully");
     }
@@ -182,7 +213,37 @@ public class BiddingController {
         }
 
         bidRepository.acceptBid(bidId);
-        return ResponseEntity.ok("Bid accepted");
+
+        // Auto-add to buyer's cart with agreed price
+        try {
+            Crop crop = cropService.getCropById(bid.getCropId(), false);
+            if (crop != null) {
+                Cart buyerCart = cartRepository.getOrCreateCart(bid.getBuyerId());
+                BigDecimal agreedPrice = bid.getFarmerCounterPrice() != null ? bid.getFarmerCounterPrice()
+                        : bid.getAmount();
+                cartRepository.addItemToCart(buyerCart.getId(), bid.getCropId(), bid.getQuantity(), agreedPrice);
+
+                // Create notification for buyer
+                String notificationMsg = String.format(
+                        "🎉 আপনার বিড গৃহীত হয়েছে!\n\n" +
+                                "ফসল: %s\n" +
+                                "পরিমাণ: %s কেজি\n" +
+                                "মূল্য: ৳%s/কেজি\n\n" +
+                                "পণ্যটি আপনার কার্টে যোগ করা হয়েছে। চেকআউট করতে কার্টে যান।",
+                        crop.getTitle(), bid.getQuantity(), agreedPrice);
+
+                String notifSql = "INSERT INTO notifications (user_id, message_bn, type) VALUES (?, ?, 'BID')";
+                jdbcTemplate.update(notifSql, bid.getBuyerId(), notificationMsg);
+
+                // Send message to buyer
+                chatRepository.sendBidMessage(userId, bid.getBuyerId(), crop.getTitle(),
+                        "✅ বিড গৃহীত! মূল্য: ৳" + agreedPrice + "/কেজি। পণ্যটি আপনার কার্টে যোগ করা হয়েছে।", "");
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to add to cart: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok("Bid accepted and added to buyer's cart");
     }
 
     /**
