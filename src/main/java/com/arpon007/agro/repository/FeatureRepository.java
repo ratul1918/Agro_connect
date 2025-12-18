@@ -255,4 +255,39 @@ public class FeatureRepository {
         String sql = "UPDATE bids SET status = ? WHERE id = ?";
         jdbcTemplate.update(sql, status, id);
     }
+
+    // ==================== FARMER FINANCIAL TRACKING ====================
+
+    /**
+     * Get pending money for farmer (sum of advance amounts from CONFIRMED orders)
+     */
+    public java.math.BigDecimal getPendingMoneyForFarmer(Long farmerId) {
+        String sql = """
+                    SELECT COALESCE(SUM(advance_amount), 0) as pending
+                    FROM orders
+                    WHERE farmer_id = ? AND status = 'CONFIRMED'
+                """;
+        try {
+            return jdbcTemplate.queryForObject(sql, java.math.BigDecimal.class, farmerId);
+        } catch (Exception e) {
+            return java.math.BigDecimal.ZERO;
+        }
+    }
+
+    /**
+     * Get total income for farmer (sum of total amounts from COMPLETED/DELIVERED
+     * orders)
+     */
+    public java.math.BigDecimal getTotalIncomeForFarmer(Long farmerId) {
+        String sql = """
+                    SELECT COALESCE(SUM(total_amount), 0) as total
+                    FROM orders
+                    WHERE farmer_id = ? AND (status = 'COMPLETED' OR status = 'DELIVERED')
+                """;
+        try {
+            return jdbcTemplate.queryForObject(sql, java.math.BigDecimal.class, farmerId);
+        } catch (Exception e) {
+            return java.math.BigDecimal.ZERO;
+        }
+    }
 }

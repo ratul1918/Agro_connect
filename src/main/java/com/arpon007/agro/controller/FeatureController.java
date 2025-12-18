@@ -110,6 +110,24 @@ public class FeatureController {
         return ResponseEntity.ok("Bid rejected");
     }
 
+    @GetMapping("/farmer/pending-money")
+    @PreAuthorize("hasRole('FARMER')")
+    public ResponseEntity<Map<String, Object>> getFarmerPendingMoney(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring(7);
+        Long userId = jwtUtil.extractClaim(token, claims -> claims.get("userId", Long.class));
+        BigDecimal pendingMoney = featureRepository.getPendingMoneyForFarmer(userId);
+        return ResponseEntity.ok(Map.of("pendingMoney", pendingMoney));
+    }
+
+    @GetMapping("/farmer/total-income")
+    @PreAuthorize("hasRole('FARMER')")
+    public ResponseEntity<Map<String, Object>> getFarmerTotalIncome(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring(7);
+        Long userId = jwtUtil.extractClaim(token, claims -> claims.get("userId", Long.class));
+        BigDecimal totalIncome = featureRepository.getTotalIncomeForFarmer(userId);
+        return ResponseEntity.ok(Map.of("totalIncome", totalIncome));
+    }
+
     // ==================== BUYER SPECIFIC ====================
 
     @GetMapping("/buyer/orders")

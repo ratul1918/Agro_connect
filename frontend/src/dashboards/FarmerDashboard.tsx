@@ -97,6 +97,8 @@ const FarmerDashboard: React.FC = () => {
     const [blogs, setBlogs] = useState<Blog[]>([]);
     const [loading, setLoading] = useState(false);
     const [walletBalance, setWalletBalance] = useState(0);
+    const [pendingMoney, setPendingMoney] = useState(0);
+    const [totalIncome, setTotalIncome] = useState(0);
     const [cashoutAmount, setCashoutAmount] = useState('');
     const [confirmAction, setConfirmAction] = useState<{
         show: boolean;
@@ -129,12 +131,32 @@ const FarmerDashboard: React.FC = () => {
         fetchMarketPrices();
         fetchBlogs();
         fetchWalletBalance();
+        fetchPendingMoney();
+        fetchTotalIncome();
     }, []);
 
     const fetchWalletBalance = async () => {
         try {
             const res = await api.get('/wallet/balance');
-            setWalletBalance(res.data);
+            setWalletBalance(res.data.balance || 0);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const fetchPendingMoney = async () => {
+        try {
+            const res = await api.get('/features/farmer/pending-money');
+            setPendingMoney(res.data.pendingMoney || 0);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const fetchTotalIncome = async () => {
+        try {
+            const res = await api.get('/features/farmer/total-income');
+            setTotalIncome(res.data.totalIncome || 0);
         } catch (err) {
             console.error(err);
         }
@@ -460,8 +482,8 @@ const FarmerDashboard: React.FC = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <StatCard title="মোট ফসল" value={myCrops.length} icon="🌾" color="green" />
                         <StatCard title="অর্ডার" value={orders.length} icon="📦" color="blue" />
-                        <StatCard title="রপ্তানি আবেদন" value={exports.length} icon="🚢" color="purple" />
-                        <StatCard title="বিড" value={bids.filter(b => b.status === 'PENDING').length} icon="💰" color="yellow" />
+                        <StatCard title="অপেক্ষমাণ টাকা" value={`৳${pendingMoney}`} icon="💰" color="yellow" />
+                        <StatCard title="মোট আয়" value={`৳${totalIncome}`} icon="💵" color="purple" />
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">

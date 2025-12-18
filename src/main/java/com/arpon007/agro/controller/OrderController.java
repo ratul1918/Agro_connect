@@ -236,6 +236,20 @@ public class OrderController {
             String updateBidSql = "UPDATE bids SET status = 'ORDERED' WHERE id = ?";
             this.jdbcTemplate.update(updateBidSql, bidId);
 
+            // Reduce inventory from farmer's crop
+            try {
+                String reduceInventorySql = "UPDATE crops SET quantity = quantity - ? WHERE id = ? AND quantity >= ?";
+                int rowsAffected = this.jdbcTemplate.update(reduceInventorySql, quantity, cropId, quantity);
+
+                if (rowsAffected == 0) {
+                    System.err.println("Warning: Could not reduce inventory for crop " + cropId
+                            + ". Insufficient quantity or crop not found.");
+                }
+            } catch (Exception e) {
+                System.err.println("Error reducing inventory: " + e.getMessage());
+                // Continue anyway - order is already created
+            }
+
             return ResponseEntity.ok(Map.of(
                     "message", "Order created successfully!",
                     "orderId", orderId,

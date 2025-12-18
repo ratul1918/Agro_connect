@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
-import { Search, Filter, MapPin, TrendingUp, Package, Plus, ShoppingCart } from 'lucide-react';
+import { Search, Filter, MapPin, TrendingUp, Package, Plus } from 'lucide-react';
 import axios from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import BidModal from '../components/BidModal';
@@ -290,30 +290,21 @@ const B2BMarketplacePage: React.FC = () => {
                                             </CardContent>
                                             <CardFooter className="pt-0">
                                                 {canBuyB2B ? (
-                                                    <div className="flex gap-2 w-full">
-                                                        <Link to={`/crop/${crop.id}`} className="flex-1">
-                                                            <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                                                                <ShoppingCart className="h-4 w-4 mr-1" />
-                                                                Buy
-                                                            </Button>
-                                                        </Link>
-                                                        <Button
-                                                            variant="outline"
-                                                            className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50"
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                setSelectedCrop(crop);
-                                                                setShowBidModal(true);
-                                                            }}
-                                                        >
-                                                            <TrendingUp className="h-4 w-4 mr-1" />
-                                                            Bid
-                                                        </Button>
-                                                    </div>
+                                                    <Button
+                                                        className="w-full bg-blue-600 hover:bg-blue-700"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            setSelectedCrop(crop);
+                                                            setShowBidModal(true);
+                                                        }}
+                                                    >
+                                                        <TrendingUp className="h-4 w-4 mr-1" />
+                                                        Place Bid
+                                                    </Button>
                                                 ) : (
                                                     <Button variant="outline" className="w-full" disabled>
-                                                        View Only (Buyers can bid)
+                                                        Login as Buyer to Bid
                                                     </Button>
                                                 )}
                                             </CardFooter>
