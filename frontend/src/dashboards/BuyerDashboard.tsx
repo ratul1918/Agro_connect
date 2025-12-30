@@ -77,12 +77,16 @@ const BuyerDashboard: React.FC = () => {
 
     const [trackingModal, setTrackingModal] = useState<{ show: boolean; order: any }>({ show: false, order: null });
 
+    // Transactions State
+    const [transactions, setTransactions] = useState<any[]>([]);
+
     useEffect(() => {
         fetchCrops();
         fetchOrders();
         fetchBids();
         fetchWalletBalance();
         fetchNotifications();
+        fetchTransactions();
     }, []);
 
     const fetchNotifications = async () => {
@@ -97,6 +101,16 @@ const BuyerDashboard: React.FC = () => {
             const res = await api.get('/wallet/balance').catch(() => ({ data: { balance: 0 } }));
             setWalletBalance(res.data.balance || 0);
         } catch { setWalletBalance(0); }
+    };
+
+    const fetchTransactions = async () => {
+        try {
+            const res = await api.get('/wallet/transactions');
+            setTransactions(res.data.transactions || []);
+        } catch (err) {
+            console.error('Failed to fetch transactions:', err);
+            setTransactions([]);
+        }
     };
 
     const handleAddCash = async () => {
@@ -499,7 +513,51 @@ const BuyerDashboard: React.FC = () => {
                             <CardTitle>Transaction History</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center text-muted-foreground py-8">No recent transactions</div>
+                            {transactions.length === 0 ? (
+                                <div className="text-center text-muted-foreground py-8">No recent transactions</div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Date</TableHead>
+                                                <TableHead>Type</TableHead>
+                                                <TableHead>Description</TableHead>
+                                                <TableHead className="text-right">Amount</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {transactions.map((t, idx) => (
+                                                <TableRow key={idx}>
+                                                    <TableCell className="text-sm">
+                                                        {new Date(t.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                        <br />
+                                                        <span className="text-xs text-muted-foreground">
+                                                            {new Date(t.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={t.type === 'CREDIT' ? 'default' : 'destructive'}>
+                                                            {t.type === 'CREDIT' ? '↓ Credit' : '↑ Debit'}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="max-w-md">
+                                                            <div className="font-medium text-sm">{t.description}</div>
+                                                            <div className="text-xs text-muted-foreground">{t.source}</div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <span className={`font-bold ${t.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}>
+                                                            {t.type === 'CREDIT' ? '+' : '-'}৳{t.amount}
+                                                        </span>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

@@ -19,39 +19,27 @@ import java.nio.charset.StandardCharsets;
 @Service
 public class AIService {
 
-    @Value("${ai.openrouter.key}")
-    private String openRouterKey;
-
-    @Value("${ai.gemini.key}")
+    @Value("${ai.gemini.api.key:}")
     private String geminiKey;
 
-    private final AppConfigRepository configRepository;
+    @Value("${ai.system.prompt:You are Drac Agro AI, an agricultural expert.}")
+    private String systemPrompt;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public AIService(AppConfigRepository configRepository) {
-        this.configRepository = configRepository;
+    public AIService() {
     }
 
     public String getResponse(String userQuery, boolean isBangla) {
-        String provider = configRepository.getValue("ai_provider", "gemini");
-
         try {
-            // Check if API keys are configured
-            if ("google".equalsIgnoreCase(provider) || "gemini".equalsIgnoreCase(provider)) {
-                if (geminiKey == null || geminiKey.isEmpty()) {
-                    return isBangla
-                            ? "দুঃখিত, AI সেবা কনফিগার করা হয়নি। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।"
-                            : "Sorry, AI service is not configured. Please contact the administrator.";
-                }
-                return callGoogleGemini(userQuery, isBangla);
-            } else {
-                if (openRouterKey == null || openRouterKey.isEmpty()) {
-                    return isBangla
-                            ? "দুঃখিত, AI সেবা কনফিগার করা হয়নি। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।"
-                            : "Sorry, AI service is not configured. Please contact the administrator.";
-                }
-                return callOpenRouter(userQuery, isBangla);
+            // Check if Gemini API key is configured
+            if (geminiKey == null || geminiKey.isEmpty()) {
+                return isBangla
+                        ? "দুঃখিত, AI সেবা কনফিগার করা হয়নি। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।"
+                        : "Sorry, AI service is not configured. Please contact the administrator.";
             }
+            
+            return callGoogleGemini(userQuery, isBangla, geminiKey);
         } catch (Exception e) {
             e.printStackTrace();
             return isBangla ? "দুঃখিত, আমি এখন উত্তর দিতে পারছি না। পরে আবার চেষ্টা করুন।"
@@ -59,17 +47,18 @@ public class AIService {
         }
     }
 
-    private String callGoogleGemini(String query, boolean isBangla) throws IOException {
-        String systemPrompt = configRepository.getValue("ai_system_prompt",
-                "You are Drac Agro AI, an agricultural expert.");
-        if (isBangla)
-            systemPrompt += " Answer in Bangla.";
+    
 
-        String fullPrompt = systemPrompt + "\n\nUser Question: " + query;
+    private String callGoogleGemini(String query, boolean isBangla, String geminiKey) throws IOException {
+        String fullSystemPrompt = systemPrompt;
+        if (isBangla)
+            fullSystemPrompt += " Answer in Bangla.";
+
+        String fullPrompt = fullSystemPrompt + "\n\nUser Question: " + query;
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost httpPost = new HttpPost(
-                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="
+                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key="
                             + geminiKey);
             httpPost.setHeader("Content-Type", "application/json");
 
@@ -98,54 +87,5 @@ public class AIService {
         }
     }
 
-    private String callOpenRouter(String query, boolean isBangla) throws IOException {
-        String defaultPrompt = "You are Drac Agro AI, an agricultural expert.";
-        String systemPrompt = configRepository.getValue("ai_system_prompt", defaultPrompt);
-        String model = configRepository.getValue("ai_model", "meta-llama/llama-3.1-8b-instruct:free");
-
-        // Safety check for broken/deprecated model IDs
-        if (model.contains("gemini-2.0") || model.isEmpty()) {
-            model = "meta-llama/llama-3.1-8b-instruct:free";
-        }
-
-        if (isBangla) {
-            systemPrompt += " Answer in Bangla.";
-        }
-
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost("https://openrouter.ai/api/v1/chat/completions");
-            httpPost.setHeader("Authorization", "Bearer " + openRouterKey);
-            httpPost.setHeader("Content-Type", "application/json");
-            // Add HTTP Referer/Title for OpenRouter rankings (optional but good practice)
-            httpPost.setHeader("HTTP-Referer", "http://localhost:5173");
-            httpPost.setHeader("X-Title", "Agro Connect");
-
-            ObjectNode requestBody = objectMapper.createObjectNode();
-            requestBody.put("model", model);
-
-            ArrayNode messages = requestBody.putArray("messages");
-            messages.addObject().put("role", "system").put("content", systemPrompt);
-            messages.addObject().put("role", "user").put("content", query);
-
-            httpPost.setEntity(new StringEntity(requestBody.toString(), StandardCharsets.UTF_8));
-
-            try (CloseableHttpResponse response = client.execute(httpPost)) {
-                String responseBody = new String(response.getEntity().getContent().readAllBytes(),
-                        StandardCharsets.UTF_8);
-
-                JsonNode responseNode = objectMapper.readTree(responseBody);
-                if (responseNode.has("choices") && responseNode.get("choices").size() > 0) {
-                    return responseNode.get("choices").get(0).get("message").get("content").asText();
-                } else if (responseNode.has("error")) {
-                    String errorMsg = responseNode.get("error").get("message").asText();
-                    System.err.println("AI Provider Error: " + errorMsg);
-                    throw new IOException("AI Provider Error: " + errorMsg);
-                }
-
-                // Fallback for unexpected success structure
-                System.out.println("Unexpected AI Response: " + responseBody);
-                throw new IOException("Empty or invalid AI response");
-            }
-        }
-    }
+    
 }

@@ -16,15 +16,18 @@ const AdminCashout: React.FC<AdminCashoutProps> = ({ handleCashoutAction }) => {
 
     const fetchRequests = async () => {
         try {
-            const res = await api.get('/admin/cashouts'); // We need to add this endpoint to AdminController later or use existing if any
-            // Actually, looking at previous context, AdminController doesn't have it yet.
-            // I will mock or assume it exists, but I should probably add it to the backend too.
-            // Wait, look at CashoutService, it has getPendingRequests.
-            // I should ensure there is an endpoint for it.
-            // Let's assume /api/admin/cashout-requests exists or I will create it.
-            setRequests(res.data);
+            const res = await api.get('/api/admin/cashout/all');
+            const allRequests = res.data;
+            // Combine all status requests into a single array
+            const combinedRequests = [
+                ...(allRequests.pending || []),
+                ...(allRequests.approved || []),
+                ...(allRequests.rejected || []),
+                ...(allRequests.paid || [])
+            ];
+            setRequests(combinedRequests);
         } catch (err) {
-            console.error("Failed to fetch cashout requests");
+            console.error("Failed to fetch cashout requests:", err);
             // Mock data for UI dev
             setRequests([
                 { id: 1, userName: 'Rahim Farmer', amount: 5000, method: 'bKash', number: '01700000000', status: 'PENDING', requestedAt: '2025-12-14' },

@@ -100,6 +100,8 @@ const FarmerDashboard: React.FC = () => {
     const [pendingMoney, setPendingMoney] = useState(0);
     const [totalIncome, setTotalIncome] = useState(0);
     const [cashoutAmount, setCashoutAmount] = useState('');
+    const [transactions, setTransactions] = useState<any[]>([]);
+    const [cashoutRequests, setCashoutRequests] = useState<any[]>([]);
     const [confirmAction, setConfirmAction] = useState<{
         show: boolean;
         title: string;
@@ -133,6 +135,8 @@ const FarmerDashboard: React.FC = () => {
         fetchWalletBalance();
         fetchPendingMoney();
         fetchTotalIncome();
+        fetchTransactions();
+        fetchCashoutRequests();
     }, []);
 
     const fetchWalletBalance = async () => {
@@ -162,6 +166,26 @@ const FarmerDashboard: React.FC = () => {
         }
     };
 
+    const fetchTransactions = async () => {
+        try {
+            const res = await api.get('/wallet/transactions');
+            setTransactions(res.data.transactions || []);
+        } catch (err) {
+            console.error('Failed to fetch transactions:', err);
+            setTransactions([]);
+        }
+    };
+
+    const fetchCashoutRequests = async () => {
+        try {
+            const res = await api.get('/cashout/my-requests');
+            setCashoutRequests(res.data || []);
+        } catch (err) {
+            console.error('Failed to fetch cashout requests:', err);
+            setCashoutRequests([]);
+        }
+    };
+
     const handleCashout = async () => {
         try {
             if (!cashoutAmount || parseFloat(cashoutAmount) <= 0) {
@@ -172,7 +196,11 @@ const FarmerDashboard: React.FC = () => {
                 error('Insufficient balance');
                 return;
             }
-            await api.post('/wallet/cashout', { amount: parseFloat(cashoutAmount) });
+            await api.post('/cashout/request', {
+                amount: parseFloat(cashoutAmount),
+                paymentMethod: 'BKASH', // Default to bKash
+                accountDetails: '' // Can be added later if needed
+            });
             success('Cashout request sent successfully');
             setCashoutAmount('');
             fetchWalletBalance();
@@ -583,11 +611,16 @@ const FarmerDashboard: React.FC = () => {
                             <CardContent>
                                 {orders.slice(0, 5).map(o => (
                                     <div key={o.id} className="flex justify-between items-center py-2 border-b last:border-0 border-border">
-                                        <div>
+                                        <div className="flex-1">
                                             <div className="font-medium">{o.cropTitle}</div>
-                                            <div className="text-sm text-muted-foreground">ক্রেতা: {o.buyerName}</div>
+                                            <div className="text-sm text-muted-foreground">ক্রেতা: {o.buyerName} • ৳{o.totalAmount}</div>
                                         </div>
-                                        <Badge variant="outline" className={getStatusColor(o.status)}>{o.status}</Badge>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="outline" className={getStatusColor(o.status)}>{o.status}</Badge>
+                                            <a href={`http://localhost:8080/api/orders/${o.id}/invoice`} target="_blank" rel="noopener noreferrer">
+                                                <Button size="sm" variant="outline">📄</Button>
+                                            </a>
+                                        </div>
                                     </div>
                                 ))}
                                 {orders.length === 0 && <p className="text-muted-foreground">কোন অর্ডার নেই</p>}
@@ -612,6 +645,67 @@ const FarmerDashboard: React.FC = () => {
                                     </div>
                                 ))}
                                 {bids.filter(b => b.status === 'PENDING').length === 0 && <p className="text-muted-foreground">কোন অপেক্ষমাণ বিড নেই</p>}
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>লেনদেনের ইতিহাস</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {transactions.length === 0 ? (
+                                    <p className="text-muted-foreground text-center py-4">কোন লেনদেন নেই</p>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {transactions.slice(0, 5).map((t, idx) => (
+                                            <div key={idx} className="flex justify-between items-center py-2 border-b last:border-0 border-border">
+                                                <div>
+                                                    <div className="font-medium text-sm">{t.description}</div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {new Date(t.createdAt).toLocaleDateString('bn-BD')} • {t.source}
+                                                    </div>
+                                                </div>
+                                                <div className={`font-bold ${t.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {t.type === 'CREDIT' ? '+' : '-'}৳{t.amount}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>নগদ উত্তোলনের ইতিহাস</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {cashoutRequests.length === 0 ? (
+                                    <p className="text-muted-foreground text-center py-4">কোন নগদ উত্তোলনের অনুরোধ নেই</p>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {cashoutRequests.slice(0, 5).map((req: any) => (
+                                            <div key={req.id} className="flex justify-between items-center py-2 border-b last:border-0 border-border">
+                                                <div className="flex-1">
+                                                    <div className="font-medium">৳{req.amount}</div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {new Date(req.requestedAt).toLocaleDateString('bn-BD')} • {req.paymentMethod}
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant={req.status === 'APPROVED' ? 'default' : req.status === 'REJECTED' ? 'destructive' : 'outline'}>
+                                                        {req.status === 'APPROVED' ? '✅ অনুমোদিত' : req.status === 'REJECTED' ? '❌ প্রত্যাখ্যাত' : '⏳ অপেক্ষমাণ'}
+                                                    </Badge>
+                                                    {req.status === 'APPROVED' && (
+                                                        <a href={`http://localhost:8080/api/cashout/${req.id}/invoice`} target="_blank" rel="noopener noreferrer">
+                                                            <Button size="sm" variant="outline">📄 Invoice</Button>
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </div>
@@ -876,6 +970,53 @@ const FarmerDashboard: React.FC = () => {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Cashout History Table */}
+                    <Card className="mt-6">
+                        <CardHeader>
+                            <CardTitle>নগদ উত্তোলনের ইতিহাস (Cashout History)</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {cashoutRequests.length === 0 ? (
+                                <p className="text-muted-foreground text-center py-4">কোন নগদ উত্তোলনের অনুরোধ নেই</p>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>তারিখ</TableHead>
+                                                <TableHead>পরিমাণ</TableHead>
+                                                <TableHead>মাধ্যম</TableHead>
+                                                <TableHead>স্ট্যাটাস</TableHead>
+                                                <TableHead>Invoice</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {cashoutRequests.map((req: any) => (
+                                                <TableRow key={req.id}>
+                                                    <TableCell>{new Date(req.requestedAt).toLocaleDateString('bn-BD')}</TableCell>
+                                                    <TableCell className="font-bold">৳{req.amount}</TableCell>
+                                                    <TableCell>{req.paymentMethod}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={req.status === 'APPROVED' ? 'default' : req.status === 'REJECTED' ? 'destructive' : 'outline'}>
+                                                            {req.status === 'APPROVED' ? '✅ অনুমোদিত' : req.status === 'REJECTED' ? '❌ প্রত্যাখ্যাত' : '⏳ অপেক্ষমাণ'}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {req.status === 'APPROVED' && (
+                                                            <a href={`http://localhost:8080/api/cashout/${req.id}/invoice`} target="_blank" rel="noopener noreferrer">
+                                                                <Button size="sm" variant="outline">📄 ডাউনলোড</Button>
+                                                            </a>
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
             )}
 

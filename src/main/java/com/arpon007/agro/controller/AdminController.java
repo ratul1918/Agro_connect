@@ -505,7 +505,7 @@ public class AdminController {
                         // assuming the platform collected everything (Advance + COD/Digital).
                         java.math.BigDecimal amountToCredit = order.getTotalAmount().subtract(platformFee);
                         walletService.creditWallet(order.getFarmerId(), amountToCredit,
-                                com.arpon007.agro.model.Transaction.TransactionSource.ORDER_PAYMENT,
+                                com.arpon007.agro.model.Transaction.TransactionSource.SALE,
                                 "Payment for Order #" + id);
                     }
                 }

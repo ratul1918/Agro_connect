@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
     BarChart3, Users, Leaf, ShoppingCart, Ship, FileCheck, BookOpen,
-    UserPlus, Settings, LogOut, DollarSign, Plus
+    UserPlus, Settings, LogOut, DollarSign, Plus, Key
 } from 'lucide-react';
 import { ThemeToggle } from '../../components/ThemeToggle';
 
@@ -32,6 +32,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, setActiveTab, pe
         { id: 'cashout', label: 'Cashouts', icon: <DollarSign className="w-5 h-5" /> },
         { id: 'blogs', label: 'Blogs', icon: <BookOpen className="w-5 h-5" /> },
         { id: 'agronomist', label: 'Add Expert', icon: <UserPlus className="w-5 h-5" /> },
+        { id: 'api-keys', label: 'API Keys', icon: <Key className="w-5 h-5" /> },
         { id: 'config', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
     ];
 

@@ -21,6 +21,7 @@ import AdminBlogs from './admin/AdminBlogs';
 import AdminAgronomist from './admin/AdminAgronomist';
 import AdminConfig from './admin/AdminConfig';
 import AdminCashout from './admin/AdminCashout';
+import AdminApiKeys from './admin/AdminApiKeys';
 
 const AdminDashboard: React.FC = () => {
     const { success, error } = useNotification();
@@ -224,7 +225,7 @@ const AdminDashboard: React.FC = () => {
         if (action === 'approve') {
             showConfirm('Approve Cashout?', 'This will deduct from user wallet.', async () => {
                 try {
-                    await api.put(`/admin/cashouts/${id}/approve`);
+                    await api.post(`/api/admin/cashout/${id}/approve`);
                     success('Cashout Approved');
                     // refresh if needed, for now just show success
                 } catch { error('Approval failed'); }
@@ -232,7 +233,7 @@ const AdminDashboard: React.FC = () => {
         } else {
             showPrompt('Reason for Rejection:', async (reason) => {
                 try {
-                    await api.put(`/admin/cashouts/${id}/reject`, { reason });
+                    await api.post(`/api/admin/cashout/${id}/reject`, { reason });
                     success('Cashout Rejected');
                 } catch { error('Rejection failed'); }
             });
@@ -388,6 +389,9 @@ const AdminDashboard: React.FC = () => {
                             )}
                             {activeTab === 'cashout' && (
                                 <AdminCashout handleCashoutAction={handleCashoutAction} />
+                            )}
+                            {activeTab === 'api-keys' && (
+                                <AdminApiKeys />
                             )}
                         </div>
                     </main>

@@ -84,4 +84,95 @@ public class CashoutController {
                         return ResponseEntity.notFound().build();
                 }
         }
+
+        /**
+         * Generate invoice for cashout request
+         */
+        @GetMapping(value = "/{id}/invoice", produces = "text/html")
+        public ResponseEntity<String> getCashoutInvoice(@PathVariable Long id) {
+                try {
+                        CashoutRequest request = cashoutService.getRequestById(id);
+
+                        // Only approved cashouts have invoices
+                        if (!"APPROVED".equals(request.getStatus())) {
+                                return ResponseEntity.badRequest()
+                                                .body("<h1>Invoice only available for approved cashouts</h1>");
+                        }
+
+                        String invoice = generateInvoiceHtml(request);
+                        return ResponseEntity.ok(invoice);
+                } catch (Exception e) {
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                        .body("<h1>Error generating invoice</h1>");
+                }
+        }
+
+        private String generateInvoiceHtml(CashoutRequest request) {
+                return String.format(
+                                """
+                                                <!DOCTYPE html>
+                                                <html>
+                                                <head>
+                                                    <meta charset="UTF-8">
+                                                    <title>Cashout Invoice #%d</title>
+                                                    <style>
+                                                        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+                                                        .header { text-align: center; margin-bottom: 30px; }
+                                                        .header h1 { color: #16a34a; margin: 0; }
+                                                        .invoice-details { background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+                                                        .detail-row { display: flex; justify-content: space-between; margin: 10px 0; }
+                                                        .label { font-weight: bold; }
+                                                        .amount { font-size: 24px; color: #16a34a; font-weight: bold; }
+                                                        .footer { margin-top: 40px; text-align: center; color: #6b7280; font-size: 12px; }
+                                                        .status { display: inline-block; padding: 5px 15px; background: #16a34a; color: white; border-radius: 4px; }
+                                                    </style>
+                                                </head>
+                                                <body>
+                                                    <div class="header">
+                                                        <h1>🌾 Agro Connect</h1>
+                                                        <p>Cashout Invoice</p>
+                                                    </div>
+
+                                                    <div class="invoice-details">
+                                                        <div class="detail-row">
+                                                            <span class="label">Invoice Number:</span>
+                                                            <span>CASHOUT-%d</span>
+                                                        </div>
+                                                        <div class="detail-row">
+                                                            <span class="label">Date:</span>
+                                                            <span>%s</span>
+                                                        </div>
+                                                        <div class="detail-row">
+                                                            <span class="label">Status:</span>
+                                                            <span class="status">APPROVED</span>
+                                                        </div>
+                                                        <div class="detail-row">
+                                                            <span class="label">Payment Method:</span>
+                                                            <span>%s</span>
+                                                        </div>
+                                                        <div class="detail-row">
+                                                            <span class="label">Account Details:</span>
+                                                            <span>%s</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div style="text-align: center; padding: 30px; background: #f9fafb; border-radius: 8px;">
+                                                        <p style="margin: 0; color: #6b7280;">Amount Withdrawn</p>
+                                                        <p class="amount">৳%s</p>
+                                                    </div>
+
+                                                    <div class="footer">
+                                                        <p>Thank you for using Agro Connect</p>
+                                                        <p>This is a computer-generated invoice</p>
+                                                    </div>
+                                                </body>
+                                                </html>
+                                                """,
+                                request.getId(),
+                                request.getId(),
+                                new java.text.SimpleDateFormat("dd MMM yyyy").format(request.getRequestedAt()),
+                                request.getPaymentMethod(),
+                                request.getAccountDetails() != null ? request.getAccountDetails() : "N/A",
+                                request.getAmount());
+        }
 }

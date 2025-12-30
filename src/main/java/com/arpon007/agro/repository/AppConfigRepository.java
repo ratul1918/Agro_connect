@@ -26,8 +26,19 @@ public class AppConfigRepository {
     }
 
     public void setValue(String key, String value) {
-        String sql = "INSERT INTO app_configs (config_key, config_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE config_value = ?";
-        jdbcTemplate.update(sql, key, value, value);
+        // Check if the key exists first
+        String checkSql = "SELECT COUNT(*) FROM app_configs WHERE config_key = ?";
+        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, key);
+        
+        if (count != null && count > 0) {
+            // Update existing record
+            String updateSql = "UPDATE app_configs SET config_value = ?, updated_at = CURRENT_TIMESTAMP WHERE config_key = ?";
+            jdbcTemplate.update(updateSql, value, key);
+        } else {
+            // Insert new record
+            String insertSql = "INSERT INTO app_configs (config_key, config_value) VALUES (?, ?)";
+            jdbcTemplate.update(insertSql, key, value);
+        }
     }
 
     public Map<String, String> getAllConfigs() {
