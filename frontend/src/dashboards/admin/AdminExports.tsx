@@ -1,5 +1,16 @@
 import React from 'react';
 import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '../../components/ui/table';
+import { Check, X, Globe, Package, User } from 'lucide-react';
 
 interface AdminExportsProps {
     exportApplications: any[];
@@ -11,82 +22,107 @@ const AdminExports: React.FC<AdminExportsProps> = ({
     exportApplications, handleExportAction, getStatusColor
 }) => {
     return (
-        <div className="card bg-base-100 shadow-xl overflow-visible animate-in fade-in duration-300">
-            <div className="card-body p-0">
-                <div className="p-6 border-b">
-                    <h2 className="card-title text-2xl">
+        <Card className="w-full shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="text-2xl font-bold flex items-center gap-2">
                         Export Applications
-                        <div className="badge badge-info">{exportApplications.length}</div>
-                    </h2>
+                        <Badge variant="secondary" className="ml-2">
+                            {exportApplications.length}
+                        </Badge>
+                    </CardTitle>
+                    <CardDescription>
+                        Manage and review international export requests from farmers.
+                    </CardDescription>
                 </div>
-
-                <div className="overflow-x-auto">
-                    <table className="table w-full">
-                        <thead>
-                            <tr>
-                                <th>Application Info</th>
-                                <th>Cargo Details</th>
-                                <th>Dest.</th>
-                                <th>Status</th>
-                                <th>Admin Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {exportApplications.map(e => (
-                                <tr key={e.id} className="hover">
-                                    <td>
-                                        <div>
-                                            <div className="font-bold">{e.farmerName}</div>
-                                            <div className="text-xs opacity-50">{e.farmerEmail}</div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="font-medium">{e.cropDetails}</div>
-                                        <div className="badge badge-ghost badge-sm">{e.quantity} kg</div>
-                                    </td>
-                                    <td>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xl">🌍</span>
-                                            {e.destinationCountry}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className={`badge ${getStatusColor(e.status)} gap-2`}>
-                                            {e.status}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {e.status === 'PENDING' ? (
-                                            <div className="join">
-                                                <Button
-                                                    size="sm"
-                                                    className="join-item bg-success hover:bg-success/90 text-white"
-                                                    onClick={() => handleExportAction(e.id, 'approve')}
-                                                >
-                                                    Approve
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="destructive"
-                                                    className="join-item"
-                                                    onClick={() => handleExportAction(e.id, 'reject')}
-                                                >
-                                                    Reject
-                                                </Button>
+            </CardHeader>
+            <CardContent>
+                <div className="rounded-md border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Farmer Info</TableHead>
+                                <TableHead>Cargo Details</TableHead>
+                                <TableHead>Destination</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {exportApplications.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                        No export applications found.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                exportApplications.map((e) => (
+                                    <TableRow key={e.id}>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold flex items-center gap-1">
+                                                    <User className="h-3 w-3 text-muted-foreground" />
+                                                    {e.farmerName}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">{e.farmerEmail}</span>
                                             </div>
-                                        ) : (
-                                            <span className="text-xs text-gray-500 italic">
-                                                {e.adminNotes || 'No notes'}
-                                            </span>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col gap-1">
+                                                <div className="font-medium flex items-center gap-2">
+                                                    <Package className="h-4 w-4 text-green-600" />
+                                                    {e.cropDetails}
+                                                </div>
+                                                <Badge variant="outline" className="w-fit">
+                                                    {e.quantity} kg
+                                                </Badge>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Globe className="h-4 w-4 text-blue-500" />
+                                                <span className="font-medium">{e.destinationCountry}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge className={getStatusColor(e.status)}>
+                                                {e.status}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            {e.status === 'PENDING' ? (
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                                        onClick={() => handleExportAction(e.id, 'approve')}
+                                                    >
+                                                        <Check className="h-4 w-4 mr-1" />
+                                                        Approve
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={() => handleExportAction(e.id, 'reject')}
+                                                    >
+                                                        <X className="h-4 w-4 mr-1" />
+                                                        Reject
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground italic">
+                                                    {e.adminNotes ? `Note: ${e.adminNotes}` : 'No notes'}
+                                                </span>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
                 </div>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 };
 

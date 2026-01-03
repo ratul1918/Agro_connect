@@ -304,10 +304,10 @@ const FarmerDashboard: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await api.post('/features/farmer/export-application', {
+            await api.post('/features/export/apply', {
                 cropDetails: exportDetails,
                 quantity: parseFloat(exportQty),
-                destinationCountry: exportDest
+                destination: exportDest
             });
             success('রপ্তানি আবেদন সফলভাবে জমা হয়েছে');
             setExportDetails(''); setExportQty(''); setExportDest('');
