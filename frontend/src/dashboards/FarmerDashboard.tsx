@@ -7,7 +7,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { useNotification } from '../context/NotificationContext';
 import api from '../api/axios';
-import { Leaf, Package, Ship, FileCheck, Plus, BarChart3, Bot, MessageSquare, Users, Printer, BookOpen, Check, X, Trash2, Edit2, PackageX, DollarSign, Wallet } from 'lucide-react';
+import { Leaf, Package, Ship, FileCheck, Plus, BarChart3, MessageSquare, Users, Printer, Check, X, Trash2, Edit2, PackageX, DollarSign, Wallet, Bot } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';

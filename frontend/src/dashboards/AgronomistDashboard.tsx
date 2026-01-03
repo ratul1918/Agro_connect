@@ -5,8 +5,8 @@ import { Textarea } from '../components/ui/textarea';
 import { useNotification } from '../context/NotificationContext';
 import { useConfirm } from '../components/ConfirmDialog';
 import api from '../api/axios';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/layout/DashboardLayout';
-import MessagesComponent from '../components/MessagesComponent';
 import { BookOpen, MessageSquare, Users, Edit2, Trash2, X } from 'lucide-react';
 
 interface Blog {
@@ -21,6 +21,7 @@ interface Blog {
 }
 
 const AgronomistDashboard: React.FC = () => {
+    const navigate = useNavigate();
     const { success, error } = useNotification();
     const { showConfirm, ConfirmDialog } = useConfirm();
     const [activeTab, setActiveTab] = useState('blogs');
@@ -47,7 +48,7 @@ const AgronomistDashboard: React.FC = () => {
 
     const sidebarItems = [
         { label: '🌱 My Blogs', icon: BookOpen, value: 'blogs' },
-        { label: '💬 Messages', icon: MessageSquare, value: 'messages' },
+        { label: '💬 Messages', icon: MessageSquare, value: 'messages', onClick: () => navigate('/messages') },
         { label: '👥 Farmers', icon: Users, value: 'farmers' }
     ];
 
@@ -285,11 +286,7 @@ const AgronomistDashboard: React.FC = () => {
                 </div>
             )}
 
-            {activeTab === 'messages' && (
-                <div className="space-y-6">
-                    <MessagesComponent />
-                </div>
-            )}
+
 
             {activeTab === 'farmers' && (
                 <div className="space-y-6">

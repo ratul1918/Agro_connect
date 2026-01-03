@@ -35,7 +35,6 @@ import AgronomistDashboard from './dashboards/AgronomistDashboard';
 import CustomerDashboard from './dashboards/CustomerDashboard';
 
 // Components
-import Chatbot from './components/Chatbot';
 import PrivateRoute from './components/PrivateRoute';
 
 // Theme-aware Toaster
@@ -111,7 +110,6 @@ function App() {
             {/* Catch all */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
-          <Chatbot />
           <ThemedToaster />
         </AuthProvider>
       </BrowserRouter>

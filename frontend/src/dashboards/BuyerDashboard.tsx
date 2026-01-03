@@ -5,13 +5,12 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useNotification } from '../context/NotificationContext';
 import api from '../api/axios';
-import { Package, FileCheck, Leaf, BarChart3, MessageSquare, Bot, Wallet, Truck, CheckCircle, Clock } from 'lucide-react';
+import { Package, FileCheck, Leaf, BarChart3, MessageSquare, Wallet, Truck, CheckCircle, Clock } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import ChangePasswordPage from '../pages/ChangePasswordPage';
-import AIChatPage from '../pages/AIChatPage';
 import MessagesPage from '../pages/MessagesPage';
 
 interface Crop {
@@ -248,7 +247,6 @@ const BuyerDashboard: React.FC = () => {
         { label: 'My Orders', icon: Package, value: 'my-orders' },
         { label: 'My Bids', icon: FileCheck, value: 'my-bids' },
         { label: 'Messages', icon: MessageSquare, value: 'messages', onClick: () => navigate('/messages') },
-        { label: 'AI Chat', icon: Bot, value: 'ai-chat' },
         { label: 'Wallet', icon: Wallet, value: 'wallet' },
     ];
 
@@ -267,7 +265,7 @@ const BuyerDashboard: React.FC = () => {
             sidebarItems={sidebarItems}
             activeTab={activeTab}
             onTabChange={handleTabChange}
-            title={activeTab === 'overview' ? 'Overview' : activeTab === 'my-orders' ? 'My Orders' : activeTab === 'my-bids' ? 'My Bids' : activeTab === 'wallet' ? 'Wallet' : activeTab === 'messages' ? 'Messages' : activeTab === 'ai-chat' ? 'AI Chat' : 'Dashboard'}
+            title={activeTab === 'overview' ? 'Overview' : activeTab === 'my-orders' ? 'My Orders' : activeTab === 'my-bids' ? 'My Bids' : activeTab === 'wallet' ? 'Wallet' : activeTab === 'messages' ? 'Messages' : 'Dashboard'}
         >
             {/* Overview */}
             {activeTab === 'overview' && (
@@ -566,8 +564,7 @@ const BuyerDashboard: React.FC = () => {
             {/* Messages */}
             {activeTab === 'messages' && <MessagesPage />}
 
-            {/* AI Chat */}
-            {activeTab === 'ai-chat' && <AIChatPage />}
+
 
             {/* Change Password */}
             {activeTab === 'change-password' && <ChangePasswordPage />}
