@@ -5,18 +5,23 @@ import { Button } from '../../components/ui/button';
 
 interface AdminCashoutProps {
     handleCashoutAction: (id: number, action: 'approve' | 'reject') => void;
+    key?: any; // Add key prop to force re-render
 }
 
-const AdminCashout: React.FC<AdminCashoutProps> = ({ handleCashoutAction }) => {
+const AdminCashout: React.FC<AdminCashoutProps> = ({ handleCashoutAction, key }) => {
     const [requests, setRequests] = useState<any[]>([]);
 
     useEffect(() => {
         fetchRequests();
-    }, []);
+    }, [key]); // Refetch when key changes (used for refresh after actions)
+
+
 
     const fetchRequests = async () => {
         try {
-            const res = await api.get('/api/admin/cashout/all');
+            console.log('Fetching cashout requests...');
+            const res = await api.get('/admin/cashout/all');
+            console.log('Cashout requests response:', res.data);
             const allRequests = res.data;
             // Combine all status requests into a single array
             const combinedRequests = [
@@ -37,7 +42,7 @@ const AdminCashout: React.FC<AdminCashoutProps> = ({ handleCashoutAction }) => {
     };
 
     return (
-        <div className="card bg-white dark:bg-gray-900 shadow-xl border border-gray-100 dark:border-gray-800 rounded-2xl">
+        <div className="card bg-white dark:bg-gray-900 shadow-xl border border-gray-100 dark:border-gray-800 rounded-2xl" data-cashout-component>
             <div className="card-body p-6">
                 <h2 className="card-title text-lg flex justify-between items-center mb-6">
                     Cashout Requests

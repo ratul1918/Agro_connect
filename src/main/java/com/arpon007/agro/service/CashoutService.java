@@ -67,10 +67,17 @@ public class CashoutService {
      */
     @Transactional
     public CashoutRequest approveCashout(Long requestId, Long adminId) {
+        System.out.println("DEBUG: Attempting to approve cashout request ID: " + requestId);
+        
         CashoutRequest request = cashoutRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Cashout request not found"));
 
+        System.out.println("DEBUG: Found request - ID: " + request.getId() + 
+                          ", Status: " + request.getStatus() + 
+                          ", isPending(): " + request.isPending());
+
         if (!request.isPending()) {
+            System.out.println("DEBUG: Request is NOT pending. Current status: " + request.getStatus());
             throw new IllegalArgumentException("Only pending requests can be approved");
         }
 
@@ -94,10 +101,17 @@ public class CashoutService {
      */
     @Transactional
     public CashoutRequest rejectCashout(Long requestId, Long adminId, String reason) {
+        System.out.println("DEBUG: Attempting to reject cashout request ID: " + requestId + " with reason: " + reason);
+        
         CashoutRequest request = cashoutRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Cashout request not found"));
 
+        System.out.println("DEBUG: Found request - ID: " + request.getId() + 
+                          ", Status: " + request.getStatus() + 
+                          ", isPending(): " + request.isPending());
+
         if (!request.isPending()) {
+            System.out.println("DEBUG: Request is NOT pending. Current status: " + request.getStatus());
             throw new IllegalArgumentException("Only pending requests can be rejected");
         }
 

@@ -24,13 +24,25 @@ public class CashoutRequestRepository {
     }
 
     private final RowMapper<CashoutRequest> cashoutRequestRowMapper = (rs, rowNum) -> {
+        String statusStr = rs.getString("status");
+        System.out.println("DEBUG: Raw status from DB: '" + statusStr + "'");
+        
+        CashoutStatus status = null;
+        try {
+            status = CashoutStatus.valueOf(statusStr);
+            System.out.println("DEBUG: Parsed status: " + status);
+        } catch (Exception e) {
+            System.out.println("DEBUG: Failed to parse status, defaulting to PENDING. Error: " + e.getMessage());
+            status = CashoutStatus.PENDING;
+        }
+        
         CashoutRequest request = new CashoutRequest(
                 rs.getLong("id"),
                 rs.getLong("user_id"),
                 rs.getBigDecimal("amount"),
                 PaymentMethod.valueOf(rs.getString("payment_method")),
                 rs.getString("account_details"),
-                CashoutStatus.valueOf(rs.getString("status")),
+                status,
                 rs.getString("admin_note"),
                 rs.getString("invoice_url"),
                 rs.getString("transaction_ref"),
@@ -85,7 +97,16 @@ public class CashoutRequestRepository {
                 JOIN users u ON cr.user_id = u.id
                 WHERE cr.id = ?
                 """;
-        return jdbcTemplate.query(sql, cashoutRequestRowMapper, id).stream().findFirst();
+        System.out.println("DEBUG: Finding cashout request by ID: " + id);
+        List<CashoutRequest> requests = jdbcTemplate.query(sql, cashoutRequestRowMapper, id);
+        System.out.println("DEBUG: Found " + requests.size() + " requests");
+        if (!requests.isEmpty()) {
+            CashoutRequest req = requests.get(0);
+            System.out.println("DEBUG: Request from DB - ID: " + req.getId() + 
+                              ", Status: " + req.getStatus() + 
+                              ", Status class: " + (req.getStatus() != null ? req.getStatus().getClass().getName() : "null"));
+        }
+        return requests.stream().findFirst();
     }
 
     public CashoutRequest save(CashoutRequest request) {

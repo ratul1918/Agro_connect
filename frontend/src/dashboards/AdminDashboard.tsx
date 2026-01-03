@@ -37,6 +37,7 @@ const AdminDashboard: React.FC = () => {
     const [orders, setOrders] = useState<any[]>([]);
     const [bids, setBids] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [cashoutRefresh, setCashoutRefresh] = useState(false);
 
     // Forms & Settings
     const [agronomistForm, setAgronomistForm] = useState({ fullName: '', email: '', password: '', phone: '' });
@@ -225,17 +226,40 @@ const AdminDashboard: React.FC = () => {
         if (action === 'approve') {
             showConfirm('Approve Cashout?', 'This will deduct from user wallet.', async () => {
                 try {
-                    await api.post(`/api/admin/cashout/${id}/approve`);
-                    success('Cashout Approved');
-                    // refresh if needed, for now just show success
-                } catch { error('Approval failed'); }
+                    console.log(`Approving cashout request ${id}`);
+                    const response = await api.post(`/admin/cashout/${id}/approve`);
+                    console.log('Approve response:', response.data);
+                    if (response.data.success) {
+                        success('Cashout Approved');
+                        // Refresh cashout requests to update the UI
+                        setCashoutRefresh(prev => !prev);
+                    } else {
+                        error(response.data.message || 'Approval failed');
+                    }
+                } catch (err: any) {
+                    console.error('Cashout approve error:', err);
+                    const errorMessage = err.response?.data?.message || err.message || 'Approval failed';
+                    error(errorMessage);
+                }
             }, true);
         } else {
             showPrompt('Reason for Rejection:', async (reason) => {
                 try {
-                    await api.post(`/api/admin/cashout/${id}/reject`, { reason });
-                    success('Cashout Rejected');
-                } catch { error('Rejection failed'); }
+                    console.log(`Rejecting cashout request ${id} with reason:`, reason);
+                    const response = await api.post(`/admin/cashout/${id}/reject`, { reason });
+                    console.log('Reject response:', response.data);
+                    if (response.data.success) {
+                        success('Cashout Rejected');
+                        // Refresh cashout requests to update the UI
+                        setCashoutRefresh(prev => !prev);
+                    } else {
+                        error(response.data.message || 'Rejection failed');
+                    }
+                } catch (err: any) {
+                    console.error('Cashout reject error:', err);
+                    const errorMessage = err.response?.data?.message || err.message || 'Rejection failed';
+                    error(errorMessage);
+                }
             });
         }
     };
@@ -388,8 +412,11 @@ const AdminDashboard: React.FC = () => {
                                 />
                             )}
                             {activeTab === 'cashout' && (
-                                <AdminCashout handleCashoutAction={handleCashoutAction} />
-                            )}
+            <AdminCashout 
+                key={cashoutRefresh}
+                handleCashoutAction={handleCashoutAction} 
+            />
+        )}
                             {activeTab === 'api-keys' && (
                                 <AdminApiKeys />
                             )}
