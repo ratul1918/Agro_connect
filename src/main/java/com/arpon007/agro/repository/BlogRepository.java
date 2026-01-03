@@ -26,9 +26,7 @@ public class BlogRepository {
         blog.setId(rs.getLong("id"));
         blog.setAuthorId(rs.getLong("author_id"));
         blog.setTitle(rs.getString("title"));
-        blog.setTitleBn(rs.getString("title_bn"));
         blog.setContent(rs.getString("content"));
-        blog.setContentBn(rs.getString("content_bn"));
         blog.setCoverImageUrl(rs.getString("cover_image_url"));
         blog.setBlogType(rs.getString("blog_type"));
         blog.setPublished(rs.getBoolean("is_published"));
@@ -45,18 +43,16 @@ public class BlogRepository {
     };
 
     public Blog save(Blog blog) {
-        String sql = "INSERT INTO blogs (author_id, title, title_bn, content, content_bn, cover_image_url, blog_type, is_published) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO blogs (author_id, title, content, cover_image_url, blog_type, is_published) VALUES (?, ?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setLong(1, blog.getAuthorId());
             ps.setString(2, blog.getTitle());
-            ps.setString(3, blog.getTitleBn());
-            ps.setString(4, blog.getContent());
-            ps.setString(5, blog.getContentBn());
-            ps.setString(6, blog.getCoverImageUrl());
-            ps.setString(7, blog.getBlogType() != null ? blog.getBlogType() : "NORMAL");
-            ps.setBoolean(8, blog.isPublished());
+            ps.setString(3, blog.getContent());
+            ps.setString(4, blog.getCoverImageUrl());
+            ps.setString(5, blog.getBlogType() != null ? blog.getBlogType() : "NORMAL");
+            ps.setBoolean(6, blog.isPublished());
             return ps;
         }, keyHolder);
         blog.setId(keyHolder.getKey().longValue());
@@ -111,8 +107,8 @@ public class BlogRepository {
     }
 
     public void update(Blog blog) {
-        String sql = "UPDATE blogs SET title = ?, title_bn = ?, content = ?, content_bn = ?, cover_image_url = ?, blog_type = ?, is_published = ? WHERE id = ?";
-        jdbcTemplate.update(sql, blog.getTitle(), blog.getTitleBn(), blog.getContent(), blog.getContentBn(),
+        String sql = "UPDATE blogs SET title = ?, content = ?, cover_image_url = ?, blog_type = ?, is_published = ? WHERE id = ?";
+        jdbcTemplate.update(sql, blog.getTitle(), blog.getContent(),
                 blog.getCoverImageUrl(), blog.getBlogType(), blog.isPublished(), blog.getId());
     }
 

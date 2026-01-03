@@ -59,8 +59,38 @@ public class BlogController {
         return ResponseEntity.ok(blogRepository.findByAuthorId(user.getId()));
     }
 
+    // Helper to save image
+    private String saveCoverImage(MultipartFile file) {
+        if (file == null || file.isEmpty())
+            return null;
+        try {
+            String UPLOAD_DIR = "uploads/blogs/";
+            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(UPLOAD_DIR));
+
+            String original = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image";
+            String safeName = original.replaceAll("[^a-zA-Z0-9._-]", "_");
+            String fileName = java.util.UUID.randomUUID() + "_" + safeName;
+            java.nio.file.Path path = java.nio.file.Paths.get(UPLOAD_DIR).resolve(fileName);
+
+            java.nio.file.Files.write(path, file.getBytes(),
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
+
+            return "/uploads/blogs/" + fileName;
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Failed to save image", e);
+        }
+    }
+
     @PostMapping
-    public ResponseEntity<Blog> createBlog(@RequestBody Blog blog, Authentication authentication) {
+    public ResponseEntity<Blog> createBlog(
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam(value = "coverImage", required = false) org.springframework.web.multipart.MultipartFile coverImage,
+            @RequestParam("blogType") String blogType,
+            @RequestParam(value = "isPublished", defaultValue = "false") boolean isPublished,
+            Authentication authentication) {
+
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -69,14 +99,32 @@ public class BlogController {
             return ResponseEntity.status(403).build();
         }
 
+        Blog blog = new Blog();
+        blog.setTitle(title);
+        blog.setContent(content);
+        blog.setBlogType(blogType);
+        blog.setPublished(isPublished);
         blog.setAuthorId(user.getId());
+
+        if (coverImage != null && !coverImage.isEmpty()) {
+            String imageUrl = saveCoverImage(coverImage);
+            blog.setCoverImageUrl(imageUrl);
+        }
+
         Blog saved = blogRepository.save(blog);
         return ResponseEntity.ok(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Blog> updateBlog(@PathVariable Long id, @RequestBody Blog blog,
+    public ResponseEntity<Blog> updateBlog(
+            @PathVariable Long id,
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam(value = "coverImage", required = false) org.springframework.web.multipart.MultipartFile coverImage,
+            @RequestParam("blogType") String blogType,
+            @RequestParam(value = "isPublished", defaultValue = "false") boolean isPublished,
             Authentication authentication) {
+
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -88,10 +136,18 @@ public class BlogController {
             return ResponseEntity.status(403).build();
         }
 
-        blog.setId(id);
-        blog.setAuthorId(user.getId());
-        blogRepository.update(blog);
-        return ResponseEntity.ok(blog);
+        existing.setTitle(title);
+        existing.setContent(content);
+        existing.setBlogType(blogType);
+        existing.setPublished(isPublished);
+
+        if (coverImage != null && !coverImage.isEmpty()) {
+            String imageUrl = saveCoverImage(coverImage);
+            existing.setCoverImageUrl(imageUrl);
+        }
+
+        blogRepository.update(existing);
+        return ResponseEntity.ok(existing);
     }
 
     @DeleteMapping("/{id}")

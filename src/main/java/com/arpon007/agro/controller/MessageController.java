@@ -1,14 +1,11 @@
 package com.arpon007.agro.controller;
 
-import com.arpon007.agro.model.ChatMessage;
-import com.arpon007.agro.repository.ChatRepository;
-import com.arpon007.agro.security.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
+import com.arpon007.agro.model.Message;
+import com.arpon007.agro.model.User;
+import com.arpon007.agro.repository.MessageRepository;
+import com.arpon007.agro.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,147 +15,132 @@ import java.util.Map;
 @RequestMapping("/api/messages")
 public class MessageController {
 
-    private final ChatRepository chatRepository;
-    private final JwtUtil jwtUtil;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final MessageRepository messageRepository;
+    private final UserRepository userRepository;
 
-    public MessageController(ChatRepository chatRepository, JwtUtil jwtUtil, SimpMessagingTemplate messagingTemplate) {
-        this.chatRepository = chatRepository;
-        this.jwtUtil = jwtUtil;
-        this.messagingTemplate = messagingTemplate;
+    public MessageController(MessageRepository messageRepository, UserRepository userRepository) {
+        this.messageRepository = messageRepository;
+        this.userRepository = userRepository;
     }
 
-    /**
-     * Get all chats for current user
-     */
-    @GetMapping("/chats")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Map<String, Object>>> getMyChats(HttpServletRequest request) {
-        Long userId = extractUserId(request);
-        return ResponseEntity.ok(chatRepository.findChatsByUserId(userId));
+    // Get all messages for current user (inbox)
+    @GetMapping("/inbox")
+    public ResponseEntity<List<Message>> getInboxMessages(Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(messageRepository.findInboxMessages(user.getId()));
     }
 
-    /**
-     * Get messages for a specific chat
-     */
-    @GetMapping("/chats/{chatId}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<ChatMessage>> getChatMessages(
-            @PathVariable Long chatId,
-            HttpServletRequest request) {
-        Long userId = extractUserId(request);
-        // Verify user is part of this chat
-        if (!chatRepository.isUserInChat(chatId, userId)) {
-            return ResponseEntity.status(403).build();
-        }
-        return ResponseEntity.ok(chatRepository.findMessagesByChatId(chatId));
+    // Get sent messages for current user
+    @GetMapping("/sent")
+    public ResponseEntity<List<Message>> getSentMessages(Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(messageRepository.findSentMessages(user.getId()));
     }
 
-    /**
-     * Send a message in a chat
-     */
-    @PostMapping("/chats/{chatId}/send")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ChatMessage> sendMessage(
-            @PathVariable Long chatId,
-            @RequestBody Map<String, String> payload,
-            HttpServletRequest request) {
-        Long userId = extractUserId(request);
+    // Get conversation between two users
+    @GetMapping("/conversation/{userId}")
+    public ResponseEntity<List<Message>> getConversation(@PathVariable Long userId, Authentication authentication) {
+        User currentUser = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        User otherUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Verify user is part of this chat
-        if (!chatRepository.isUserInChat(chatId, userId)) {
-            return ResponseEntity.status(403).build();
-        }
+        return ResponseEntity.ok(messageRepository.findConversation(currentUser.getId(), otherUser.getId()));
+    }
 
-        String content = payload.get("content");
-        if (content == null || content.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
+    // Send a message
+    @PostMapping
+    public ResponseEntity<Message> sendMessage(@RequestBody Map<String, Object> messageData, Authentication authentication) {
+        User sender = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        ChatMessage message = new ChatMessage();
-        message.setChatId(chatId);
-        message.setSenderId(userId);
+        Long receiverId = ((Number) messageData.get("receiverId")).longValue();
+        String content = (String) messageData.get("content");
+        String messageType = (String) messageData.getOrDefault("messageType", "NORMAL");
+
+        User receiver = userRepository.findById(receiverId)
+                .orElseThrow(() -> new RuntimeException("Receiver not found"));
+
+        Message message = new Message();
+        message.setSenderId(sender.getId());
+        message.setReceiverId(receiverId);
         message.setContent(content);
+        message.setMessageType(messageType);
 
-        chatRepository.save(message);
-
-        // Notify via WebSocket
-        try {
-            Long otherUserId = chatRepository.getOtherUserId(chatId, userId);
-            messagingTemplate.convertAndSendToUser(
-                    String.valueOf(otherUserId),
-                    "/queue/messages",
-                    message);
-        } catch (Exception e) {
-            // Log error but don't fail the request
-            System.err.println("WebSocket notification failed: " + e.getMessage());
-        }
-
-        return ResponseEntity.ok(message);
+        Message saved = messageRepository.save(message);
+        return ResponseEntity.ok(saved);
     }
 
-    /**
-     * Start a new chat with a user
-     */
-    @PostMapping("/start")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Object>> startChat(
-            @RequestBody Map<String, Object> payload,
-            HttpServletRequest request) {
-        Long userId = extractUserId(request);
-        Long otherUserId = Long.parseLong(payload.get("userId").toString());
+    // Mark message as read
+    @PutMapping("/{id}/read")
+    public ResponseEntity<?> markAsRead(@PathVariable Long id, Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (userId.equals(otherUserId)) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Cannot start chat with yourself"));
-        }
+        Message message = messageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Message not found"));
 
-        Long chatId = chatRepository.findOrCreateChat(userId, otherUserId);
-        return ResponseEntity.ok(Map.of("chatId", chatId));
-    }
-
-    /**
-     * Mark messages as read
-     */
-    @PutMapping("/chats/{chatId}/read")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> markAsRead(
-            @PathVariable Long chatId,
-            HttpServletRequest request) {
-        Long userId = extractUserId(request);
-        if (!chatRepository.isUserInChat(chatId, userId)) {
+        // Only receiver can mark as read
+        if (!message.getReceiverId().equals(user.getId())) {
             return ResponseEntity.status(403).build();
         }
-        chatRepository.markMessagesAsRead(chatId, userId);
-        return ResponseEntity.ok().build();
+
+        messageRepository.markAsRead(id);
+        return ResponseEntity.ok(Map.of("message", "Message marked as read"));
     }
 
-    /**
-     * Delete a chat (conversation)
-     */
-    @DeleteMapping("/chats/{chatId}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Object>> deleteChat(
-            @PathVariable Long chatId,
-            HttpServletRequest request) {
-        Long userId = extractUserId(request);
-        if (!chatRepository.isUserInChat(chatId, userId)) {
-            return ResponseEntity.status(403).body(Map.of("error", "Not authorized"));
+    // Mark entire conversation as read
+    @PutMapping("/conversation/{userId}/read")
+    public ResponseEntity<?> markConversationAsRead(@PathVariable Long userId, Authentication authentication) {
+        User currentUser = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        messageRepository.markConversationAsRead(currentUser.getId(), userId);
+        return ResponseEntity.ok(Map.of("message", "Conversation marked as read"));
+    }
+
+    // Get unread messages count
+    @GetMapping("/unread/count")
+    public ResponseEntity<Map<String, Integer>> getUnreadCount(Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        int count = messageRepository.getUnreadCount(user.getId());
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    // Delete message
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteMessage(@PathVariable Long id, Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Message message = messageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Message not found"));
+
+        // Only sender or receiver can delete
+        if (!message.getSenderId().equals(user.getId()) && !message.getReceiverId().equals(user.getId())) {
+            return ResponseEntity.status(403).build();
         }
-        chatRepository.deleteChat(chatId);
-        return ResponseEntity.ok(Map.of("message", "Chat deleted successfully"));
+
+        messageRepository.deleteById(id);
+        return ResponseEntity.ok(Map.of("message", "Message deleted"));
     }
 
-    private Long extractUserId(HttpServletRequest request) {
-        String token = request.getHeader("Authorization").substring(7);
-        return jwtUtil.extractClaim(token, claims -> {
-            Object idObj = claims.get("userId");
-            if (idObj instanceof Integer) {
-                return ((Integer) idObj).longValue();
-            } else if (idObj instanceof Long) {
-                return (Long) idObj;
-            } else {
-                return Long.parseLong(String.valueOf(idObj));
-            }
-        });
+    // Get agronomists for messaging (for farmers)
+    @GetMapping("/agronomists")
+    public ResponseEntity<List<User>> getAgronomists() {
+        List<User> agronomists = userRepository.findByRole("ROLE_AGRONOMIST");
+        return ResponseEntity.ok(agronomists);
+    }
+
+    // Get farmers for messaging (for agronomists)
+    @GetMapping("/farmers")
+    public ResponseEntity<List<User>> getFarmers() {
+        List<User> farmers = userRepository.findByRole("ROLE_FARMER");
+        return ResponseEntity.ok(farmers);
     }
 }

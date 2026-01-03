@@ -8,6 +8,12 @@ import com.arpon007.agro.repository.CashoutRequestRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.properties.TextAlignment;
+
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,10 +24,12 @@ public class CashoutService {
 
     private final CashoutRequestRepository cashoutRequestRepository;
     private final WalletService walletService;
+    private final InvoiceService invoiceService;
 
-    public CashoutService(CashoutRequestRepository cashoutRequestRepository, WalletService walletService) {
+    public CashoutService(CashoutRequestRepository cashoutRequestRepository, WalletService walletService, InvoiceService invoiceService) {
         this.cashoutRequestRepository = cashoutRequestRepository;
         this.walletService = walletService;
+        this.invoiceService = invoiceService;
     }
 
     /**
@@ -169,13 +177,64 @@ public class CashoutService {
     }
 
     /**
-     * Generate invoice URL (simplified version)
-     * In production, this would generate an actual PDF invoice
+     * Generate invoice URL and create PDF invoice
      */
     private String generateInvoiceUrl(CashoutRequest request) {
         String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
         String invoiceNumber = "INV-" + timestamp + "-" + request.getId();
-        return "/invoices/" + invoiceNumber + ".pdf";
+        String invoicePath = "/invoices/" + invoiceNumber + ".pdf";
+        
+        // Generate a simple cashout invoice PDF
+        try {
+            generateCashoutInvoicePdf(request, invoiceNumber);
+        } catch (Exception e) {
+            // Log error but still return the URL
+            System.err.println("Failed to generate cashout invoice PDF: " + e.getMessage());
+        }
+        
+        return invoicePath;
+    }
+
+    /**
+     * Generate a simple cashout invoice PDF
+     */
+    private void generateCashoutInvoicePdf(CashoutRequest request, String invoiceNumber) throws Exception {
+        com.itextpdf.kernel.pdf.PdfWriter writer = new com.itextpdf.kernel.pdf.PdfWriter("invoices/" + invoiceNumber + ".pdf");
+        com.itextpdf.kernel.pdf.PdfDocument pdf = new com.itextpdf.kernel.pdf.PdfDocument(writer);
+        com.itextpdf.layout.Document document = new com.itextpdf.layout.Document(pdf);
+        
+        // Add title
+        com.itextpdf.layout.element.Paragraph title = new com.itextpdf.layout.element.Paragraph("CASHOUT INVOICE")
+                .setTextAlignment(com.itextpdf.layout.properties.TextAlignment.CENTER)
+                .setFontSize(18)
+                .setBold();
+        document.add(title);
+        
+        // Add invoice number and date
+        com.itextpdf.layout.element.Paragraph invoiceInfo = new com.itextpdf.layout.element.Paragraph()
+                .add("Invoice Number: " + invoiceNumber + "\n")
+                .add("Date: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "\n")
+                .add("Status: " + request.getStatus() + "\n");
+        document.add(invoiceInfo);
+        
+        // Add cashout details
+        com.itextpdf.layout.element.Paragraph details = new com.itextpdf.layout.element.Paragraph()
+                .add("\nCashout Details:\n")
+                .add("User ID: " + request.getUserId() + "\n")
+                .add("Amount: $" + request.getAmount() + "\n")
+                .add("Method: " + request.getPaymentMethod() + "\n")
+                .add("Account: " + request.getAccountDetails() + "\n")
+                .add("Requested: " + request.getRequestedAt() + "\n");
+        document.add(details);
+        
+        if (request.getProcessedAt() != null) {
+            com.itextpdf.layout.element.Paragraph processed = new com.itextpdf.layout.element.Paragraph()
+                    .add("Processed: " + request.getProcessedAt() + "\n")
+                    .add("Processed by: " + request.getProcessedBy());
+            document.add(processed);
+        }
+        
+        document.close();
     }
 
     /**

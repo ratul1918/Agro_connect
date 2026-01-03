@@ -6,9 +6,7 @@ public class Blog {
     private Long id;
     private Long authorId;
     private String title;
-    private String titleBn;
     private String content;
-    private String contentBn;
     private String coverImageUrl;
     private String blogType; // NORMAL or TIP
     private boolean isPublished;
@@ -23,15 +21,13 @@ public class Blog {
     public Blog() {
     }
 
-    public Blog(Long id, Long authorId, String title, String titleBn, String content, String contentBn,
+    public Blog(Long id, Long authorId, String title, String content,
             String coverImageUrl, String blogType, boolean isPublished, int viewCount, Timestamp createdAt,
             Timestamp updatedAt, String authorName, String authorImageUrl) {
         this.id = id;
         this.authorId = authorId;
         this.title = title;
-        this.titleBn = titleBn;
         this.content = content;
-        this.contentBn = contentBn;
         this.coverImageUrl = coverImageUrl;
         this.blogType = blogType;
         this.isPublished = isPublished;
@@ -66,28 +62,12 @@ public class Blog {
         this.title = title;
     }
 
-    public String getTitleBn() {
-        return titleBn;
-    }
-
-    public void setTitleBn(String titleBn) {
-        this.titleBn = titleBn;
-    }
-
     public String getContent() {
         return content;
     }
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public String getContentBn() {
-        return contentBn;
-    }
-
-    public void setContentBn(String contentBn) {
-        this.contentBn = contentBn;
     }
 
     public String getCoverImageUrl() {

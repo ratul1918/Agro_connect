@@ -16,5 +16,10 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:uploads/")
                 .setCacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic());
+        
+        // Serve invoice files from the invoices directory (relative to working dir)
+        registry.addResourceHandler("/invoices/**")
+                .addResourceLocations("file:invoices/")
+                .setCacheControl(CacheControl.maxAge(1, TimeUnit.DAYS).cachePublic());
     }
 }

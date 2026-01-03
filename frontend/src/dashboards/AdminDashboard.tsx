@@ -3,11 +3,13 @@ import { getAllUsers, deleteUser, deleteCropAdmin, updateCrop } from '../api/end
 import { useNotification } from '../context/NotificationContext';
 import { useConfirm, usePrompt } from '../components/ConfirmDialog';
 import api from '../api/axios';
-import { Menu, Settings } from 'lucide-react';
-import Navbar from '../components/layout/Navbar';
+import {
+    BarChart3, Users, Leaf, ShoppingCart, Ship, FileCheck, BookOpen,
+    UserPlus, Settings, DollarSign, Plus, Key
+} from 'lucide-react';
+import DashboardLayout from '../components/layout/DashboardLayout';
 
 // Sub-components
-import AdminSidebar from './admin/AdminSidebar';
 import AdminOverview from './admin/AdminOverview';
 import AdminUsers from './admin/AdminUsers';
 import AdminCrops from './admin/AdminCrops';
@@ -45,6 +47,23 @@ const AdminDashboard: React.FC = () => {
     const [editingCrop, setEditingCrop] = useState<any>(null);
     const [bulkSettings, setBulkSettings] = useState({ minWholesaleQty: 80, minRetailQty: 0.1, maxRetailQty: 10 });
     const [config, setConfig] = useState<any>({});
+
+    // Sidebar Items
+    const sidebarItems = [
+        { label: 'Overview', icon: BarChart3, value: 'overview' },
+        { label: 'Users', icon: Users, value: 'users' },
+        { label: 'Add B2B Product', icon: Plus, value: 'add-b2b' },
+        { label: 'Add Retail Product', icon: Plus, value: 'add-retail' },
+        { label: 'All Products', icon: Leaf, value: 'crops' },
+        { label: 'Orders', icon: ShoppingCart, value: 'orders' },
+        { label: 'Export Apps', icon: Ship, value: 'exports' },
+        { label: 'Bids', icon: FileCheck, value: 'bids' },
+        { label: 'Cashouts', icon: DollarSign, value: 'cashout' },
+        { label: 'Blogs', icon: BookOpen, value: 'blogs' },
+        { label: 'Add Expert', icon: UserPlus, value: 'agronomist' },
+        { label: 'API Keys', icon: Key, value: 'api-keys' },
+        { label: 'Settings', icon: Settings, value: 'config' }
+    ];
 
     // Computed Stats
     const stats = {
@@ -302,271 +321,264 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
+    const getTitle = () => {
+        const item = sidebarItems.find(i => i.value === activeTab);
+        return item ? item.label : 'Admin Dashboard';
+    };
+
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab);
+    };
+
     return (
-        <div className="min-h-screen bg-base-100 font-sans text-base-content" data-theme="emerald">
-            {/* Main Navbar */}
-            <div className="fixed top-0 left-0 right-0 z-50">
-                <Navbar />
-            </div>
+        <DashboardLayout
+            sidebarItems={sidebarItems}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            title={getTitle()}
+        >
+            {ConfirmDialog}
+            {PromptDialog}
 
-            <div className="drawer lg:drawer-open">
-                <input id="admin-drawer" type="checkbox" className="drawer-toggle" />
+            {/* Overview */}
+            {activeTab === 'overview' && (
+                <AdminOverview
+                    stats={stats}
+                    orders={orders}
+                    exportApplications={exportApplications}
+                    handleExportAction={handleExportAction}
+                    getStatusColor={getStatusColor}
+                />
+            )}
+            
+            {/* Users */}
+            {activeTab === 'users' && (
+                <AdminUsers users={users} handleDeleteUser={handleDeleteUser} />
+            )}
+            
+            {/* Add Products */}
+            {activeTab === 'add-product' && (
+                <AdminAddProduct onSuccess={fetchData} />
+            )}
+            {activeTab === 'add-retail' && (
+                <AdminAddRetail onSuccess={fetchData} />
+            )}
+            {activeTab === 'add-b2b' && (
+                <AdminAddB2B onSuccess={fetchData} />
+            )}
+            
+            {/* Crops */}
+            {activeTab === 'crops' && (
+                <AdminCrops
+                    crops={crops}
+                    handleDeleteCrop={handleDeleteCrop}
+                    handleEditCrop={setEditingCrop}
+                    handleStockOut={handleStockOut}
+                    handleBackInStock={handleBackInStock}
+                    handleBulkUpdate={handleBulkUpdate}
+                    bulkSettings={bulkSettings}
+                    setBulkSettings={setBulkSettings}
+                    loading={loading}
+                />
+            )}
+            
+            {/* Orders */}
+            {activeTab === 'orders' && (
+                <AdminOrders
+                    orders={orders}
+                    handleOrderStatus={handleOrderStatus}
+                    handleDeliveryStatus={handleDeliveryStatus}
+                    handleDeleteOrder={handleDeleteOrder}
+                    getStatusColor={getStatusColor}
+                />
+            )}
+            
+            {/* Exports */}
+            {activeTab === 'exports' && (
+                <AdminExports
+                    exportApplications={exportApplications}
+                    handleExportAction={handleExportAction}
+                    getStatusColor={getStatusColor}
+                />
+            )}
+            
+            {/* Bids */}
+            {activeTab === 'bids' && (
+                <AdminBids bids={bids} getStatusColor={getStatusColor} />
+            )}
+            
+            {/* Blogs */}
+            {activeTab === 'blogs' && (
+                <AdminBlogs blogs={blogs} handleDeleteBlog={handleDeleteBlog} />
+            )}
+            
+            {/* Agronomist */}
+            {activeTab === 'agronomist' && (
+                <AdminAgronomist
+                    agronomistForm={agronomistForm}
+                    setAgronomistForm={setAgronomistForm}
+                    handleAddAgronomist={handleAddAgronomist}
+                    agronomistMessage={agronomistMessage}
+                    loading={loading}
+                />
+            )}
+            
+            {/* Config */}
+            {activeTab === 'config' && (
+                <AdminConfig
+                    config={config}
+                    setConfig={setConfig}
+                    updateConfig={updateConfig}
+                    loading={loading}
+                />
+            )}
+            
+            {/* Cashout */}
+            {activeTab === 'cashout' && (
+                <AdminCashout 
+                    key={cashoutRefresh}
+                    handleCashoutAction={handleCashoutAction} 
+                />
+            )}
+            
+            {/* API Keys */}
+            {activeTab === 'api-keys' && (
+                <AdminApiKeys />
+            )}
 
-                <div className="drawer-content flex flex-col pt-16">
-                    {/* Mobile Menu Button */}
-                    <div className="w-full lg:hidden px-4 py-3 flex items-center gap-3 bg-base-100 shadow-sm sticky top-16 z-30">
-                        <label htmlFor="admin-drawer" className="btn btn-square btn-ghost btn-sm">
-                            <Menu className="w-5 h-5" />
-                        </label>
-                        <span className="font-bold text-lg">Admin Panel</span>
-                    </div>
-
-                    {/* Main Content */}
-                    <main className="flex-1 p-6 md:p-10 bg-base-100 min-h-screen">
-                        <div className="max-w-7xl mx-auto">
-                            <div className="mb-8 flex justify-between items-end">
-                                <div>
-                                    <h1 className="text-3xl font-bold tracking-tight capitalize">
-                                        {activeTab.replace('_', ' ')}
-                                    </h1>
-                                    <p className="text-gray-500 mt-1">
-                                        Manage your platform efficiently
-                                    </p>
-                                </div>
-                                <div className="text-sm border px-3 py-1 rounded-full bg-base-200">
-                                    {new Date().toLocaleDateString()}
-                                </div>
+            {/* Edit Crop Modal */}
+            {editingCrop && (
+                <div className="modal modal-open">
+                    <div className="modal-box max-w-2xl">
+                        <h3 className="font-bold text-lg mb-4">Edit Product</h3>
+                        <form onSubmit={handleSaveCrop} className="space-y-4">
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Product Name</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    className="input input-bordered"
+                                    value={editingCrop.title || ''}
+                                    onChange={e => setEditingCrop({ ...editingCrop, title: e.target.value })}
+                                    required
+                                />
                             </div>
 
-                            {activeTab === 'overview' && (
-                                <AdminOverview
-                                    stats={stats}
-                                    orders={orders}
-                                    exportApplications={exportApplications}
-                                    handleExportAction={handleExportAction}
-                                    getStatusColor={getStatusColor}
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Description</span>
+                                </label>
+                                <textarea
+                                    className="textarea textarea-bordered"
+                                    rows={3}
+                                    value={editingCrop.description || ''}
+                                    onChange={e => setEditingCrop({ ...editingCrop, description: e.target.value })}
                                 />
-                            )}
-                            {activeTab === 'users' && (
-                                <AdminUsers users={users} handleDeleteUser={handleDeleteUser} />
-                            )}
-                            {activeTab === 'add-product' && (
-                                <AdminAddProduct onSuccess={fetchData} />
-                            )}
-                            {activeTab === 'add-retail' && (
-                                <AdminAddRetail onSuccess={fetchData} />
-                            )}
-                            {activeTab === 'add-b2b' && (
-                                <AdminAddB2B onSuccess={fetchData} />
-                            )}
-                            {activeTab === 'crops' && (
-                                <AdminCrops
-                                    crops={crops}
-                                    handleDeleteCrop={handleDeleteCrop}
-                                    handleEditCrop={setEditingCrop}
-                                    handleStockOut={handleStockOut}
-                                    handleBackInStock={handleBackInStock}
-                                    handleBulkUpdate={handleBulkUpdate}
-                                    bulkSettings={bulkSettings}
-                                    setBulkSettings={setBulkSettings}
-                                    loading={loading}
-                                />
-                            )}
-                            {activeTab === 'orders' && (
-                                <AdminOrders
-                                    orders={orders}
-                                    handleOrderStatus={handleOrderStatus}
-                                    handleDeliveryStatus={handleDeliveryStatus}
-                                    handleDeleteOrder={handleDeleteOrder}
-                                    getStatusColor={getStatusColor}
-                                />
-                            )}
-                            {activeTab === 'exports' && (
-                                <AdminExports
-                                    exportApplications={exportApplications}
-                                    handleExportAction={handleExportAction}
-                                    getStatusColor={getStatusColor}
-                                />
-                            )}
-                            {activeTab === 'bids' && (
-                                <AdminBids bids={bids} getStatusColor={getStatusColor} />
-                            )}
-                            {activeTab === 'blogs' && (
-                                <AdminBlogs blogs={blogs} handleDeleteBlog={handleDeleteBlog} />
-                            )}
-                            {activeTab === 'agronomist' && (
-                                <AdminAgronomist
-                                    agronomistForm={agronomistForm}
-                                    setAgronomistForm={setAgronomistForm}
-                                    handleAddAgronomist={handleAddAgronomist}
-                                    agronomistMessage={agronomistMessage}
-                                    loading={loading}
-                                />
-                            )}
-                            {activeTab === 'config' && (
-                                <AdminConfig
-                                    config={config}
-                                    setConfig={setConfig}
-                                    updateConfig={updateConfig}
-                                    loading={loading}
-                                />
-                            )}
-                            {activeTab === 'cashout' && (
-            <AdminCashout 
-                key={cashoutRefresh}
-                handleCashoutAction={handleCashoutAction} 
-            />
-        )}
-                            {activeTab === 'api-keys' && (
-                                <AdminApiKeys />
-                            )}
-                        </div>
-                    </main>
-                </div>
+                            </div>
 
-                <AdminSidebar
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    pendingOrdersCount={orders.filter(o => o.status === 'PENDING' || o.deliveryStatus === 'PENDING').length}
-                />
-
-                {ConfirmDialog}
-                {PromptDialog}
-
-                {/* Edit Crop Modal */}
-                {editingCrop && (
-                    <div className="modal modal-open">
-                        <div className="modal-box max-w-2xl">
-                            <h3 className="font-bold text-lg mb-4">Edit Product</h3>
-                            <form onSubmit={handleSaveCrop} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="form-control">
                                     <label className="label">
-                                        <span className="label-text">Product Name</span>
+                                        <span className="label-text">Quantity</span>
                                     </label>
                                     <input
-                                        type="text"
+                                        type="number"
                                         className="input input-bordered"
-                                        value={editingCrop.title || ''}
-                                        onChange={e => setEditingCrop({ ...editingCrop, title: e.target.value })}
+                                        value={editingCrop.quantity || 0}
+                                        onChange={e => setEditingCrop({ ...editingCrop, quantity: parseFloat(e.target.value) })}
                                         required
                                     />
                                 </div>
 
                                 <div className="form-control">
                                     <label className="label">
-                                        <span className="label-text">Description</span>
+                                        <span className="label-text">Unit</span>
                                     </label>
-                                    <textarea
-                                        className="textarea textarea-bordered"
-                                        rows={3}
-                                        value={editingCrop.description || ''}
-                                        onChange={e => setEditingCrop({ ...editingCrop, description: e.target.value })}
+                                    <select
+                                        className="select select-bordered"
+                                        value={editingCrop.unit || 'kg'}
+                                        onChange={e => setEditingCrop({ ...editingCrop, unit: e.target.value })}
+                                    >
+                                        <option value="kg">Kilogram (kg)</option>
+                                        <option value="ton">Ton</option>
+                                        <option value="maund">Maund</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text">Price (৳ per unit)</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        className="input input-bordered"
+                                        value={editingCrop.minPrice || 0}
+                                        onChange={e => setEditingCrop({ ...editingCrop, minPrice: parseFloat(e.target.value) })}
+                                        required
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="form-control">
-                                        <label className="label">
-                                            <span className="label-text">Quantity</span>
-                                        </label>
-                                        <input
-                                            type="number"
-                                            className="input input-bordered"
-                                            value={editingCrop.quantity || 0}
-                                            onChange={e => setEditingCrop({ ...editingCrop, quantity: parseFloat(e.target.value) })}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="form-control">
-                                        <label className="label">
-                                            <span className="label-text">Unit</span>
-                                        </label>
-                                        <select
-                                            className="select select-bordered"
-                                            value={editingCrop.unit || 'kg'}
-                                            onChange={e => setEditingCrop({ ...editingCrop, unit: e.target.value })}
-                                        >
-                                            <option value="kg">Kilogram (kg)</option>
-                                            <option value="ton">Ton</option>
-                                            <option value="maund">Maund</option>
-                                        </select>
-                                    </div>
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text">Location</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="input input-bordered"
+                                        value={editingCrop.location || ''}
+                                        onChange={e => setEditingCrop({ ...editingCrop, location: e.target.value })}
+                                        required
+                                    />
                                 </div>
+                            </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="form-control">
-                                        <label className="label">
-                                            <span className="label-text">Price (৳ per unit)</span>
-                                        </label>
-                                        <input
-                                            type="number"
-                                            className="input input-bordered"
-                                            value={editingCrop.minPrice || 0}
-                                            onChange={e => setEditingCrop({ ...editingCrop, minPrice: parseFloat(e.target.value) })}
-                                            required
-                                        />
+                            {/* Show existing images */}
+                            {editingCrop.images && editingCrop.images.length > 0 && (
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text">Current Images</span>
+                                    </label>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {editingCrop.images.map((img: string, idx: number) => (
+                                            <img
+                                                key={idx}
+                                                src={`http://localhost:8080${img}`}
+                                                alt={`Product ${idx + 1}`}
+                                                className="w-20 h-20 object-cover rounded border"
+                                            />
+                                        ))}
                                     </div>
-
-                                    <div className="form-control">
-                                        <label className="label">
-                                            <span className="label-text">Location</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            className="input input-bordered"
-                                            value={editingCrop.location || ''}
-                                            onChange={e => setEditingCrop({ ...editingCrop, location: e.target.value })}
-                                            required
-                                        />
-                                    </div>
+                                    <label className="label">
+                                        <span className="label-text-alt text-gray-500">Note: Image editing not supported yet</span>
+                                    </label>
                                 </div>
+                            )}
 
-                                {/* Show existing images */}
-                                {editingCrop.images && editingCrop.images.length > 0 && (
-                                    <div className="form-control">
-                                        <label className="label">
-                                            <span className="label-text">Current Images</span>
-                                        </label>
-                                        <div className="flex gap-2 flex-wrap">
-                                            {editingCrop.images.map((img: string, idx: number) => (
-                                                <img
-                                                    key={idx}
-                                                    src={`http://localhost:8080${img}`}
-                                                    alt={`Product ${idx + 1}`}
-                                                    className="w-20 h-20 object-cover rounded border"
-                                                />
-                                            ))}
-                                        </div>
-                                        <label className="label">
-                                            <span className="label-text-alt text-gray-500">Note: Image editing not supported yet</span>
-                                        </label>
-                                    </div>
-                                )}
-
-                                <div className="modal-action">
-                                    <button
-                                        type="button"
-                                        className="btn"
-                                        onClick={() => setEditingCrop(null)}
-                                        disabled={loading}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="btn btn-primary"
-                                        disabled={loading}
-                                    >
-                                        {loading ? 'Saving...' : 'Save Changes'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                            <div className="modal-action">
+                                <button
+                                    type="button"
+                                    className="btn"
+                                    onClick={() => setEditingCrop(null)}
+                                    disabled={loading}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary"
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                )}
-            </div>
-        </div>
+                </div>
+            )}
+        </DashboardLayout>
     );
 };
 

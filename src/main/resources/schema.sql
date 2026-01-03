@@ -321,6 +321,22 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     FOREIGN KEY (sender_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS messages (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    sender_id BIGINT NOT NULL,
+    receiver_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    message_type VARCHAR(20) DEFAULT 'NORMAL',
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_receiver_read (receiver_id, is_read),
+    INDEX idx_conversation (sender_id, receiver_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS notifications (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -339,9 +355,7 @@ CREATE TABLE IF NOT EXISTS blogs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     author_id BIGINT NOT NULL,
     title VARCHAR(200) NOT NULL,
-    title_bn VARCHAR(200), -- Bangla title
     content TEXT NOT NULL,
-    content_bn TEXT, -- Bangla content
     cover_image_url VARCHAR(255),
     blog_type ENUM('NORMAL', 'TIP') DEFAULT 'NORMAL',
     is_published BOOLEAN DEFAULT FALSE,
