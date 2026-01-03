@@ -93,12 +93,8 @@ const Navbar: React.FC = () => {
 
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-8">
-                        {/* For customers, show minimal nav - just logo leads to shop */}
-                        {user?.role === 'ROLE_GENERAL_CUSTOMER' || user?.role === 'ROLE_CUSTOMER' ? (
-                            <>
-                                <Link to="/customer" className="text-gray-700 hover:text-green-600 font-medium">{t('nav.dashboard')}</Link>
-                            </>
-                        ) : (
+                                {/* Desktop Menu - Hide standard links for customers */}
+                        {!['ROLE_GENERAL_CUSTOMER', 'ROLE_CUSTOMER'].includes(user?.role || '') && (
                             <>
                                 <Link to="/" className="text-gray-700 hover:text-green-600">{t('nav.home')}</Link>
                                 <Link to="/blogs" className="text-gray-700 hover:text-green-600">{t('nav.blogs')}</Link>
@@ -275,12 +271,9 @@ const Navbar: React.FC = () => {
                 {isMenuOpen && (
                     <div className="md:hidden pb-4 border-t">
                         {/* For customers, show minimal mobile nav */}
+                        {/* For customers, show minimal mobile nav */}
                         {user?.role === 'ROLE_GENERAL_CUSTOMER' || user?.role === 'ROLE_CUSTOMER' ? (
                             <>
-                                <Link to="/customer" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/customer' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`} onClick={() => setIsMenuOpen(false)}>
-                                    {t('nav.dashboard')}
-                                </Link>
-                                {/* Customer links hidden */}
                                 <Link to="/cart" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-gray-600 hover:text-primary hover:bg-gray-50`} onClick={() => setIsMenuOpen(false)}>
                                     <ShoppingCart className="h-4 w-4 inline mr-2" />
                                     কার্ট
