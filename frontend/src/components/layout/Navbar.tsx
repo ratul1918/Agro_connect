@@ -47,6 +47,7 @@ const Navbar: React.FC = () => {
             case 'ROLE_BUYER': return '/buyer';
             case 'ROLE_AGRONOMIST': return '/agronomist';
             case 'ROLE_CUSTOMER': return '/customer';
+            case 'ROLE_GENERAL_CUSTOMER': return '/customer';
             default: return '/';
         }
     };
@@ -67,6 +68,12 @@ const Navbar: React.FC = () => {
                 return [
                     ...baseLinks,
                     { label: 'prices', path: '/market-prices', icon: BarChart3 }
+                ];
+            case 'ROLE_GENERAL_CUSTOMER':
+            case 'ROLE_CUSTOMER':
+                return [
+                    ...baseLinks,
+                    { label: 'shop', path: '/marketplace/retail', icon: ShoppingCart }
                 ];
             case 'ROLE_ADMIN':
                 return baseLinks;

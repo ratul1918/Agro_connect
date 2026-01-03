@@ -115,13 +115,15 @@ public class AuthService {
 
         var userDetails = userDetailsService.loadUserByUsername(request.getEmail());
 
-        // Check if user has roles
+        // Check if user has roles - if not, assign default ROLE_GENERAL_CUSTOMER
+        String role;
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            System.out.println("ERROR: User has no roles!");
-            throw new RuntimeException("User has no role assigned. Please contact admin.");
+            System.out.println("User has no roles, assigning ROLE_GENERAL_CUSTOMER");
+            userRepository.addRole(user.getId(), "ROLE_GENERAL_CUSTOMER");
+            role = "ROLE_GENERAL_CUSTOMER";
+        } else {
+            role = user.getRoles().iterator().next();
         }
-
-        String role = user.getRoles().iterator().next();
         System.out.println("User role: " + role);
 
         String token = jwtUtil.generateToken(userDetails, user.getId(), role);

@@ -34,6 +34,7 @@ const translations: Translations = {
     'nav.login': { en: 'Login', bn: 'লগইন' },
     'nav.signup': { en: 'Sign Up', bn: 'নিবন্ধন' },
     'nav.agronomists': { en: 'Agronomists', bn: 'কৃষিবিদ' },
+    'nav.shop': { en: 'Shop', bn: 'শপ' },
 
     // Home Page
     'home.badge': { en: "Bangladesh's #1 Agricultural Platform", bn: 'বাংলাদেশের #১ কৃষি প্ল্যাটফর্ম' },
