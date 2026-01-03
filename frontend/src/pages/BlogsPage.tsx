@@ -1,96 +1,83 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Search, Calendar, User, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import api, { BASE_URL } from '../api/axios';
 
 interface BlogPost {
     id: number;
     title: string;
-    excerpt: string;
     content: string;
-    author: string;
-    date: string;
-    category: string;
-    image: string;
+    blogType: string; // 'NORMAL' or 'TIP'
+    coverImageUrl?: string;
+    createdAt: string;
+    authorName: string;
+    authorImageUrl?: string;
+    authorEmail?: string;
 }
 
 const BlogsPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const categories = ["All", "Farming Tips", "Market Trends", "Pest Management", "Organic Farming", "Technology"];
+    const categories = ["All", "Tips", "Blogs"];
 
-    const blogPosts: BlogPost[] = [
-        {
-            id: 1,
-            title: "10 Tips for Organic Tomato Farming",
-            excerpt: "Learn the best practices to grow organic tomatoes without chemical pesticides...",
-            content: "Growing organic tomatoes requires proper soil preparation, regular watering, and natural pest control methods. In this comprehensive guide, we cover everything from seed selection to harvest.",
-            author: "Md. Karim",
-            date: "Dec 10, 2024",
-            category: "Organic Farming",
-            image: "🍅"
-        },
-        {
-            id: 2,
-            title: "Understanding Market Prices: A Farmer's Guide",
-            excerpt: "How to track and predict agricultural prices for better decision making...",
-            content: "Market prices fluctuate based on supply, demand, and seasonal factors. This guide helps farmers understand price trends and negotiate better deals.",
-            author: "Fatima Khan",
-            date: "Dec 8, 2024",
-            category: "Market Trends",
-            image: "📊"
-        },
-        {
-            id: 3,
-            title: "Best Practices for Rice Cultivation",
-            excerpt: "Maximize your rice yield with these proven cultivation techniques...",
-            content: "Rice farming has been central to Bangladesh's agriculture for centuries. Modern techniques combined with traditional knowledge can significantly increase productivity.",
-            author: "Abdul Rahman",
-            date: "Dec 5, 2024",
-            category: "Farming Tips",
-            image: "🌾"
-        },
-        {
-            id: 4,
-            title: "Managing Pest Problems Naturally",
-            excerpt: "Effective organic methods to protect crops from common pests...",
-            content: "Chemical pesticides harm the environment and increase costs. Learn natural pest management techniques that are both effective and sustainable.",
-            author: "Dr. Aisha Ahmed",
-            date: "Dec 1, 2024",
-            category: "Pest Management",
-            image: "🐛"
-        },
-        {
-            id: 5,
-            title: "IoT Technology in Modern Farming",
-            excerpt: "How sensors and data analytics are transforming agriculture...",
-            content: "Internet of Things (IoT) technology allows farmers to monitor soil moisture, temperature, and crop health in real-time, leading to better decision making.",
-            author: "Karim Rahman",
-            date: "Nov 28, 2024",
-            category: "Technology",
-            image: "📱"
-        },
-        {
-            id: 6,
-            title: "Seasonal Vegetable Planting Guide",
-            excerpt: "Know when and what to plant for maximum yield throughout the year...",
-            content: "Bangladesh's climate allows for multiple harvests throughout the year. This guide helps you plan what vegetables to grow in each season.",
-            author: "Hasan Ali",
-            date: "Nov 25, 2024",
-            category: "Farming Tips",
-            image: "🥬"
+    const fetchBlogs = async () => {
+        try {
+            setLoading(true);
+            const res = await api.get('/blogs');
+            setBlogPosts(res.data);
+            setError(null);
+        } catch (err) {
+            console.error('Failed to fetch blogs:', err);
+            setError('Failed to load blogs. Please try again later.');
+            setBlogPosts([]);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    useEffect(() => {
+        fetchBlogs();
+    }, []);
 
     const filteredPosts = blogPosts.filter(post => {
         const searchMatch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
-        const categoryMatch = selectedCategory === 'All' || post.category === selectedCategory;
+            post.content.toLowerCase().includes(searchTerm.toLowerCase());
+        const categoryMatch = selectedCategory === 'All' || 
+            (selectedCategory === 'Tips' && post.blogType === 'TIP') ||
+            (selectedCategory === 'Blogs' && post.blogType === 'NORMAL');
         return searchMatch && categoryMatch;
     });
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    };
+
+    const getExcerpt = (content: string, maxLength: number = 150) => {
+        if (content.length <= maxLength) return content;
+        return content.substring(0, maxLength).replace(/\s+\S*$/, '') + '...';
+    };
+
+    const getImageUrl = (imageUrl: string | null | undefined) => {
+        if (!imageUrl) return null;
+        // If URL is already absolute (starts with http), return as is
+        if (imageUrl.startsWith('http')) {
+            return imageUrl;
+        }
+        // If URL is relative, prepend backend URL
+        return `${BASE_URL.replace('/api', '')}${imageUrl}`;
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 py-12">
@@ -132,31 +119,66 @@ const BlogsPage: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Loading State */}
+                {loading && (
+                    <div className="text-center py-12">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                        <p className="text-gray-500 text-lg mt-4">Loading blogs...</p>
+                    </div>
+                )}
+
+                {/* Error State */}
+                {error && (
+                    <div className="text-center py-12">
+                        <p className="text-red-500 text-lg">{error}</p>
+                        <Button onClick={fetchBlogs} className="mt-4 bg-green-600 hover:bg-green-700">
+                            Try Again
+                        </Button>
+                    </div>
+                )}
+
                 {/* Blog Posts Grid */}
-                {filteredPosts.length > 0 ? (
+                {!loading && !error && filteredPosts.length > 0 ? (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredPosts.map(post => (
                             <Card key={post.id} className="hover:shadow-lg transition-shadow overflow-hidden flex flex-col">
-                                <div className="bg-gradient-to-br from-green-100 to-green-50 h-32 flex items-center justify-center text-6xl">
-                                    {post.image}
+                                {post.coverImageUrl ? (
+                                    <img 
+                                        src={getImageUrl(post.coverImageUrl) || ''} 
+                                        alt={post.title}
+                                        className="w-full h-32 object-cover"
+                                        onError={(e) => {
+                                            // Fallback to placeholder if image fails to load
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = 'none';
+                                            target.nextElementSibling?.classList.remove('hidden');
+                                        }}
+                                    />
+                                ) : null}
+                                <div className={`bg-gradient-to-br from-green-100 to-green-50 h-32 flex items-center justify-center text-6xl ${post.coverImageUrl ? 'hidden' : ''}`}>
+                                    {post.blogType === 'TIP' ? '💡' : '📝'}
                                 </div>
                                 <CardHeader>
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
-                                            {post.category}
+                                        <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full ${
+                                            post.blogType === 'TIP' 
+                                                ? 'bg-blue-100 text-blue-700' 
+                                                : 'bg-green-100 text-green-700'
+                                        }`}>
+                                            {post.blogType === 'TIP' ? 'Tip' : 'Blog'}
                                         </span>
                                         <span className="flex items-center gap-1 text-xs text-gray-500">
                                             <Calendar className="h-3 w-3" />
-                                            {post.date}
+                                            {formatDate(post.createdAt)}
                                         </span>
                                     </div>
                                     <CardTitle className="text-lg leading-tight">{post.title}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
-                                    <p className="text-gray-600 text-sm mb-4">{post.excerpt}</p>
+                                    <p className="text-gray-600 text-sm mb-4">{getExcerpt(post.content)}</p>
                                     <div className="flex items-center gap-1 text-xs text-gray-500">
                                         <User className="h-3 w-3" />
-                                        {post.author}
+                                        {post.authorName}
                                     </div>
                                 </CardContent>
                                 <div className="px-6 pb-6">
@@ -170,11 +192,15 @@ const BlogsPage: React.FC = () => {
                             </Card>
                         ))}
                     </div>
-                ) : (
+                ) : !loading && !error && filteredPosts.length === 0 ? (
                     <div className="text-center py-12">
-                        <p className="text-gray-500 text-lg">No articles found matching your search</p>
+                        <p className="text-gray-500 text-lg">
+                            {searchTerm || selectedCategory !== 'All' 
+                                ? 'No articles found matching your search' 
+                                : 'No blog posts published yet'}
+                        </p>
                     </div>
-                )}
+                ) : null}
 
                 {/* Newsletter Signup */}
                 <section className="mt-16 bg-gradient-to-br from-green-600 to-green-800 text-white rounded-lg p-8">

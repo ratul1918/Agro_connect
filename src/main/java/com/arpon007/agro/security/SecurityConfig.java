@@ -70,6 +70,10 @@ public class SecurityConfig {
                                 "/api/public/**", // Explicitly public endpoints
                                 "/api/shop/products/**", // Retail shop
                                 "/api/shop/crop-types", // Crop types (public for filters)
+                                "/api/blogs", // Public blog posts
+                                "/api/blogs/tips", // Public tips
+                                "/api/blogs/articles", // Public articles
+                                "/api/blogs/**", // Individual blog posts
                                 "/api/ai/**", // AI chat
                                 "/ws/**", // WebSocket
                                 "/error", // Error page

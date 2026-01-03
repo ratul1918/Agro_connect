@@ -13,9 +13,9 @@ const AdminBlogs: React.FC<AdminBlogsProps> = ({ blogs, handleDeleteBlog }) => {
                 <div key={blog.id} className="card bg-base-100 shadow-xl image-full group">
                     <figure>
                         <img
-                            src={blog.imageUrl || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2670&auto=format&fit=crop"}
+                            src={blog.coverImageUrl ? `http://localhost:8080${blog.coverImageUrl}` : "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2670&auto=format&fit=crop"}
                             alt={blog.title}
-                            className="group-hover:scale-110 transition duration-500"
+                            className="group-hover:scale-110 transition duration-500 w-full h-full object-cover"
                         />
                     </figure>
                     <div className="card-body">
@@ -30,7 +30,9 @@ const AdminBlogs: React.FC<AdminBlogsProps> = ({ blogs, handleDeleteBlog }) => {
                         </div>
                         <p className="text-gray-200 text-sm">By {blog.authorName}</p>
                         <div className="card-actions justify-end mt-auto">
-                            <div className="badge badge-outline text-white">{blog.status}</div>
+                            <div className={`badge ${blog.isPublished ? 'badge-success' : 'badge-warning'} text-white`}>
+                                {blog.isPublished ? 'Published' : 'Draft'}
+                            </div>
                             <button className="btn btn-primary btn-sm">Read</button>
                         </div>
                     </div>

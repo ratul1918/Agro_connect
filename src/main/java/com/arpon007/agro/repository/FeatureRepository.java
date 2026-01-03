@@ -56,7 +56,7 @@ public class FeatureRepository {
     public List<Map<String, Object>> getAllBlogsForAdmin() {
         String sql = """
                 SELECT b.id, b.title, b.content, b.created_at as createdAt,
-                       u.full_name as authorName, b.status
+                       u.full_name as authorName, b.is_published as isPublished, b.cover_image_url as coverImageUrl
                 FROM blogs b
                 LEFT JOIN users u ON b.author_id = u.id
                 ORDER BY b.created_at DESC
