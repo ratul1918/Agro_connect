@@ -32,9 +32,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         // Ideally verify token or fetch user profile on load
+        const storedToken = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
+        
+        console.log('AuthContext useEffect - token:', !!storedToken);
+        console.log('AuthContext useEffect - user:', storedUser);
+        
+        if (storedUser && storedToken) {
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (error) {
+                console.error('Failed to parse stored user:', error);
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+            }
         }
     }, []);
 
@@ -48,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (userData.role === 'ROLE_ADMIN') navigate('/admin');
         else if (userData.role === 'ROLE_FARMER') navigate('/farmer');
         else if (userData.role === 'ROLE_AGRONOMIST') navigate('/agronomist');
-        else if (userData.role === 'ROLE_GENERAL_CUSTOMER' || userData.role === 'ROLE_CUSTOMER') navigate('/marketplace/retail');
+        else if (userData.role === 'ROLE_GENERAL_CUSTOMER' || userData.role === 'ROLE_CUSTOMER') navigate('/customer');
         else navigate('/buyer');
     };
 

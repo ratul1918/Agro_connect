@@ -69,11 +69,8 @@ const Navbar: React.FC = () => {
                     ...baseLinks,
                     { label: 'prices', path: '/market-prices', icon: BarChart3 }
                 ];
-            case 'ROLE_GENERAL_CUSTOMER':
-            case 'ROLE_CUSTOMER':
                 return [
-                    ...baseLinks,
-                    { label: 'shop', path: '/marketplace/retail', icon: ShoppingCart }
+                    ...baseLinks
                 ];
             case 'ROLE_ADMIN':
                 return baseLinks;
@@ -99,8 +96,7 @@ const Navbar: React.FC = () => {
                         {/* For customers, show minimal nav - just logo leads to shop */}
                         {user?.role === 'ROLE_GENERAL_CUSTOMER' || user?.role === 'ROLE_CUSTOMER' ? (
                             <>
-                                <Link to="/marketplace/retail" className="text-gray-700 hover:text-green-600 font-medium">{t('nav.retailShop')}</Link>
-                                <Link to="/orders" className="text-gray-700 hover:text-green-600">আমার অর্ডার</Link>
+                                <Link to="/customer" className="text-gray-700 hover:text-green-600 font-medium">{t('nav.dashboard')}</Link>
                             </>
                         ) : (
                             <>
@@ -281,12 +277,10 @@ const Navbar: React.FC = () => {
                         {/* For customers, show minimal mobile nav */}
                         {user?.role === 'ROLE_GENERAL_CUSTOMER' || user?.role === 'ROLE_CUSTOMER' ? (
                             <>
-                                <Link to="/marketplace/retail" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/marketplace/retail' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`} onClick={() => setIsMenuOpen(false)}>
-                                    {t('nav.retailShop')}
+                                <Link to="/customer" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/customer' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`} onClick={() => setIsMenuOpen(false)}>
+                                    {t('nav.dashboard')}
                                 </Link>
-                                <Link to="/orders" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-gray-600 hover:text-primary hover:bg-gray-50`} onClick={() => setIsMenuOpen(false)}>
-                                    আমার অর্ডার
-                                </Link>
+                                {/* Customer links hidden */}
                                 <Link to="/cart" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-gray-600 hover:text-primary hover:bg-gray-50`} onClick={() => setIsMenuOpen(false)}>
                                     <ShoppingCart className="h-4 w-4 inline mr-2" />
                                     কার্ট

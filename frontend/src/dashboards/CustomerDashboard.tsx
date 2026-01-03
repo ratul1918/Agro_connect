@@ -41,6 +41,7 @@ const CustomerDashboard: React.FC = () => {
     });
     const [loading, setLoading] = useState(false);
     const [trackingModal, setTrackingModal] = useState<{ show: boolean; order: Order | null }>({ show: false, order: null });
+    const [isLoading, setIsLoading] = useState(true);
 
     const sidebarItems = [
         { label: 'সারাংশ (Overview)', icon: BarChart3, value: 'overview' },
@@ -51,16 +52,25 @@ const CustomerDashboard: React.FC = () => {
     ];
 
     useEffect(() => {
-        fetchOrders();
-        fetchProfile();
+        // Only fetch data if user is authenticated
+        const token = localStorage.getItem('token');
+        if (token) {
+            fetchOrders();
+            fetchProfile();
+        }
+        setIsLoading(false);
     }, []);
 
     const fetchOrders = async () => {
         try {
             const res = await api.get('/customer/orders');
             setOrders(res.data || []);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to fetch orders', err);
+            if (err?.status === 401) {
+                // Token expired, will be handled by axios interceptor
+                return;
+            }
             setOrders([]);
         }
     };
@@ -70,8 +80,41 @@ const CustomerDashboard: React.FC = () => {
             const res = await api.get('/auth/me');
             setProfile(res.data);
             setProfileForm(res.data);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to fetch profile', err);
+            if (err?.status === 401) {
+                // Token expired, will be handled by axios interceptor
+                return;
+            }
+            // Don't log out user for profile fetch failures, just keep using stored data
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                try {
+                    const userData = JSON.parse(storedUser);
+                    setProfile({
+                        fullName: userData.fullName || '',
+                        email: userData.email || '',
+                        phone: userData.phone || '',
+                        division: userData.division || '',
+                        district: userData.district || '',
+                        upazila: userData.upazila || '',
+                        thana: userData.thana || '',
+                        postCode: userData.postCode || ''
+                    });
+                    setProfileForm({
+                        fullName: userData.fullName || '',
+                        email: userData.email || '',
+                        phone: userData.phone || '',
+                        division: userData.division || '',
+                        district: userData.district || '',
+                        upazila: userData.upazila || '',
+                        thana: userData.thana || '',
+                        postCode: userData.postCode || ''
+                    });
+                } catch (parseError) {
+                    console.error('Failed to parse stored user data:', parseError);
+                }
+            }
         }
     };
 
@@ -134,8 +177,13 @@ const CustomerDashboard: React.FC = () => {
             document.body.appendChild(link);
             link.click();
             link.remove();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to download invoice", error);
+            if (error?.status === 401) {
+                // Token expired, will be handled by axios interceptor
+                return;
+            }
+            alert('Failed to download invoice. Please try again.');
         }
     };
 
@@ -153,6 +201,21 @@ const CustomerDashboard: React.FC = () => {
         const item = sidebarItems.find(i => i.value === activeTab);
         return item ? item.label : 'Dashboard';
     };
+
+    if (isLoading) {
+        return (
+            <DashboardLayout
+                sidebarItems={sidebarItems}
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+                title={getTitle()}
+            >
+                <div className="flex items-center justify-center h-64">
+                    <div className="loading loading-spinner loading-lg"></div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout

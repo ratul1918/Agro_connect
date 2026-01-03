@@ -1,6 +1,7 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import RetailMarketplacePage from './RetailMarketplacePage';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Leaf, ShoppingBag, TrendingUp, Users, Shield, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
@@ -10,15 +11,11 @@ import { motion } from 'framer-motion';
 const HomePage: React.FC = () => {
     const { t } = useLanguage();
     const { user, isAuthenticated } = useAuth();
-    const navigate = useNavigate();
 
-    React.useEffect(() => {
-        if (isAuthenticated && user) {
-            if (user.role === 'ROLE_GENERAL_CUSTOMER' || user.role === 'ROLE_CUSTOMER') {
-                navigate('/marketplace/retail');
-            }
-        }
-    }, [isAuthenticated, user, navigate]);
+    // For customers, show Retail Shop directly on Home URL
+    if (isAuthenticated && user && (user.role === 'ROLE_GENERAL_CUSTOMER' || user.role === 'ROLE_CUSTOMER')) {
+        return <RetailMarketplacePage />;
+    }
 
     // Mock Market Data for Ticker - In real app, fetch from API
     const marketTicker = [

@@ -32,12 +32,35 @@ api.interceptors.response.use(
 
         const { status, data } = error.response;
 
-        // Handle 401 Unauthorized - clear token and redirect to login
+        // Handle 401 Unauthorized - temporarily disable auto-redirect to debug issue
         if (status === 401) {
-            localStorage.removeItem('token');
-            // Don't redirect if already on auth page
-            if (!window.location.pathname.includes('/auth')) {
-                window.location.href = '/auth';
+            console.warn('401 error received, but auto-redirect is disabled for debugging:', {
+                url: error.config?.url,
+                message: data?.message || data?.error,
+                pathname: window.location.pathname
+            });
+            
+            // Only clear tokens for explicit auth failures
+            // Exclude /auth/me and /auth/profile from triggering logout to avoid loops if profile fetch fails
+            const isExplicitAuthFailure = (error.config?.url?.includes('/auth/') && 
+                                          !error.config?.url?.includes('/me') && 
+                                          !error.config?.url?.includes('/profile')) || 
+                                         error.config?.url?.includes('/login') ||
+                                         data?.message?.toLowerCase().includes('invalid') ||
+                                         data?.message?.toLowerCase().includes('expired');
+
+            if (isExplicitAuthFailure) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                // Don't redirect if already on auth page
+                if (!window.location.pathname.includes('/auth')) {
+                    // Use setTimeout to avoid redirect loops during component initialization
+                    setTimeout(() => {
+                        if (!window.location.pathname.includes('/auth')) {
+                            window.location.href = '/auth';
+                        }
+                    }, 100);
+                }
             }
         }
 
