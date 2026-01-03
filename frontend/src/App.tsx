@@ -24,6 +24,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrdersPage from './pages/OrdersPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import AgronomistDirectoryPage from './pages/AgronomistDirectoryPage';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 
 // Dashboard Pages
@@ -93,6 +94,7 @@ function App() {
             <Route path="/profile" element={<PublicLayout><PrivateRoute><ProfilePage /></PrivateRoute></PublicLayout>} />
             <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
             <Route path="/messages" element={<PrivateRoute><NavOnlyLayout><MessagesPage /></NavOnlyLayout></PrivateRoute>} />
+            <Route path="/agronomists" element={<PrivateRoute><NavOnlyLayout><AgronomistDirectoryPage /></NavOnlyLayout></PrivateRoute>} />
 
             {/* Auth Routes (no navbar/footer) */}
             <Route path="/auth" element={<AuthPage />} />

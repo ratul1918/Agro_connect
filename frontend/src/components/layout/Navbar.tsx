@@ -21,8 +21,8 @@ const Navbar: React.FC = () => {
         if (isAuthenticated) {
             const fetchUnreadCount = async () => {
                 try {
-                    const res = await api.get('/messages/chats');
-                    const total = res.data.reduce((sum: number, chat: any) => sum + (chat.unreadCount || 0), 0);
+                    const res = await api.get('/messenger/chats');
+                    const total = res.data.reduce((sum: number, chat: any) => sum + (chat.unread_count || 0), 0);
                     setUnreadCount(total);
                 } catch {
                     setUnreadCount(0);
@@ -59,7 +59,10 @@ const Navbar: React.FC = () => {
 
         switch (user.role) {
             case 'ROLE_FARMER':
-                return baseLinks;
+                return [
+                    ...baseLinks,
+                    { label: 'agronomists', path: '/agronomists', icon: User }
+                ];
             case 'ROLE_BUYER':
                 return [
                     ...baseLinks,

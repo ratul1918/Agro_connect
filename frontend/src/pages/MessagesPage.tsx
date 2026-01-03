@@ -40,8 +40,17 @@ const MessagesPage: React.FC = () => {
     // Fetch chats
     const fetchChats = async () => {
         try {
-            const response = await api.get('/messages/chats');
-            setChats(response.data);
+            const response = await api.get('/messenger/chats');
+            // Map response to expected format
+            const mapped = response.data.map((chat: any) => ({
+                chatId: chat.chat_id,
+                contactId: chat.other_user_id,
+                contactName: chat.other_user_name,
+                lastMessage: chat.last_message,
+                lastUpdated: chat.last_updated,
+                unreadCount: chat.unread_count
+            }));
+            setChats(mapped);
         } catch (error) {
             console.error('Failed to fetch chats:', error);
         } finally {
@@ -52,10 +61,19 @@ const MessagesPage: React.FC = () => {
     // Fetch messages for a chat
     const fetchMessages = async (chatId: number) => {
         try {
-            const response = await api.get(`/messages/chats/${chatId}`);
-            setMessages(response.data);
+            const response = await api.get(`/messenger/chats/${chatId}/messages`);
+            // Map response to expected format
+            const mapped = response.data.map((msg: any) => ({
+                id: msg.id,
+                chatId: msg.chat_id,
+                senderId: msg.sender_id,
+                content: msg.content,
+                isRead: msg.is_read,
+                sentAt: msg.sent_at
+            })).reverse(); // Reverse to show oldest first
+            setMessages(mapped);
             // Mark as read
-            await api.put(`/messages/chats/${chatId}/read`);
+            await api.post(`/messenger/chats/${chatId}/read`);
             // Update unread count in chats list
             setChats(prev => prev.map(chat =>
                 chat.chatId === chatId ? { ...chat, unreadCount: 0 } : chat
@@ -91,7 +109,7 @@ const MessagesPage: React.FC = () => {
 
         setSending(true);
         try {
-            await api.post(`/messages/chats/${selectedChat.chatId}/send`, { content: message });
+            await api.post(`/messenger/chats/${selectedChat.chatId}/messages`, { content: message });
             setMessage('');
             fetchMessages(selectedChat.chatId);
         } catch (error) {
@@ -110,7 +128,7 @@ const MessagesPage: React.FC = () => {
         if (!deleteConfirm.chatId) return;
 
         try {
-            await api.delete(`/messages/chats/${deleteConfirm.chatId}`);
+            await api.delete(`/messenger/chats/${deleteConfirm.chatId}`);
             toast.success('কথোপকথন মুছে ফেলা হয়েছে');
             setChats(prev => prev.filter(c => c.chatId !== deleteConfirm.chatId));
             if (selectedChat?.chatId === deleteConfirm.chatId) {

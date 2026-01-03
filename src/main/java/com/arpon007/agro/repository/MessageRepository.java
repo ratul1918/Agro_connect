@@ -31,21 +31,23 @@ public class MessageRepository {
         message.setRead(rs.getBoolean("is_read"));
         message.setCreatedAt(rs.getTimestamp("created_at"));
         message.setUpdatedAt(rs.getTimestamp("updated_at"));
-        
+
         // Sender details
         try {
             message.setSenderName(rs.getString("sender_name"));
             message.setSenderEmail(rs.getString("sender_email"));
             message.setSenderRole(rs.getString("sender_role"));
-        } catch (Exception ignored) {}
-        
+        } catch (Exception ignored) {
+        }
+
         // Receiver details
         try {
             message.setReceiverName(rs.getString("receiver_name"));
             message.setReceiverEmail(rs.getString("receiver_email"));
             message.setReceiverRole(rs.getString("receiver_role"));
-        } catch (Exception ignored) {}
-        
+        } catch (Exception ignored) {
+        }
+
         return message;
     };
 
@@ -67,13 +69,13 @@ public class MessageRepository {
 
     public List<Message> findConversation(Long userId1, Long userId2) {
         String sql = """
-                SELECT m.*, 
-                       s.full_name as sender_name, s.email as sender_email, 
+                SELECT m.*,
+                       s.full_name as sender_name, s.email as sender_email,
                        r.full_name as receiver_name, r.email as receiver_email
                 FROM messages m
                 JOIN users s ON m.sender_id = s.id
                 JOIN users r ON m.receiver_id = r.id
-                WHERE (m.sender_id = ? AND m.receiver_id = ?) 
+                WHERE (m.sender_id = ? AND m.receiver_id = ?)
                    OR (m.sender_id = ? AND m.receiver_id = ?)
                 ORDER BY m.created_at ASC
                 """;
@@ -82,8 +84,8 @@ public class MessageRepository {
 
     public List<Message> findInboxMessages(Long userId) {
         String sql = """
-                SELECT m.*, 
-                       s.full_name as sender_name, s.email as sender_email, 
+                SELECT m.*,
+                       s.full_name as sender_name, s.email as sender_email,
                        r.full_name as receiver_name, r.email as receiver_email
                 FROM messages m
                 JOIN users s ON m.sender_id = s.id
@@ -96,8 +98,8 @@ public class MessageRepository {
 
     public List<Message> findSentMessages(Long userId) {
         String sql = """
-                SELECT m.*, 
-                       s.full_name as sender_name, s.email as sender_email, 
+                SELECT m.*,
+                       s.full_name as sender_name, s.email as sender_email,
                        r.full_name as receiver_name, r.email as receiver_email
                 FROM messages m
                 JOIN users s ON m.sender_id = s.id
@@ -110,8 +112,8 @@ public class MessageRepository {
 
     public List<Message> findUnreadMessages(Long userId) {
         String sql = """
-                SELECT m.*, 
-                       s.full_name as sender_name, s.email as sender_email, 
+                SELECT m.*,
+                       s.full_name as sender_name, s.email as sender_email,
                        r.full_name as receiver_name, r.email as receiver_email
                 FROM messages m
                 JOIN users s ON m.sender_id = s.id
@@ -124,8 +126,8 @@ public class MessageRepository {
 
     public Optional<Message> findById(Long id) {
         String sql = """
-                SELECT m.*, 
-                       s.full_name as sender_name, s.email as sender_email, 
+                SELECT m.*,
+                       s.full_name as sender_name, s.email as sender_email,
                        r.full_name as receiver_name, r.email as receiver_email
                 FROM messages m
                 JOIN users s ON m.sender_id = s.id
@@ -136,13 +138,14 @@ public class MessageRepository {
     }
 
     public void markAsRead(Long messageId) {
-        jdbcTemplate.update("UPDATE messages SET is_read = true, updated_at = CURRENT_TIMESTAMP WHERE id = ?", messageId);
+        jdbcTemplate.update("UPDATE messages SET is_read = true, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                messageId);
     }
 
     public void markConversationAsRead(Long userId1, Long userId2) {
         jdbcTemplate.update("""
-                UPDATE messages 
-                SET is_read = true, updated_at = CURRENT_TIMESTAMP 
+                UPDATE messages
+                SET is_read = true, updated_at = CURRENT_TIMESTAMP
                 WHERE sender_id = ? AND receiver_id = ? AND is_read = false
                 """, userId2, userId1);
     }
@@ -153,8 +156,42 @@ public class MessageRepository {
 
     public int getUnreadCount(Long userId) {
         Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM messages WHERE receiver_id = ? AND is_read = false", 
+                "SELECT COUNT(*) FROM messages WHERE receiver_id = ? AND is_read = false",
                 Integer.class, userId);
         return count != null ? count : 0;
+    }
+
+    // Chat integration methods for MessengerController compatibility
+    public java.util.List<java.util.Map<String, Object>> findChat(Long userId1, Long userId2) {
+        String sql = """
+                SELECT id FROM chats
+                WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)
+                """;
+        return jdbcTemplate.queryForList(sql, userId1, userId2, userId2, userId1);
+    }
+
+    public Long createChat(Long userId1, Long userId2) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(
+                    "INSERT INTO chats (user1_id, user2_id) VALUES (?, ?)",
+                    Statement.RETURN_GENERATED_KEYS);
+            ps.setLong(1, userId1);
+            ps.setLong(2, userId2);
+            return ps;
+        }, keyHolder);
+        return keyHolder.getKey().longValue();
+    }
+
+    public void addChatMessage(Long chatId, Long senderId, String content, String messageType) {
+        jdbcTemplate.update(
+                "INSERT INTO chat_messages (chat_id, sender_id, content, message_type) VALUES (?, ?, ?, ?)",
+                chatId, senderId, content, messageType);
+    }
+
+    public void updateChatLastMessage(Long chatId, String lastMessage) {
+        jdbcTemplate.update(
+                "UPDATE chats SET last_message = ?, last_updated = NOW() WHERE id = ?",
+                lastMessage, chatId);
     }
 }

@@ -44,16 +44,17 @@ public class MessageController {
     public ResponseEntity<List<Message>> getConversation(@PathVariable Long userId, Authentication authentication) {
         User currentUser = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         User otherUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return ResponseEntity.ok(messageRepository.findConversation(currentUser.getId(), otherUser.getId()));
     }
 
-    // Send a message
+    // Send a message - also creates chat for integrated messaging
     @PostMapping
-    public ResponseEntity<Message> sendMessage(@RequestBody Map<String, Object> messageData, Authentication authentication) {
+    public ResponseEntity<Message> sendMessage(@RequestBody Map<String, Object> messageData,
+            Authentication authentication) {
         User sender = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -71,6 +72,28 @@ public class MessageController {
         message.setMessageType(messageType);
 
         Message saved = messageRepository.save(message);
+
+        // Also create or update chat for integrated messaging system
+        try {
+            // First check if chat exists
+            java.util.List<java.util.Map<String, Object>> chats = messageRepository.findChat(sender.getId(),
+                    receiverId);
+            Long chatId;
+            if (chats.isEmpty()) {
+                chatId = messageRepository.createChat(sender.getId(), receiverId);
+            } else {
+                chatId = ((Number) chats.get(0).get("id")).longValue();
+            }
+            // Add message to chat
+            messageRepository.addChatMessage(chatId, sender.getId(), content, messageType);
+            // Update last message
+            String preview = content.length() > 100 ? content.substring(0, 100) : content;
+            messageRepository.updateChatLastMessage(chatId, preview);
+        } catch (Exception e) {
+            // Silently fail - the message table still has the message
+            System.err.println("Warning: Failed to create chat: " + e.getMessage());
+        }
+
         return ResponseEntity.ok(saved);
     }
 
