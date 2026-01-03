@@ -82,12 +82,12 @@ const AdminCrops: React.FC<AdminCropsProps> = ({
             {/* Crops Table */}
             <div className="card bg-base-100 shadow-xl">
                 <div className="card-body p-0">
-                    <div className="p-4 border-b flex justify-between items-center">
-                        <div className="flex items-center gap-4">
-                            <h2 className="text-xl font-bold">Crop Listings</h2>
-                            <div className="join">
+                    <div className="p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+                            <h2 className="text-xl font-bold whitespace-nowrap">Crop Listings</h2>
+                            <div className="join w-full sm:w-auto">
                                 <input
-                                    className="input input-bordered input-sm join-item w-48"
+                                    className="input input-bordered input-sm join-item w-full sm:w-48"
                                     placeholder="Search crops..."
                                     value={filter}
                                     onChange={(e) => setFilter(e.target.value)}
@@ -95,7 +95,7 @@ const AdminCrops: React.FC<AdminCropsProps> = ({
                             </div>
                         </div>
                         <button
-                            className="btn btn-primary btn-sm gap-2"
+                            className="btn btn-primary btn-sm gap-2 w-full sm:w-auto"
                             onClick={() => window.location.href = '/admin#add-product'}
                         >
                             <Plus className="w-4 h-4" /> Add Product (Retail/B2B)
@@ -103,43 +103,55 @@ const AdminCrops: React.FC<AdminCropsProps> = ({
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="table table-zebra table-pin-rows">
+                        <table className="table table-zebra table-pin-rows w-full">
                             <thead>
                                 <tr>
-                                    <th>Product</th>
-                                    <th>Farmer</th>
-                                    <th>Stock</th>
-                                    <th>Price/Unit</th>
-                                    <th className="text-right">Actions</th>
-                                    <th>Stock</th>
+                                    <th className="w-[25%]">Product</th>
+                                    <th className="w-[15%]">Farmer</th>
+                                    <th className="w-[15%]">Stock</th>
+                                    <th className="w-[10%]">Price/Unit</th>
+                                    <th className="w-[20%] text-right">Actions</th>
+                                    <th className="w-[15%]">Stock Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredCrops.map(crop => (
                                     <tr key={crop.id} className="hover">
                                         <td>
-                                            <div className="font-bold">{crop.title}</div>
-                                            <div className="text-xs badge badge-ghost badge-sm">{crop.cropTypeName}</div>
+                                            <div className="font-bold break-words">{crop.title}</div>
+                                            <div className="text-xs badge badge-ghost badge-sm mt-1">{crop.cropTypeName}</div>
                                         </td>
-                                        <td>{crop.farmerName}</td>
                                         <td>
-                                            <div className="radial-progress text-primary text-[10px]" style={{ "--value": Math.min(100, (crop.quantity / 100) * 100), "--size": "2rem" } as any}>
-                                                {crop.quantity}
-                                            </div>
-                                            <span className="ml-2 text-xs">{crop.unit}</span>
+                                            <div className="break-words">{crop.farmerName}</div>
                                         </td>
-                                        <td className="font-mono">৳{crop.minPrice}</td>
+                                        <td>
+                                            <div className="flex items-center gap-2">
+                                                <div 
+                                                    className="radial-progress text-primary text-[10px] flex-shrink-0" 
+                                                    style={{ 
+                                                        "--value": Math.min(100, (crop.quantity / 100) * 100), 
+                                                        "--size": "2rem" 
+                                                    } as React.CSSProperties}
+                                                >
+                                                    {crop.quantity}
+                                                </div>
+                                                <span className="text-xs whitespace-nowrap">{crop.unit}</span>
+                                            </div>
+                                        </td>
+                                        <td className="font-mono whitespace-nowrap">৳{crop.minPrice}</td>
                                         <td className="text-right">
-                                            <div className="join">
+                                            <div className="join justify-end">
                                                 <button
                                                     className="btn btn-square btn-sm btn-ghost join-item text-primary"
                                                     onClick={() => handleEditCrop(crop)}
+                                                    title="Edit Product"
                                                 >
                                                     <Edit className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     className="btn btn-square btn-sm btn-ghost join-item text-error"
                                                     onClick={() => handleDeleteCrop(crop.id)}
+                                                    title="Delete Product"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -148,7 +160,7 @@ const AdminCrops: React.FC<AdminCropsProps> = ({
                                         <td>
                                             {crop.isSold ? (
                                                 <button
-                                                    className="btn btn-xs btn-success gap-1"
+                                                    className="btn btn-xs btn-success gap-1 w-full"
                                                     onClick={() => handleBackInStock(crop.id)}
                                                 >
                                                     <CheckCircle className="w-3 h-3" />
@@ -156,7 +168,7 @@ const AdminCrops: React.FC<AdminCropsProps> = ({
                                                 </button>
                                             ) : (
                                                 <button
-                                                    className="btn btn-xs btn-warning gap-1"
+                                                    className="btn btn-xs btn-warning gap-1 w-full"
                                                     onClick={() => handleStockOut(crop.id)}
                                                 >
                                                     <XCircle className="w-3 h-3" />
@@ -168,7 +180,7 @@ const AdminCrops: React.FC<AdminCropsProps> = ({
                                 ))}
                                 {filteredCrops.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} className="text-center py-8 opacity-50">No crops found</td>
+                                        <td colSpan={6} className="text-center py-8 opacity-50">No crops found</td>
                                     </tr>
                                 )}
                             </tbody>

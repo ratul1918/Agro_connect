@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import api from '../api/axios';
-import { Package, ShoppingCart, BarChart3, Truck, CheckCircle, Clock, Search, ShoppingBag } from 'lucide-react';
+import { Package, ShoppingCart, BarChart3, Truck, CheckCircle, Clock, ShoppingBag, User } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { Input } from '../components/ui/input';
 
 interface Order {
     id: number;
@@ -18,20 +19,27 @@ interface Order {
     createdAt: string;
 }
 
-interface CartItem {
-    id: number;
-    cropId: number;
-    title: string;
-    quantity: number;
-    price: number;
-    imageUrl?: string;
+interface UserProfile {
+    fullName: string;
+    email: string;
+    phone: string;
+    division: string;
+    district: string;
+    upazila: string;
+    thana: string;
+    postCode: string;
 }
 
 const CustomerDashboard: React.FC = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
     const [orders, setOrders] = useState<Order[]>([]);
-    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [editingProfile, setEditingProfile] = useState(false);
+    const [profileForm, setProfileForm] = useState<UserProfile>({
+        fullName: '', email: '', phone: '', division: '', district: '', upazila: '', thana: '', postCode: ''
+    });
+    const [loading, setLoading] = useState(false);
     const [trackingModal, setTrackingModal] = useState<{ show: boolean; order: Order | null }>({ show: false, order: null });
 
     const sidebarItems = [
@@ -39,11 +47,12 @@ const CustomerDashboard: React.FC = () => {
         { label: 'রিটেইল শপ (Shop)', icon: ShoppingBag, value: 'shop', onClick: () => navigate('/marketplace/retail') },
         { label: 'আমার অর্ডার (My Orders)', icon: Package, value: 'orders' },
         { label: 'কার্ট (Cart)', icon: ShoppingCart, value: 'cart', onClick: () => navigate('/cart') },
+        { label: 'প্রোফাইল (Profile)', icon: User, value: 'profile' },
     ];
 
     useEffect(() => {
         fetchOrders();
-        fetchCart();
+        fetchProfile();
     }, []);
 
     const fetchOrders = async () => {
@@ -56,13 +65,26 @@ const CustomerDashboard: React.FC = () => {
         }
     };
 
-    const fetchCart = async () => {
+    const fetchProfile = async () => {
         try {
-            const res = await api.get('/cart');
-            setCartItems(res.data?.items || []);
+            const res = await api.get('/auth/me');
+            setProfile(res.data);
+            setProfileForm(res.data);
         } catch (err) {
-            console.error('Failed to fetch cart', err);
-            setCartItems([]);
+            console.error('Failed to fetch profile', err);
+        }
+    };
+
+    const handleUpdateProfile = async () => {
+        setLoading(true);
+        try {
+            await api.put('/auth/profile', profileForm);
+            setProfile(profileForm);
+            setEditingProfile(false);
+        } catch (err) {
+            console.error('Failed to update profile', err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -78,6 +100,25 @@ const CustomerDashboard: React.FC = () => {
                 return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
             default:
                 return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+        }
+    };
+
+    const getDisplayStatus = (order: Order) => {
+        // Use deliveryStatus if available and not null, otherwise use status
+        const effectiveStatus = order.deliveryStatus || order.status || 'PENDING';
+        return effectiveStatus.toUpperCase();
+    };
+
+    const getStatusLabel = (status: string) => {
+        switch (status?.toUpperCase()) {
+            case 'DELIVERED': return '✅ ডেলিভারি সম্পন্ন';
+            case 'COMPLETED': return '✅ সম্পন্ন';
+            case 'SHIPPED': return '🚚 শিপমেন্টে';
+            case 'OUT_FOR_DELIVERY': return '🛵 ডেলিভারিতে';
+            case 'PROCESSING': return '⏳ প্রক্রিয়াধীন';
+            case 'PENDING': return '🕐 অপেক্ষমাণ';
+            case 'CANCELLED': return '❌ বাতিল';
+            default: return status;
         }
     };
 
@@ -125,9 +166,9 @@ const CustomerDashboard: React.FC = () => {
                 <div className="space-y-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <StatCard title="মোট অর্ডার" value={orders.length} icon="📦" color="blue" />
-                        <StatCard title="ডেলিভারি সম্পন্ন" value={orders.filter(o => o.deliveryStatus === 'DELIVERED').length} icon="✅" color="green" />
-                        <StatCard title="প্রক্রিয়াধীন" value={orders.filter(o => ['PENDING', 'PROCESSING', 'SHIPPED'].includes(o.deliveryStatus)).length} icon="⏳" color="yellow" />
-                        <StatCard title="কার্টে আইটেম" value={cartItems.length} icon="🛒" color="purple" />
+                        <StatCard title="ডেলিভারি সম্পন্ন" value={orders.filter(o => (o.deliveryStatus || o.status)?.toUpperCase() === 'DELIVERED').length} icon="✅" color="green" />
+                        <StatCard title="প্রক্রিয়াধীন" value={orders.filter(o => ['PENDING', 'PROCESSING', 'SHIPPED'].includes((o.deliveryStatus || o.status)?.toUpperCase())).length} icon="⏳" color="yellow" />
+                        <StatCard title="শপিং করুন" value={0} icon="🛒" color="purple" />
                     </div>
 
                     {/* Quick Actions */}
@@ -163,10 +204,10 @@ const CustomerDashboard: React.FC = () => {
                                 <Button 
                                     variant="outline"
                                     className="h-24 flex flex-col gap-2"
-                                    onClick={() => navigate('/blogs')}
+                                    onClick={() => setActiveTab('profile')}
                                 >
-                                    <Search className="h-8 w-8" />
-                                    <span>কৃষি টিপস</span>
+                                    <User className="h-8 w-8" />
+                                    <span>প্রোফাইল</span>
                                 </Button>
                             </div>
                         </CardContent>
@@ -188,8 +229,8 @@ const CustomerDashboard: React.FC = () => {
                                                     ৳{order.totalAmount} • {new Date(order.createdAt).toLocaleDateString('bn-BD')}
                                                 </div>
                                             </div>
-                                            <Badge className={getStatusColor(order.deliveryStatus)}>
-                                                {order.deliveryStatus}
+                                            <Badge className={getStatusColor(getDisplayStatus(order))}>
+                                                {getStatusLabel(getDisplayStatus(order))}
                                             </Badge>
                                         </div>
                                     ))}
@@ -232,39 +273,42 @@ const CustomerDashboard: React.FC = () => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {orders.map(order => (
-                                            <TableRow key={order.id}>
-                                                <TableCell className="font-mono">#{order.id}</TableCell>
-                                                <TableCell className="font-medium">{order.cropTitle}</TableCell>
-                                                <TableCell className="font-bold text-green-600">৳{order.totalAmount}</TableCell>
-                                                <TableCell>
-                                                    <Badge className={getStatusColor(order.deliveryStatus)}>
-                                                        {order.deliveryStatus}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-sm text-muted-foreground">
-                                                    {new Date(order.createdAt).toLocaleDateString('bn-BD')}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex gap-2">
-                                                        <Button 
-                                                            size="sm" 
-                                                            variant="outline"
-                                                            onClick={() => setTrackingModal({ show: true, order })}
-                                                        >
-                                                            <Truck className="h-4 w-4 mr-1" /> ট্র্যাক
-                                                        </Button>
-                                                        <Button 
-                                                            size="sm" 
-                                                            variant="outline"
-                                                            onClick={() => handleDownloadInvoice(order.id)}
-                                                        >
-                                                            ইনভয়েস
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                        {orders.map(order => {
+                                            const displayStatus = getDisplayStatus(order);
+                                            return (
+                                                <TableRow key={order.id}>
+                                                    <TableCell className="font-mono">#{order.id}</TableCell>
+                                                    <TableCell className="font-medium">{order.cropTitle}</TableCell>
+                                                    <TableCell className="font-bold text-green-600">৳{order.totalAmount}</TableCell>
+                                                    <TableCell>
+                                                        <Badge className={getStatusColor(displayStatus)}>
+                                                            {getStatusLabel(displayStatus)}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-sm text-muted-foreground">
+                                                        {new Date(order.createdAt).toLocaleDateString('bn-BD')}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex gap-2">
+                                                            <Button 
+                                                                size="sm" 
+                                                                variant="outline"
+                                                                onClick={() => setTrackingModal({ show: true, order })}
+                                                            >
+                                                                <Truck className="h-4 w-4 mr-1" /> ট্র্যাক
+                                                            </Button>
+                                                            <Button 
+                                                                size="sm" 
+                                                                variant="outline"
+                                                                onClick={() => handleDownloadInvoice(order.id)}
+                                                            >
+                                                                ইনভয়েস
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -278,6 +322,122 @@ const CustomerDashboard: React.FC = () => {
                                 >
                                     এখনই শপিং করুন
                                 </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Profile */}
+            {activeTab === 'profile' && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex justify-between items-center">
+                            <span>👤 আমার প্রোফাইল</span>
+                            {!editingProfile && (
+                                <Button variant="outline" onClick={() => setEditingProfile(true)}>
+                                    ✏️ সম্পাদনা
+                                </Button>
+                            )}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {profile && (
+                            <div className="space-y-4">
+                                {editingProfile ? (
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-sm font-medium">নাম</label>
+                                            <Input 
+                                                value={profileForm.fullName} 
+                                                onChange={e => setProfileForm({...profileForm, fullName: e.target.value})}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">ইমেইল</label>
+                                            <Input value={profileForm.email} disabled className="bg-muted" />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">ফোন</label>
+                                            <Input 
+                                                value={profileForm.phone} 
+                                                onChange={e => setProfileForm({...profileForm, phone: e.target.value})}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">বিভাগ</label>
+                                            <Input 
+                                                value={profileForm.division} 
+                                                onChange={e => setProfileForm({...profileForm, division: e.target.value})}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">জেলা</label>
+                                            <Input 
+                                                value={profileForm.district} 
+                                                onChange={e => setProfileForm({...profileForm, district: e.target.value})}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">উপজেলা</label>
+                                            <Input 
+                                                value={profileForm.upazila} 
+                                                onChange={e => setProfileForm({...profileForm, upazila: e.target.value})}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">থানা</label>
+                                            <Input 
+                                                value={profileForm.thana} 
+                                                onChange={e => setProfileForm({...profileForm, thana: e.target.value})}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">পোস্ট কোড</label>
+                                            <Input 
+                                                value={profileForm.postCode} 
+                                                onChange={e => setProfileForm({...profileForm, postCode: e.target.value})}
+                                            />
+                                        </div>
+                                        <div className="md:col-span-2 flex gap-3">
+                                            <Button onClick={handleUpdateProfile} disabled={loading} className="bg-green-600 hover:bg-green-700">
+                                                {loading ? 'সংরক্ষণ হচ্ছে...' : '✅ সংরক্ষণ করুন'}
+                                            </Button>
+                                            <Button variant="outline" onClick={() => setEditingProfile(false)}>
+                                                বাতিল
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <div>
+                                                <div className="text-sm text-muted-foreground">নাম</div>
+                                                <div className="font-medium">{profile.fullName}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm text-muted-foreground">ইমেইল</div>
+                                                <div className="font-medium">{profile.email}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm text-muted-foreground">ফোন</div>
+                                                <div className="font-medium">{profile.phone || 'নেই'}</div>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <div className="text-sm text-muted-foreground">ঠিকানা</div>
+                                                <div className="font-medium">
+                                                    {[profile.thana, profile.upazila, profile.district, profile.division].filter(Boolean).join(', ') || 'নেই'}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm text-muted-foreground">পোস্ট কোড</div>
+                                                <div className="font-medium">{profile.postCode || 'নেই'}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </CardContent>
@@ -304,7 +464,7 @@ const CustomerDashboard: React.FC = () => {
                                 { status: 'SHIPPED', label: 'শিপমেন্টে আছে', icon: Truck },
                                 { status: 'DELIVERED', label: 'ডেলিভারি সম্পন্ন', icon: CheckCircle }
                             ].map((step, index) => {
-                                const orderStatus = trackingModal.order!.deliveryStatus;
+                                const orderStatus = getDisplayStatus(trackingModal.order!);
                                 const steps = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
                                 const currentStepIndex = steps.indexOf(orderStatus);
                                 const isCompleted = index <= currentStepIndex;
@@ -327,7 +487,7 @@ const CustomerDashboard: React.FC = () => {
                         <div className="mt-8 pt-4 border-t">
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Order ID: #{trackingModal.order.id}</span>
-                                <span className="font-medium text-green-600">{trackingModal.order.deliveryStatus}</span>
+                                <span className="font-medium text-green-600">{getStatusLabel(getDisplayStatus(trackingModal.order))}</span>
                             </div>
                         </div>
                     </div>

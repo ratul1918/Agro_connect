@@ -67,7 +67,7 @@ public class MessageController {
 
         Message message = new Message();
         message.setSenderId(sender.getId());
-        message.setReceiverId(receiverId);
+        message.setReceiverId(receiver.getId());
         message.setContent(content);
         message.setMessageType(messageType);
 

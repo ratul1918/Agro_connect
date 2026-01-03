@@ -96,25 +96,35 @@ const Navbar: React.FC = () => {
 
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-8">
-                        <Link to="/" className="text-gray-700 hover:text-green-600">{t('nav.home')}</Link>
-                        <Link to="/blogs" className="text-gray-700 hover:text-green-600">{t('nav.blogs')}</Link>
-                        <Link to="/marketplace/retail" className="text-gray-700 hover:text-green-600">{t('nav.retailShop')}</Link>
-                        <Link to="/marketplace/b2b" className="text-gray-700 hover:text-green-600">{t('nav.b2bMarket')}</Link>
-                        {isAuthenticated && getRoleSpecificLinks()?.map((link) => {
-                            const IconComponent = link.icon;
-                            return (
-                                <Link
-                                    key={link.path}
-                                    to={link.path}
-                                    className="flex items-center gap-1 text-gray-700 hover:text-green-600"
-                                >
-                                    <IconComponent className="h-4 w-4" />
-                                    {t(`nav.${link.label}`)}
-                                </Link>
-                            );
-                        })}
-                        {!isAuthenticated && (
-                            <Link to="/about" className="text-gray-700 hover:text-green-600">{t('nav.about')}</Link>
+                        {/* For customers, show minimal nav - just logo leads to shop */}
+                        {user?.role === 'ROLE_GENERAL_CUSTOMER' || user?.role === 'ROLE_CUSTOMER' ? (
+                            <>
+                                <Link to="/marketplace/retail" className="text-gray-700 hover:text-green-600 font-medium">{t('nav.retailShop')}</Link>
+                                <Link to="/orders" className="text-gray-700 hover:text-green-600">আমার অর্ডার</Link>
+                            </>
+                        ) : (
+                            <>
+                                <Link to="/" className="text-gray-700 hover:text-green-600">{t('nav.home')}</Link>
+                                <Link to="/blogs" className="text-gray-700 hover:text-green-600">{t('nav.blogs')}</Link>
+                                <Link to="/marketplace/retail" className="text-gray-700 hover:text-green-600">{t('nav.retailShop')}</Link>
+                                <Link to="/marketplace/b2b" className="text-gray-700 hover:text-green-600">{t('nav.b2bMarket')}</Link>
+                                {isAuthenticated && getRoleSpecificLinks()?.map((link) => {
+                                    const IconComponent = link.icon;
+                                    return (
+                                        <Link
+                                            key={link.path}
+                                            to={link.path}
+                                            className="flex items-center gap-1 text-gray-700 hover:text-green-600"
+                                        >
+                                            <IconComponent className="h-4 w-4" />
+                                            {t(`nav.${link.label}`)}
+                                        </Link>
+                                    );
+                                })}
+                                {!isAuthenticated && (
+                                    <Link to="/about" className="text-gray-700 hover:text-green-600">{t('nav.about')}</Link>
+                                )}
+                            </>
                         )}
                     </div>
 
@@ -268,38 +278,56 @@ const Navbar: React.FC = () => {
                 {/* Mobile Menu */}
                 {isMenuOpen && (
                     <div className="md:hidden pb-4 border-t">
-                        <Link to="/" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`}>
-                            {t('nav.home')}
-                        </Link>
-
-                        {/* Public Marketplace Links - Visible to Everyone */}
-                        <Link to="/marketplace/retail" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/marketplace/retail' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`}>
-                            {t('nav.retailShop')}
-                        </Link>
-                        <Link to="/marketplace/b2b" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/marketplace/b2b' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`}>
-                            {t('nav.b2bMarket')}
-                        </Link>
-
-                        {/* Role Specific Links */}
-                        {isAuthenticated && getRoleSpecificLinks()?.map((link) => {
-                            const IconComponent = link.icon;
-                            return (
-                                <Link
-                                    key={link.path}
-                                    to={link.path}
-                                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === link.path ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`}
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    <IconComponent className="h-4 w-4" />
-                                    {t(`nav.${link.label}`)}
+                        {/* For customers, show minimal mobile nav */}
+                        {user?.role === 'ROLE_GENERAL_CUSTOMER' || user?.role === 'ROLE_CUSTOMER' ? (
+                            <>
+                                <Link to="/marketplace/retail" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/marketplace/retail' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`} onClick={() => setIsMenuOpen(false)}>
+                                    {t('nav.retailShop')}
                                 </Link>
-                            );
-                        })}
+                                <Link to="/orders" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-gray-600 hover:text-primary hover:bg-gray-50`} onClick={() => setIsMenuOpen(false)}>
+                                    আমার অর্ডার
+                                </Link>
+                                <Link to="/cart" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-gray-600 hover:text-primary hover:bg-gray-50`} onClick={() => setIsMenuOpen(false)}>
+                                    <ShoppingCart className="h-4 w-4 inline mr-2" />
+                                    কার্ট
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <Link to="/" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`}>
+                                    {t('nav.home')}
+                                </Link>
 
-                        {!isAuthenticated && (
-                            <Link to="/about" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/about' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`} onClick={() => setIsMenuOpen(false)}>
-                                {t('nav.about')}
-                            </Link>
+                                {/* Public Marketplace Links - Visible to Everyone */}
+                                <Link to="/marketplace/retail" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/marketplace/retail' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`}>
+                                    {t('nav.retailShop')}
+                                </Link>
+                                <Link to="/marketplace/b2b" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/marketplace/b2b' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`}>
+                                    {t('nav.b2bMarket')}
+                                </Link>
+
+                                {/* Role Specific Links */}
+                                {isAuthenticated && getRoleSpecificLinks()?.map((link) => {
+                                    const IconComponent = link.icon;
+                                    return (
+                                        <Link
+                                            key={link.path}
+                                            to={link.path}
+                                            className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === link.path ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`}
+                                            onClick={() => setIsMenuOpen(false)}
+                                        >
+                                            <IconComponent className="h-4 w-4 inline mr-2" />
+                                            {t(`nav.${link.label}`)}
+                                        </Link>
+                                    );
+                                })}
+
+                                {!isAuthenticated && (
+                                    <Link to="/about" className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${location.pathname === '/about' ? 'text-primary bg-primary/10' : 'text-gray-600 hover:text-primary hover:bg-gray-50'}`} onClick={() => setIsMenuOpen(false)}>
+                                        {t('nav.about')}
+                                    </Link>
+                                )}
+                            </>
                         )}
                         <div className="border-t pt-4 mt-4">
                             {isAuthenticated && user ? (

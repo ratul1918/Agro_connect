@@ -21,7 +21,7 @@ public class OrderRepository {
 
     @Transactional
     public Long createOrder(Order order) {
-        String sql = "INSERT INTO orders (buyer_id, farmer_id, crop_id, total_amount, advance_amount, due_amount, customer_mobile, customer_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO orders (buyer_id, farmer_id, crop_id, total_amount, advance_amount, due_amount, customer_mobile, customer_address, status, delivery_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
@@ -34,6 +34,8 @@ public class OrderRepository {
             ps.setBigDecimal(6, order.getDueAmount());
             ps.setString(7, order.getCustomerMobile());
             ps.setString(8, order.getCustomerAddress());
+            ps.setString(9, order.getStatus() != null ? order.getStatus().name() : "PENDING");
+            ps.setString(10, order.getDeliveryStatus() != null ? order.getDeliveryStatus().name() : "PENDING");
             return ps;
         }, keyHolder);
 
