@@ -80,16 +80,16 @@ const BlogsPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-12">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-2">Blogs & Tips</h1>
-                    <p className="text-xl text-gray-600">Expert advice, market insights, and farming best practices</p>
+                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Blogs & Tips</h1>
+                    <p className="text-xl text-gray-600 dark:text-white">Expert advice, market insights, and farming best practices</p>
                 </div>
 
                 {/* Search & Filter */}
-                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -97,7 +97,7 @@ const BlogsPage: React.FC = () => {
                                 placeholder="Search articles..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10"
+                                className="pl-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             />
                         </div>
                     </div>
@@ -110,7 +110,7 @@ const BlogsPage: React.FC = () => {
                                 onClick={() => setSelectedCategory(category)}
                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === category
                                         ? 'bg-green-600 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 {category}
@@ -123,7 +123,7 @@ const BlogsPage: React.FC = () => {
                 {loading && (
                     <div className="text-center py-12">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-                        <p className="text-gray-500 text-lg mt-4">Loading blogs...</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-lg mt-4">Loading blogs...</p>
                     </div>
                 )}
 
@@ -175,8 +175,8 @@ const BlogsPage: React.FC = () => {
                                     <CardTitle className="text-lg leading-tight">{post.title}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
-                                    <p className="text-gray-600 text-sm mb-4">{getExcerpt(post.content)}</p>
-                                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                                    <p className="text-gray-600 dark:text-white text-sm mb-4">{getExcerpt(post.content)}</p>
+                                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-200">
                                         <User className="h-3 w-3" />
                                         {post.authorName}
                                     </div>
@@ -194,7 +194,7 @@ const BlogsPage: React.FC = () => {
                     </div>
                 ) : !loading && !error && filteredPosts.length === 0 ? (
                     <div className="text-center py-12">
-                        <p className="text-gray-500 text-lg">
+                        <p className="text-gray-500 dark:text-gray-400 text-lg">
                             {searchTerm || selectedCategory !== 'All' 
                                 ? 'No articles found matching your search' 
                                 : 'No blog posts published yet'}

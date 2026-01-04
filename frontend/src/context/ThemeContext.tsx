@@ -12,12 +12,19 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [theme, setThemeState] = useState<Theme>(() => {
         const saved = localStorage.getItem('agro_theme') as Theme;
-        return saved || 'light';
+        return saved || 'dark';
     });
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('agro_theme', theme);
+        
+        // Add/remove 'dark' class for Tailwind dark: variants to work
+        if (theme === 'dark' || theme === 'forest') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
     }, [theme]);
 
     const setTheme = (newTheme: Theme) => {

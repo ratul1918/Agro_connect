@@ -137,8 +137,8 @@ const ProductDetailsPage: React.FC = () => {
         }
     };
 
-    if (loading) return <div className="flex justify-center items-center min-h-screen"><Loader2 className="animate-spin w-8 h-8 text-green-600" /></div>;
-    if (!product) return <div className="p-8 text-center text-xl">Product not found</div>;
+    if (loading) return <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900"><Loader2 className="animate-spin w-8 h-8 text-green-600" /></div>;
+    if (!product) return <div className="p-8 text-center text-xl text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 min-h-screen">Product not found</div>;
 
     const price = product.minPrice;
     const pricePerKg = price;
@@ -150,8 +150,8 @@ const ProductDetailsPage: React.FC = () => {
     const bgGradient = isB2B ? 'from-blue-50 to-blue-100' : 'from-green-50 to-green-100';
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-24 pb-12 px-4">
-            <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-12 px-4">
+            <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row">
                 {/* Image Section */}
                 <div className={`md:w-1/2 bg-gray-100 flex items-center justify-center p-6 bg-gradient-to-br ${bgGradient} overflow-hidden`}>
                     {product.images && product.images.length > 0 ? (
@@ -179,10 +179,10 @@ const ProductDetailsPage: React.FC = () => {
                             {product.location && <span className="text-gray-500 text-xs flex items-center"><span className="mr-1">📍</span>{product.location}</span>}
                         </div>
 
-                        <h1 className="text-4xl font-extrabold text-gray-900 mb-2 leading-tight">{product.title}</h1>
-                        <p className="text-gray-500 mb-6 flex items-center">
+                        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2 leading-tight">{product.title}</h1>
+                        <p className="text-gray-500 dark:text-gray-300 mb-6 flex items-center">
                             <span className="mr-2">Sold by</span>
-                            <span className="font-semibold text-gray-700 underline decoration-dotted">{product.farmerName}</span>
+                            <span className="font-semibold text-gray-700 dark:text-white underline decoration-dotted">{product.farmerName}</span>
                         </p>
 
                         <div className={`bg-${themeColor}-50 p-5 rounded-xl mb-8 border border-${themeColor}-100 shadow-sm`}>
@@ -200,12 +200,12 @@ const ProductDetailsPage: React.FC = () => {
                             )}
                         </div>
 
-                        <p className="text-gray-700 leading-relaxed mb-8 text-lg">{product.description}</p>
+                        <p className="text-gray-700 dark:text-white leading-relaxed mb-8 text-lg">{product.description}</p>
                     </div>
 
                     <div>
                         <div className="mb-8">
-                            <label className="block text-sm font-semibold text-gray-700 mb-3">Select Quantity</label>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Select Quantity</label>
                             <div className="space-y-4">
                                 {/* Unit Selector - Only for Retail */}
                                 {!isB2B && (
@@ -250,17 +250,17 @@ const ProductDetailsPage: React.FC = () => {
                                                 {isB2B ? product.unit : unit}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-2">
-                                            Available: <span className="font-medium text-gray-900">{product.quantity} {product.unit}</span>
+                                        <p className="text-xs text-gray-500 dark:text-gray-300 mt-2">
+                                            Available: <span className="font-medium text-gray-900 dark:text-white">{product.quantity} {product.unit}</span>
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="border-t border-gray-200 pt-6">
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                             <div className="flex justify-between items-center mb-6">
-                                <span className="text-xl font-bold text-gray-800">Total</span>
+                                <span className="text-xl font-bold text-gray-800 dark:text-white">Total</span>
                                 <span className={`text-3xl font-bold text-${themeColor}-700`}>৳{totalPrice.toFixed(2)}</span>
                             </div>
 

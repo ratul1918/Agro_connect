@@ -71,10 +71,10 @@ const BlogDetailPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 py-12 flex items-center justify-center">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 flex items-center justify-center">
                 <div className="text-center">
                     <Loader2 className="w-12 h-12 animate-spin text-green-600 mx-auto mb-4" />
-                    <p className="text-gray-600">Loading blog post...</p>
+                    <p className="text-gray-600 dark:text-gray-400">Loading blog post...</p>
                 </div>
             </div>
         );
@@ -82,12 +82,12 @@ const BlogDetailPage: React.FC = () => {
 
     if (error || !blog) {
         return (
-            <div className="min-h-screen bg-gray-50 py-12">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <Card>
+                    <Card className="bg-white dark:bg-gray-800">
                         <CardContent className="py-12 text-center">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">Blog Post Not Found</h2>
-                            <p className="text-gray-600 mb-6">{error || "The blog post you're looking for doesn't exist."}</p>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Blog Post Not Found</h2>
+                            <p className="text-gray-600 dark:text-gray-400 mb-6">{error || "The blog post you're looking for doesn't exist."}</p>
                             <Button onClick={() => navigate('/blogs')} className="bg-green-600 hover:bg-green-700">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Back to Blogs
@@ -100,20 +100,20 @@ const BlogDetailPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Back Button */}
                 <Button
                     variant="ghost"
                     onClick={() => navigate('/blogs')}
-                    className="mb-6 hover:bg-gray-100"
+                    className="mb-6 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back to Blogs
                 </Button>
 
                 {/* Blog Content */}
-                <Card className="overflow-hidden">
+                <Card className="overflow-hidden bg-white dark:bg-gray-800">
                     {/* Header Image */}
                     {blog.coverImageUrl ? (
                         <div className="h-64 md:h-80 overflow-hidden">
@@ -151,7 +151,7 @@ const BlogDetailPage: React.FC = () => {
                         </CardTitle>
 
                         {/* Meta Info */}
-                        <div className="flex flex-wrap items-center gap-4 text-gray-600 text-sm">
+                        <div className="flex flex-wrap items-center gap-4 text-gray-600 dark:text-gray-200 text-sm">
                             <div className="flex items-center gap-2">
                                 <User className="h-4 w-4" />
                                 <span>{blog.authorName || 'Unknown Author'}</span>
@@ -167,15 +167,15 @@ const BlogDetailPage: React.FC = () => {
                         </div>
                     </CardHeader>
 
-                    <CardContent className="prose prose-lg max-w-none">
+                    <CardContent className="prose prose-lg dark:prose-invert max-w-none">
                         {/* Content with proper formatting */}
-                        <div className="text-gray-700 leading-relaxed space-y-4">
+                        <div className="text-gray-700 dark:text-white leading-relaxed space-y-4">
                             {blog.content.split('\n\n').map((paragraph, index) => {
                                 // Check if paragraph is a heading (starts with **)
                                 if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
                                     const headingText = paragraph.replace(/\*\*/g, '');
                                     return (
-                                        <h3 key={index} className="text-xl font-bold text-gray-900 mt-6 mb-3">
+                                        <h3 key={index} className="text-xl font-bold text-gray-900 dark:text-white mt-6 mb-3">
                                             {headingText}
                                         </h3>
                                     );
@@ -198,7 +198,7 @@ const BlogDetailPage: React.FC = () => {
                 {/* Related Posts Section */}
                 {relatedBlogs.length > 0 && (
                     <div className="mt-12">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-6">More Articles</h3>
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">More Articles</h3>
                         <div className="grid md:grid-cols-3 gap-6">
                             {relatedBlogs.map(relatedBlog => (
                                 <Link
@@ -226,7 +226,7 @@ const BlogDetailPage: React.FC = () => {
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-sm text-gray-600 line-clamp-2">
+                                            <p className="text-sm text-gray-600 dark:text-white line-clamp-2">
                                                 {relatedBlog.content?.substring(0, 100)}...
                                             </p>
                                         </CardContent>

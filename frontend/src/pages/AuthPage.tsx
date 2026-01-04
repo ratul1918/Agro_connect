@@ -211,27 +211,27 @@ const AuthPage: React.FC = () => {
     
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-green-100">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-green-100 dark:from-gray-900 dark:to-gray-800">
             <Navbar />
             <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full">
                     {/* Logo */}
                     <div className="text-center mb-8">
                         <div className="flex items-center justify-center space-x-2">
-                            <Leaf className="h-12 w-12 text-green-600" />
-                            <span className="text-3xl font-bold text-green-600">AgroConnect</span>
+                            <Leaf className="h-12 w-12 text-green-600 dark:text-green-400" />
+                            <span className="text-3xl font-bold text-green-600 dark:text-green-400">AgroConnect</span>
                         </div>
-                        <p className="mt-2 text-gray-600">Your Agricultural Marketplace</p>
+                        <p className="mt-2 text-gray-600 dark:text-gray-300">Your Agricultural Marketplace</p>
                     </div>
 
-                    <Card className="shadow-xl">
+                    <Card className="shadow-xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         {/* Tabs */}
-                        <div className="flex border-b">
+                        <div className="flex border-b border-gray-200 dark:border-gray-700">
                             <button
                                 onClick={() => setActiveTab('login')}
                                 className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'login'
-                                    ? 'text-green-600 border-b-2 border-green-600'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                    ? 'text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400'
+                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
                             >
                                 Login
@@ -239,8 +239,8 @@ const AuthPage: React.FC = () => {
                             <button
                                 onClick={() => setActiveTab('signup')}
                                 className={`flex-1 py-4 text-center font-medium transition-colors ${activeTab === 'signup'
-                                    ? 'text-green-600 border-b-2 border-green-600'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                    ? 'text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400'
+                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
                             >
                                 Sign Up
@@ -252,7 +252,7 @@ const AuthPage: React.FC = () => {
                                 /* Login Form */
                                 <form onSubmit={handleLogin} className="space-y-4">
                                     {loginError && (
-                                        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                                        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
                                             {loginError}
                                         </div>
                                     )}
@@ -309,13 +309,13 @@ const AuthPage: React.FC = () => {
                                 /* Signup Form */
                                 <form onSubmit={handleSignup} className="space-y-4">
                                     {signupError && (
-                                        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                                        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
                                             {signupError}
                                         </div>
                                     )}
 
                                     {signupSuccess && (
-                                        <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg text-sm">
+                                        <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
                                             Registration successful! Redirecting to login...
                                         </div>
                                     )}
@@ -580,11 +580,11 @@ const AuthPage: React.FC = () => {
                                         {signupLoading ? 'Creating Account...' : 'Create Account'}
                                     </Button>
 
-                                    <p className="text-center text-sm text-gray-500">
+                                    <p className="text-center text-sm text-gray-500 dark:text-gray-400">
                                         By signing up, you agree to our{' '}
-                                        <a href="/terms" className="text-green-600 hover:underline">Terms of Service</a>
+                                        <a href="/terms" className="text-green-600 dark:text-green-400 hover:underline">Terms of Service</a>
                                         {' '}and{' '}
-                                        <a href="/privacy" className="text-green-600 hover:underline">Privacy Policy</a>
+                                        <a href="/privacy" className="text-green-600 dark:text-green-400 hover:underline">Privacy Policy</a>
                                     </p>
                                 </form>
                             )}
