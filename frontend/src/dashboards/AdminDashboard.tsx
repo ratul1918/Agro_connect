@@ -5,7 +5,7 @@ import { useConfirm, usePrompt } from '../components/ConfirmDialog';
 import api from '../api/axios';
 import {
     BarChart3, Users, Leaf, ShoppingCart, Ship, FileCheck, BookOpen,
-    UserPlus, Settings, DollarSign, Plus, Key
+    UserPlus, Settings, DollarSign, Plus
 } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 
@@ -23,7 +23,6 @@ import AdminBlogs from './admin/AdminBlogs';
 import AdminAgronomist from './admin/AdminAgronomist';
 import AdminConfig from './admin/AdminConfig';
 import AdminCashout from './admin/AdminCashout';
-import AdminApiKeys from './admin/AdminApiKeys';
 
 const AdminDashboard: React.FC = () => {
     const { success, error } = useNotification();
@@ -61,7 +60,6 @@ const AdminDashboard: React.FC = () => {
         { label: 'Cashouts', icon: DollarSign, value: 'cashout' },
         { label: 'Blogs', icon: BookOpen, value: 'blogs' },
         { label: 'Add Expert', icon: UserPlus, value: 'agronomist' },
-        { label: 'API Keys', icon: Key, value: 'api-keys' },
         { label: 'Settings', icon: Settings, value: 'config' }
     ];
 
@@ -439,11 +437,6 @@ const AdminDashboard: React.FC = () => {
                     key={cashoutRefresh}
                     handleCashoutAction={handleCashoutAction} 
                 />
-            )}
-            
-            {/* API Keys */}
-            {activeTab === 'api-keys' && (
-                <AdminApiKeys />
             )}
 
             {/* Edit Crop Modal */}

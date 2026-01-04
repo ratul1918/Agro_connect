@@ -46,3 +46,5 @@ export const getMarketPrices = (district?: string) => api.get('/market-prices', 
 export const chatWithAI = (payload: { query: string, lang?: string }) => api.post('/ai/chat', payload, {
     headers: { 'Content-Type': 'application/json' }
 });
+export const checkAIHealth = () => api.get('/ai/health');
+export const getAIStatus = () => api.get('/ai/status');

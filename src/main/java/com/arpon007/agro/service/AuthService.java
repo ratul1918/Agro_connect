@@ -74,7 +74,7 @@ public class AuthService {
 
         // Generate Token
         var userDetails = userDetailsService.loadUserByUsername(savedUser.getEmail());
-        String token = jwtUtil.generateToken(userDetails, savedUser.getId(), roleName);
+        String token = jwtUtil.generateToken(userDetails, savedUser.getId(), request.getRole().toUpperCase());
 
         return new AuthResponse(token, savedUser.getId(), savedUser.getEmail(), roleName, savedUser.getFullName(),
                 savedUser.getProfileImageUrl());
@@ -125,11 +125,14 @@ public class AuthService {
             role = user.getRoles().iterator().next();
         }
         System.out.println("User role: " + role);
+        
+        // Remove ROLE_ prefix for JWT token since Spring Security adds it automatically when checking hasRole()
+        String tokenRole = role.startsWith("ROLE_") ? role.substring(5) : role;
 
-        String token = jwtUtil.generateToken(userDetails, user.getId(), role);
+        String token = jwtUtil.generateToken(userDetails, user.getId(), tokenRole);
         System.out.println("=== LOGIN SUCCESS ===");
 
-        return new AuthResponse(token, user.getId(), user.getEmail(), role, user.getFullName(),
+        return new AuthResponse(token, user.getId(), user.getEmail(), "ROLE_" + tokenRole, user.getFullName(),
                 user.getProfileImageUrl());
     }
 

@@ -406,30 +406,17 @@ CREATE TABLE IF NOT EXISTS app_configs (
     config_value TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO app_configs (config_key, config_value) VALUES 
-('ai_provider', 'openrouter'),
-('ai_model', 'meta-llama/llama-3.1-8b-instruct:free'),
-('ai_system_prompt', 'You are Drac Agro AI, a highly skilled Agronomist Expert. You provide precise, scientific, and practical agricultural advice. You are helpful, polite, and deeply knowledgeable about farming, crops, pest control, and market trends. Always answer in the language requested (default Bangla).')
-ON DUPLICATE KEY UPDATE config_key=config_key;
-
 SET FOREIGN_KEY_CHECKS = 1;
 
+
 -- =================================================================================
--- INITIAL DATA SEEDING
+-- ESSENTIAL DATA (Required for application to function)
 -- =================================================================================
 
+-- Roles are required for authorization
 INSERT INTO roles (name) VALUES 
 ('ROLE_FARMER'), ('ROLE_BUYER'), ('ROLE_AGRONOMIST'), ('ROLE_ADMIN'), ('ROLE_GENERAL_CUSTOMER')
 ON DUPLICATE KEY UPDATE name=name;
-
-INSERT INTO crop_type (name_en, name_bn) VALUES
-('Rice', 'ধান'),
-('Wheat', 'গম'),
-('Potato', 'আলু'),
-('Tomato', 'টমেটো'),
-('Onion', 'পেঁয়াজ'),
-('Jute', 'পাট')
-ON DUPLICATE KEY UPDATE name_en=name_en;
 
 
 -- =================================================================================

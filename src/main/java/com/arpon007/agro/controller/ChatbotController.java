@@ -52,4 +52,40 @@ public class ChatbotController {
         String response = aiService.getResponse(fullQuery, isBangla);
         return ResponseEntity.ok(Map.of("response", response));
     }
+
+    /**
+     * Health check endpoint to test if AI service is responding
+     */
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> healthCheck() {
+        try {
+            // Simple test to see if the service can respond
+            String testResponse = aiService.getResponse("Say 'OK' if you can hear me", false);
+            boolean isWorking = testResponse != null && !testResponse.isEmpty()
+                    && !testResponse.contains("not configured")
+                    && !testResponse.contains("সমস্যা");
+
+            return ResponseEntity.ok(Map.of(
+                    "status", isWorking ? "healthy" : "degraded",
+                    "aiServiceAvailable", isWorking,
+                    "message", isWorking ? "AI service is operational" : "AI service is not fully configured"));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of(
+                    "status", "unhealthy",
+                    "aiServiceAvailable", false,
+                    "message", "AI service error: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Quick test endpoint (no actual API call, just checks configuration)
+     */
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> getStatus() {
+        return ResponseEntity.ok(Map.of(
+                "service", "Agro AI Chat",
+                "model", "Gemini 1.5 Flash",
+                "endpoint", "/api/ai/chat",
+                "supportedLanguages", new String[] { "en", "bn" }));
+    }
 }

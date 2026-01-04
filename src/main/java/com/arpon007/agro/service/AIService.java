@@ -1,91 +1,146 @@
 package com.arpon007.agro.service;
 
-import com.arpon007.agro.repository.AppConfigRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.io.entity.StringEntity;
+import com.google.genai.Client;
+import com.google.genai.types.GenerateContentResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
+/**
+ * AI Service using the official Google GenAI SDK.
+ * Uses Gemini 2.5 Flash model for agricultural queries.
+ * API key is loaded from environment variable GEMINI_API_KEY.
+ */
 @Service
 public class AIService {
 
     @Value("${ai.gemini.api.key:}")
-    private String geminiKey;
+    private String geminiApiKey;
 
-    @Value("${ai.system.prompt:You are Drac Agro AI, an agricultural expert.}")
+    @Value("${ai.system.prompt:You are Drac Agro AI, an agricultural expert assistant for Bangladesh. You help farmers with crop management, pest control, weather advice, and market information. Be helpful, accurate, and culturally aware.}")
     private String systemPrompt;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String GEMINI_MODEL = "gemini-2.5-flash";
 
-    public AIService() {
-    }
-
+    /**
+     * Get AI response for a user query
+     * 
+     * @param userQuery The user's question
+     * @param isBangla  Whether to respond in Bangla
+     * @return AI response text
+     */
     public String getResponse(String userQuery, boolean isBangla) {
+        // Check if API key is configured
+        if (geminiApiKey == null || geminiApiKey.isEmpty()) {
+            return isBangla
+                    ? "দুঃখিত, AI সেবা কনফিগার করা হয়নি। অনুগ্রহ করে .env ফাইলে GEMINI_API_KEY সেট করুন।"
+                    : "Sorry, AI service is not configured. Please set GEMINI_API_KEY in the .env file.";
+        }
+
         try {
-            // Check if Gemini API key is configured
-            if (geminiKey == null || geminiKey.isEmpty()) {
+            // Build the prompt with language instruction
+            String langInstruction = isBangla
+                    ? " Always respond in Bengali/Bangla language (বাংলা)."
+                    : " Respond in English.";
+
+            String fullPrompt = systemPrompt + langInstruction + "\n\nUser Question: " + userQuery;
+
+            // Create client with API key
+            Client client = Client.builder().apiKey(geminiApiKey).build();
+
+            // Generate content using Gemini 2.5 Flash
+            GenerateContentResponse response = client.models.generateContent(
+                    GEMINI_MODEL,
+                    fullPrompt,
+                    null);
+
+            String responseText = response.text();
+
+            if (responseText == null || responseText.isEmpty()) {
                 return isBangla
-                        ? "দুঃখিত, AI সেবা কনফিগার করা হয়নি। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।"
-                        : "Sorry, AI service is not configured. Please contact the administrator.";
+                        ? "দুঃখিত, AI উত্তর দিতে পারেনি। পরে আবার চেষ্টা করুন।"
+                        : "Sorry, AI could not generate a response. Please try again.";
             }
-            
-            return callGoogleGemini(userQuery, isBangla, geminiKey);
+
+            return responseText;
+
         } catch (Exception e) {
             e.printStackTrace();
-            return isBangla ? "দুঃখিত, আমি এখন উত্তর দিতে পারছি না। পরে আবার চেষ্টা করুন।"
-                    : "Sorry, I cannot answer right now. Please try again later.";
-        }
-    }
+            String errorMsg = e.getMessage();
 
-    
-
-    private String callGoogleGemini(String query, boolean isBangla, String geminiKey) throws IOException {
-        String fullSystemPrompt = systemPrompt;
-        if (isBangla)
-            fullSystemPrompt += " Answer in Bangla.";
-
-        String fullPrompt = fullSystemPrompt + "\n\nUser Question: " + query;
-
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost(
-                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key="
-                            + geminiKey);
-            httpPost.setHeader("Content-Type", "application/json");
-
-            ObjectNode root = objectMapper.createObjectNode();
-            ArrayNode contents = root.putArray("contents");
-            ObjectNode content = contents.addObject();
-            ArrayNode parts = content.putArray("parts");
-            parts.addObject().put("text", fullPrompt);
-
-            httpPost.setEntity(new StringEntity(root.toString(), StandardCharsets.UTF_8));
-
-            try (CloseableHttpResponse response = client.execute(httpPost)) {
-                String responseBody = new String(response.getEntity().getContent().readAllBytes(),
-                        StandardCharsets.UTF_8);
-                JsonNode responseNode = objectMapper.readTree(responseBody);
-
-                if (responseNode.has("candidates") && responseNode.get("candidates").size() > 0) {
-                    JsonNode candidate = responseNode.get("candidates").get(0);
-                    if (candidate.has("content") && candidate.get("content").has("parts")) {
-                        return candidate.get("content").get("parts").get(0).get("text").asText();
-                    }
-                }
-                System.err.println("Google AI Error: " + responseBody);
-                throw new IOException("Google AI returned invalid response");
+            if (errorMsg != null && errorMsg.contains("API_KEY")) {
+                return isBangla
+                        ? "দুঃখিত, API Key সমস্যা। অনুগ্রহ করে সঠিক GEMINI_API_KEY সেট করুন।"
+                        : "Sorry, API Key issue. Please set a valid GEMINI_API_KEY.";
             }
+
+            return isBangla
+                    ? "দুঃখিত, AI সার্ভিসে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।"
+                    : "Sorry, there was an issue with the AI service. Please try again later.";
         }
     }
 
-    
+    /**
+     * Test if the Gemini API is configured and working
+     * 
+     * @return true if working, false otherwise
+     */
+    public boolean isConfigured() {
+        return geminiApiKey != null && !geminiApiKey.isEmpty();
+    }
+
+    /**
+     * Test the API connection
+     * 
+     * @return TestResult with success status and message
+     */
+    public TestResult testConnection() {
+        if (!isConfigured()) {
+            return new TestResult(false, "GEMINI_API_KEY is not set in environment variables", null);
+        }
+
+        try {
+            Client client = Client.builder().apiKey(geminiApiKey).build();
+
+            GenerateContentResponse response = client.models.generateContent(
+                    GEMINI_MODEL,
+                    "Say OK",
+                    null);
+
+            String responseText = response.text();
+            if (responseText != null && !responseText.isEmpty()) {
+                return new TestResult(true, "Gemini API is working!", responseText);
+            }
+            return new TestResult(false, "API returned empty response", null);
+
+        } catch (Exception e) {
+            return new TestResult(false, "API test failed: " + e.getMessage(), null);
+        }
+    }
+
+    /**
+     * Result class for API testing
+     */
+    public static class TestResult {
+        private final boolean success;
+        private final String message;
+        private final String response;
+
+        public TestResult(boolean success, String message, String response) {
+            this.success = success;
+            this.message = message;
+            this.response = response;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public String getResponse() {
+            return response;
+        }
+    }
 }

@@ -25,7 +25,6 @@ import OrdersPage from './pages/OrdersPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import AgronomistDirectoryPage from './pages/AgronomistDirectoryPage';
-import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 
 // Dashboard Pages
 import AdminDashboard from './dashboards/AdminDashboard';
@@ -98,7 +97,6 @@ function App() {
             {/* Auth Routes (no navbar/footer) */}
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/login" element={<Navigate to="/auth" />} />
-            <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
             {/* Protected Dashboard Routes */}
             <Route path="/admin/*" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />

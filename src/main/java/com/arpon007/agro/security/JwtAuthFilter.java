@@ -27,8 +27,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/api/public/",
             "/api/ai/",
             "/ws/",
-            "/oauth2/",
-            "/login/oauth2/",
             "/error",
             "/favicon.ico",
             "/uploads/");
@@ -65,6 +63,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
                 if (jwtUtil.validateToken(jwt, userDetails)) {
+                    // Use authorities from userDetails (loaded from database via
+                    // CustomUserDetailsService)
+                    // This ensures all roles assigned to the user are properly recognized
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,

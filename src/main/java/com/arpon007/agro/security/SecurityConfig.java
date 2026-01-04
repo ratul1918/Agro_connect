@@ -30,18 +30,13 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomUserDetailsService userDetailsService;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2SuccessHandler oauth2SuccessHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter, CustomUserDetailsService userDetailsService,
-            CustomOAuth2UserService customOAuth2UserService, OAuth2SuccessHandler oauth2SuccessHandler,
             JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtAccessDeniedHandler jwtAccessDeniedHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
-        this.customOAuth2UserService = customOAuth2UserService;
-        this.oauth2SuccessHandler = oauth2SuccessHandler;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
     }
@@ -89,10 +84,6 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 // Disable HTTP Basic Auth
                 .httpBasic(basic -> basic.disable())
-                // OAuth2 Login
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .successHandler(oauth2SuccessHandler))
                 // Authentication provider
                 .authenticationProvider(authenticationProvider())
                 // Add JWT filter
