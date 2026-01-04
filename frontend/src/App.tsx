@@ -25,6 +25,8 @@ import OrdersPage from './pages/OrdersPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import AgronomistDirectoryPage from './pages/AgronomistDirectoryPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Dashboard Pages
 import AdminDashboard from './dashboards/AdminDashboard';
@@ -97,6 +99,8 @@ function App() {
             {/* Auth Routes (no navbar/footer) */}
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/login" element={<Navigate to="/auth" />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* Protected Dashboard Routes */}
             <Route path="/admin/*" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
