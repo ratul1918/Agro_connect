@@ -243,7 +243,7 @@ const ProductDetailsPage: React.FC = () => {
                                                 step={isB2B ? '1' : (unit === 'gram' ? '1' : '0.1')}
                                                 value={quantity}
                                                 onChange={(e) => setQuantity(Math.max(0.001, parseFloat(e.target.value) || 0))}
-                                                className={`w-full px-4 py-3 text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-${themeColor}-500 focus:ring-2 focus:ring-${themeColor}-200 outline-none transition-all`}
+                                                className={`w-full px-4 py-3 text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-${themeColor}-500 focus:ring-2 focus:ring-${themeColor}-200 outline-none transition-all bg-white text-gray-900`}
                                                 placeholder={`Enter quantity in ${isB2B ? product.unit : unit}`}
                                             />
                                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
