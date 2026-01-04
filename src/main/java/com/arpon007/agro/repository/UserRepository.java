@@ -42,17 +42,17 @@ public class UserRepository {
     public User save(User user) {
         if (user.getId() != null && findById(user.getId()).isPresent()) {
             // Update existing user
-            String sql = "UPDATE users SET full_name = ?, email = ?, password_hash = ?, phone = ?, country = ?, division = ?, district = ?, upazila = ?, thana = ?, post_code = ?, is_verified = ?, email_verified = ? WHERE id = ?";
+            String sql = "UPDATE users SET full_name = ?, email = ?, password_hash = ?, phone = ?, country = ?, division = ?, district = ?, upazila = ?, thana = ?, post_code = ?, is_verified = ?, email_verified = ?, role_id = ? WHERE id = ?";
             jdbcTemplate.update(sql, user.getFullName(), user.getEmail(), user.getPasswordHash(), user.getPhone(),
                     user.getCountry(), user.getDivision(), user.getDistrict(), user.getUpazila(), user.getThana(),
-                    user.getPostCode(), user.isVerified(), user.isEmailVerified(), user.getId());
+                    user.getPostCode(), user.isVerified(), user.isEmailVerified(), user.getRoleId(), user.getId());
             return findById(user.getId()).orElseThrow();
         } else {
             // Insert new user
-            String sql = "INSERT INTO users (full_name, email, password_hash, phone, country, division, district, upazila, thana, post_code, is_verified, email_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO users (full_name, email, password_hash, phone, country, division, district, upazila, thana, post_code, is_verified, email_verified, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             jdbcTemplate.update(sql, user.getFullName(), user.getEmail(), user.getPasswordHash(), user.getPhone(),
                     user.getCountry(), user.getDivision(), user.getDistrict(), user.getUpazila(), user.getThana(),
-                    user.getPostCode(), user.isVerified(), user.isEmailVerified());
+                    user.getPostCode(), user.isVerified(), user.isEmailVerified(), user.getRoleId());
 
             // Fetch ID back
             User savedUser = findByEmail(user.getEmail()).orElseThrow();
@@ -74,6 +74,10 @@ public class UserRepository {
                 if (count == null || count == 0) {
                     String sql = "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)";
                     jdbcTemplate.update(sql, userId, roleId);
+
+                    // Also update main user role_id if it's null (first role assignment)
+                    String updateMainRoleSql = "UPDATE users SET role_id = ? WHERE id = ? AND role_id IS NULL";
+                    jdbcTemplate.update(updateMainRoleSql, roleId, userId);
                 }
             } else {
                 System.err.println("Role not found in database: " + roleName);
@@ -172,6 +176,19 @@ public class UserRepository {
             user.setEmailVerified(rs.getBoolean("email_verified"));
             user.setCreatedAt(rs.getTimestamp("created_at"));
             user.setUpdatedAt(rs.getTimestamp("updated_at"));
+
+            // Map role_id - check if column exists first (for backward compatibility if run
+            // before migration)
+            try {
+                long roleId = rs.getLong("role_id");
+                if (!rs.wasNull()) {
+                    user.setRoleId(roleId);
+                }
+            } catch (SQLException e) {
+                // Column might not exist yet during migration phase
+                // ignore
+            }
+
             return user;
         }
     }

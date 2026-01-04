@@ -7,6 +7,7 @@ import { useConfirm } from '../components/ConfirmDialog';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import MobileCard from '../components/ui/MobileCard';
 import { BookOpen, MessageSquare, Users, Edit2, Trash2, X } from 'lucide-react';
 
 interface Blog {
@@ -173,7 +174,7 @@ const AgronomistDashboard: React.FC = () => {
 
                 {/* Blog Creation Form */}
                 {showForm && (
-                    <div className="bg-white p-6 rounded shadow border-l-4 border-green-500">
+                    <MobileCard padding="lg">
                         <h2 className="text-xl font-bold mb-4">📝 Create New Blog</h2>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
@@ -197,14 +198,14 @@ const AgronomistDashboard: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium">Cover Image</label>
                                     <div className="flex items-center gap-2 mt-1">
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            className="file-input file-input-bordered file-input-sm w-full max-w-xs"
+                                            className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                             onChange={e => {
                                                 if (e.target.files && e.target.files[0]) {
                                                     setCoverImage(e.target.files[0]);
@@ -216,7 +217,7 @@ const AgronomistDashboard: React.FC = () => {
                                 <div>
                                     <label className="block text-sm font-medium">Type</label>
                                     <select
-                                        className="w-full border rounded p-2"
+                                        className="w-full border rounded p-2 text-sm"
                                         value={formData.blogType}
                                         onChange={e => setFormData({ ...formData, blogType: e.target.value as 'NORMAL' | 'TIP' })}
                                     >
@@ -239,46 +240,53 @@ const AgronomistDashboard: React.FC = () => {
                                 {loading ? 'Creating...' : 'Create Blog'}
                             </Button>
                         </form>
-                    </div>
+                    </MobileCard>
                 )}
 
                     {/* My Blogs List */}
-                    <div className="bg-white p-6 rounded shadow">
-                        <h3 className="text-xl font-bold mb-4">📚 My Blogs ({blogs.length})</h3>
+                    <div className="space-y-4">
+                        <h3 className="text-xl font-bold">📚 My Blogs ({blogs.length})</h3>
                         {blogs.length === 0 ? (
-                            <p className="text-gray-500">No blogs yet. Create your first one!</p>
+                            <div className="text-center py-8 text-gray-500">
+                                <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                                <p>No blogs yet. Create your first one!</p>
+                            </div>
                         ) : (
                             <div className="space-y-4">
                                 {blogs.map(blog => (
-                                    <div key={blog.id} className="border rounded p-4 flex justify-between items-start gap-4">
-                                        {/* Blog Cover Image */}
-                                        {blog.coverImageUrl && (
-                                            <img 
-                                                src={`http://localhost:8080${blog.coverImageUrl}`} 
-                                                alt={blog.title}
-                                                className="w-24 h-24 object-cover rounded flex-shrink-0"
-                                            />
-                                        )}
-                                        <div className="flex-1">
-                                            <h3 className="font-bold text-lg">{blog.title}</h3>
-                                            <p className="text-sm text-gray-500">
-                                                {blog.blogType === 'TIP' ? '🌿 Agricultural Tip' : '📄 Blog Post'} |
-                                                👁 {blog.viewCount} views |
-                                                {blog.isPublished ? '✅ Published' : '📝 Draft'}
-                                            </p>
-                                            <p className="text-gray-600 mt-2 line-clamp-2">
-                                                {blog.content?.substring(0, 150)}...
-                                            </p>
+                                    <MobileCard key={blog.id} padding="md">
+                                        <div className="space-y-4">
+                                            {/* Blog Cover Image */}
+                                            {blog.coverImageUrl && (
+                                                <img 
+                                                    src={`http://localhost:8080${blog.coverImageUrl}`} 
+                                                    alt={blog.title}
+                                                    className="w-full h-48 object-cover rounded-lg"
+                                                />
+                                            )}
+                                            
+                                            <div className="space-y-2">
+                                                <h3 className="font-bold text-lg">{blog.title}</h3>
+                                                <p className="text-sm text-gray-500">
+                                                    {blog.blogType === 'TIP' ? '🌿 Agricultural Tip' : '📄 Blog Post'} |
+                                                    👁 {blog.viewCount} views |
+                                                    {blog.isPublished ? '✅ Published' : '📝 Draft'}
+                                                </p>
+                                                <p className="text-gray-600">
+                                                    {blog.content?.substring(0, 150)}...
+                                                </p>
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                <Button variant="outline" size="sm" className="flex-1 touch-manipulation" onClick={() => handleEdit(blog)}>
+                                                    <Edit2 className="w-4 h-4 mr-1" /> Edit
+                                                </Button>
+                                                <Button variant="destructive" size="sm" className="flex-1 touch-manipulation" onClick={() => handleDelete(blog.id)}>
+                                                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <div className="flex gap-2 flex-shrink-0">
-                                            <Button variant="outline" size="sm" onClick={() => handleEdit(blog)}>
-                                                <Edit2 className="w-4 h-4 mr-1" /> Edit
-                                            </Button>
-                                            <Button variant="destructive" size="sm" onClick={() => handleDelete(blog.id)}>
-                                                <Trash2 className="w-4 h-4 mr-1" /> Delete
-                                            </Button>
-                                        </div>
-                                    </div>
+                                    </MobileCard>
                                 ))}
                             </div>
                         )}

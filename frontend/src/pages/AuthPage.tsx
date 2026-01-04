@@ -453,7 +453,7 @@ const AuthPage: React.FC = () => {
                                                         id="signup-division"
                                                         value={signupData.division}
                                                         onChange={(e) => setSignupData({ ...signupData, division: e.target.value })}
-                                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                                         disabled={locationLoading}
                                                     >
                                                         <option value="">Select Division</option>

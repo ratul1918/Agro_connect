@@ -387,7 +387,6 @@ const AdminDashboard: React.FC = () => {
                     handleOrderStatus={handleOrderStatus}
                     handleDeliveryStatus={handleDeliveryStatus}
                     handleDeleteOrder={handleDeleteOrder}
-                    getStatusColor={getStatusColor}
                 />
             )}
             
@@ -396,13 +395,12 @@ const AdminDashboard: React.FC = () => {
                 <AdminExports
                     exportApplications={exportApplications}
                     handleExportAction={handleExportAction}
-                    getStatusColor={getStatusColor}
                 />
             )}
             
             {/* Bids */}
             {activeTab === 'bids' && (
-                <AdminBids bids={bids} getStatusColor={getStatusColor} />
+                <AdminBids bids={bids} />
             )}
             
             {/* Blogs */}
@@ -434,7 +432,7 @@ const AdminDashboard: React.FC = () => {
             {/* Cashout */}
             {activeTab === 'cashout' && (
                 <AdminCashout 
-                    key={cashoutRefresh}
+                    key={cashoutRefresh.toString()}
                     handleCashoutAction={handleCashoutAction} 
                 />
             )}
@@ -442,7 +440,7 @@ const AdminDashboard: React.FC = () => {
             {/* Edit Crop Modal */}
             {editingCrop && (
                 <div className="modal modal-open">
-                    <div className="modal-box max-w-2xl">
+                    <div className="modal-box max-w-2xl bg-white dark:bg-gray-800 dark:text-white">
                         <h3 className="font-bold text-lg mb-4">Edit Product</h3>
                         <form onSubmit={handleSaveCrop} className="space-y-4">
                             <div className="form-control">
@@ -451,7 +449,7 @@ const AdminDashboard: React.FC = () => {
                                 </label>
                                 <input
                                     type="text"
-                                    className="input input-bordered"
+                                    className="input input-bordered dark:bg-gray-700 dark:text-white"
                                     value={editingCrop.title || ''}
                                     onChange={e => setEditingCrop({ ...editingCrop, title: e.target.value })}
                                     required
@@ -463,7 +461,7 @@ const AdminDashboard: React.FC = () => {
                                     <span className="label-text">Description</span>
                                 </label>
                                 <textarea
-                                    className="textarea textarea-bordered"
+                                    className="textarea textarea-bordered dark:bg-gray-700 dark:text-white"
                                     rows={3}
                                     value={editingCrop.description || ''}
                                     onChange={e => setEditingCrop({ ...editingCrop, description: e.target.value })}
@@ -477,7 +475,7 @@ const AdminDashboard: React.FC = () => {
                                     </label>
                                     <input
                                         type="number"
-                                        className="input input-bordered"
+                                        className="input input-bordered dark:bg-gray-700 dark:text-white"
                                         value={editingCrop.quantity || 0}
                                         onChange={e => setEditingCrop({ ...editingCrop, quantity: parseFloat(e.target.value) })}
                                         required
@@ -489,7 +487,7 @@ const AdminDashboard: React.FC = () => {
                                         <span className="label-text">Unit</span>
                                     </label>
                                     <select
-                                        className="select select-bordered"
+                                        className="select select-bordered dark:bg-gray-700 dark:text-white"
                                         value={editingCrop.unit || 'kg'}
                                         onChange={e => setEditingCrop({ ...editingCrop, unit: e.target.value })}
                                     >
@@ -507,7 +505,7 @@ const AdminDashboard: React.FC = () => {
                                     </label>
                                     <input
                                         type="number"
-                                        className="input input-bordered"
+                                        className="input input-bordered dark:bg-gray-700 dark:text-white"
                                         value={editingCrop.minPrice || 0}
                                         onChange={e => setEditingCrop({ ...editingCrop, minPrice: parseFloat(e.target.value) })}
                                         required
@@ -520,7 +518,7 @@ const AdminDashboard: React.FC = () => {
                                     </label>
                                     <input
                                         type="text"
-                                        className="input input-bordered"
+                                        className="input input-bordered dark:bg-gray-700 dark:text-white"
                                         value={editingCrop.location || ''}
                                         onChange={e => setEditingCrop({ ...editingCrop, location: e.target.value })}
                                         required
@@ -553,7 +551,7 @@ const AdminDashboard: React.FC = () => {
                             <div className="modal-action">
                                 <button
                                     type="button"
-                                    className="btn"
+                                    className="btn dark:bg-gray-700 dark:text-white"
                                     onClick={() => setEditingCrop(null)}
                                     disabled={loading}
                                 >

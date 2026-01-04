@@ -75,50 +75,52 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
 
     return (
         <div className="animate-in slide-in-from-bottom-4 duration-500">
-            <div className="card bg-base-100 shadow-xl max-w-3xl border-l-4 border-blue-500">
+            <div className="card bg-white dark:bg-gray-800 shadow-xl max-w-3xl border border-gray-100 dark:border-gray-700 border-l-4 border-l-blue-500">
                 <div className="card-body">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="p-3 bg-blue-100 rounded-lg">
-                            <Warehouse className="w-8 h-8 text-blue-600" />
+                        <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                            <Warehouse className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                            <h2 className="card-title text-2xl text-blue-700">Add B2B Product</h2>
-                            <p className="text-sm text-base-content/60">Add wholesale products for B2B marketplace (min 80kg)</p>
+                            <h2 className="card-title text-2xl text-blue-700 dark:text-blue-400">Add B2B Product</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Add wholesale products for B2B marketplace (min 80kg)</p>
                         </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text font-medium">Product Name</span>
+                                <span className="label-text font-medium dark:text-gray-300">Product Name</span>
                             </label>
                             <Input
                                 placeholder="e.g., Premium Basmati Rice (Bulk)"
                                 value={formData.title}
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
                                 required
+                                className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
                             />
                         </div>
 
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text font-medium">Description</span>
+                                <span className="label-text font-medium dark:text-gray-300">Description</span>
                             </label>
                             <Textarea
                                 placeholder="Product details, quality, bulk specifications..."
                                 value={formData.description}
                                 onChange={e => setFormData({ ...formData, description: e.target.value })}
                                 rows={3}
+                                className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Category</span>
+                                    <span className="label-text font-medium dark:text-gray-300">Category</span>
                                 </label>
                                 <select
-                                    className="select select-bordered w-full"
+                                    className="select select-bordered w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                     value={formData.cropTypeId}
                                     onChange={e => setFormData({ ...formData, cropTypeId: e.target.value })}
                                 >
@@ -133,7 +135,7 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Available Quantity</span>
+                                    <span className="label-text font-medium dark:text-gray-300">Available Quantity</span>
                                 </label>
                                 <Input
                                     type="number"
@@ -142,13 +144,14 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
                                     onChange={e => setFormData({ ...formData, quantity: e.target.value })}
                                     min="1"
                                     required
+                                    className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                 />
                             </div>
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Min Order Qty</span>
-                                    <span className="label-text-alt text-blue-600">Default in cart</span>
+                                    <span className="label-text font-medium dark:text-gray-300">Min Order Qty</span>
+                                    <span className="label-text-alt text-blue-600 dark:text-blue-400">Default in cart</span>
                                 </label>
                                 <Input
                                     type="number"
@@ -157,15 +160,16 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
                                     onChange={e => setFormData({ ...formData, minWholesaleQty: e.target.value })}
                                     min="1"
                                     required
+                                    className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                 />
                             </div>
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Unit</span>
+                                    <span className="label-text font-medium dark:text-gray-300">Unit</span>
                                 </label>
                                 <select
-                                    className="select select-bordered w-full"
+                                    className="select select-bordered w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                     value={formData.unit}
                                     onChange={e => setFormData({ ...formData, unit: e.target.value })}
                                 >
@@ -179,7 +183,7 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Wholesale Price (৳ per unit)</span>
+                                    <span className="label-text font-medium dark:text-gray-300">Wholesale Price (৳ per unit)</span>
                                 </label>
                                 <Input
                                     type="number"
@@ -187,41 +191,43 @@ const AdminAddB2B: React.FC<AdminAddB2BProps> = ({ onSuccess }) => {
                                     value={formData.minPrice}
                                     onChange={e => setFormData({ ...formData, minPrice: e.target.value })}
                                     required
+                                    className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                 />
                             </div>
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Location</span>
+                                    <span className="label-text font-medium dark:text-gray-300">Location</span>
                                 </label>
                                 <Input
                                     placeholder="District/Region"
                                     value={formData.location}
                                     onChange={e => setFormData({ ...formData, location: e.target.value })}
                                     required
+                                    className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                 />
                             </div>
                         </div>
 
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text font-medium">Product Images</span>
+                                <span className="label-text font-medium dark:text-gray-300">Product Images</span>
                             </label>
                             <Input
                                 type="file"
                                 multiple
                                 accept="image/*"
                                 onChange={e => setImages(e.target.files)}
-                                className="file-input file-input-bordered w-full"
+                                className="file-input file-input-bordered w-full dark:bg-gray-700 dark:text-white dark:border-gray-600 cursor-pointer"
                             />
                             <label className="label">
-                                <span className="label-text-alt">Max 5 images, JPG/PNG</span>
+                                <span className="label-text-alt dark:text-gray-400">Max 5 images, JPG/PNG</span>
                             </label>
                         </div>
 
-                        <div className="alert alert-info bg-blue-50 border-blue-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6 text-blue-600"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span className="text-blue-800">B2B products are for wholesale/bulk orders. Set your custom minimum order quantity.</span>
+                        <div className="alert alert-info bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6 text-blue-600 dark:text-blue-400"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span className="text-blue-800 dark:text-blue-200">B2B products are for wholesale/bulk orders. Set your custom minimum order quantity.</span>
                         </div>
 
                         <Button

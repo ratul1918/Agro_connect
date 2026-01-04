@@ -149,6 +149,13 @@
 			<artifactId>httpclient5</artifactId>
 		</dependency>
 
+		<!-- Cloudinary SDK for Cloud Image Storage -->
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http45</artifactId>
+			<version>1.39.0</version>
+		</dependency>
+
 		<!-- Dotenv for automatic .env file support -->
 		<dependency>
 			<groupId>me.paulschwarz</groupId>

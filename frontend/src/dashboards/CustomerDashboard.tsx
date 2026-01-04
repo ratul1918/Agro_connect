@@ -4,9 +4,9 @@ import { Button } from '../components/ui/button';
 import api from '../api/axios';
 import { Package, ShoppingCart, BarChart3, Truck, CheckCircle, Clock, ShoppingBag, User } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import MobileCard from '../components/ui/MobileCard';
+import MobileStatCard from '../components/ui/MobileStatCard';
 import { Input } from '../components/ui/input';
 
 interface Order {
@@ -227,61 +227,57 @@ const CustomerDashboard: React.FC = () => {
             {/* Overview */}
             {activeTab === 'overview' && (
                 <div className="space-y-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <StatCard title="মোট অর্ডার" value={orders.length} icon="📦" color="blue" />
-                        <StatCard title="ডেলিভারি সম্পন্ন" value={orders.filter(o => (o.deliveryStatus || o.status)?.toUpperCase() === 'DELIVERED').length} icon="✅" color="green" />
-                        <StatCard title="প্রক্রিয়াধীন" value={orders.filter(o => ['PENDING', 'PROCESSING', 'SHIPPED'].includes((o.deliveryStatus || o.status)?.toUpperCase())).length} icon="⏳" color="yellow" />
-                        <StatCard title="শপিং করুন" value={0} icon="🛒" color="purple" />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                        <MobileStatCard title="মোট অর্ডার" value={orders.length} icon={<span className="text-2xl">📦</span>} color="blue" />
+                        <MobileStatCard title="ডেলিভারি সম্পন্ন" value={orders.filter(o => (o.deliveryStatus || o.status)?.toUpperCase() === 'DELIVERED').length} icon={<span className="text-2xl">✅</span>} color="green" />
+                        <MobileStatCard title="প্রক্রিয়াধীন" value={orders.filter(o => ['PENDING', 'PROCESSING', 'SHIPPED'].includes((o.deliveryStatus || o.status)?.toUpperCase())).length} icon={<span className="text-2xl">⏳</span>} color="yellow" />
+                        <MobileStatCard title="শপিং করুন" value={0} icon={<span className="text-2xl">🛒</span>} color="purple" />
                     </div>
 
                     {/* Quick Actions */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>🛍️ দ্রুত অ্যাকশন</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <MobileCard>
+                        <div className="p-4 md:p-6">
+                            <h3 className="text-lg font-semibold mb-4">🛍️ দ্রুত অ্যাকশন</h3>
+                            <div className="grid grid-cols-2 gap-3 md:gap-4">
                                 <Button 
-                                    className="h-24 flex flex-col gap-2 bg-green-600 hover:bg-green-700"
+                                    className="h-20 md:h-24 flex flex-col gap-1 md:gap-2 bg-green-600 hover:bg-green-700 touch-manipulation"
                                     onClick={() => navigate('/marketplace/retail')}
                                 >
-                                    <ShoppingBag className="h-8 w-8" />
-                                    <span>শপ ব্রাউজ করুন</span>
+                                    <ShoppingBag className="h-6 w-6 md:h-8 md:w-8" />
+                                    <span className="text-xs md:text-sm">শপ ব্রাউজ করুন</span>
                                 </Button>
                                 <Button 
                                     variant="outline"
-                                    className="h-24 flex flex-col gap-2"
+                                    className="h-20 md:h-24 flex flex-col gap-1 md:gap-2 touch-manipulation"
                                     onClick={() => navigate('/cart')}
                                 >
-                                    <ShoppingCart className="h-8 w-8" />
-                                    <span>কার্ট দেখুন</span>
+                                    <ShoppingCart className="h-6 w-6 md:h-8 md:w-8" />
+                                    <span className="text-xs md:text-sm">কার্ট দেখুন</span>
                                 </Button>
                                 <Button 
                                     variant="outline"
-                                    className="h-24 flex flex-col gap-2"
+                                    className="h-20 md:h-24 flex flex-col gap-1 md:gap-2 touch-manipulation"
                                     onClick={() => setActiveTab('orders')}
                                 >
-                                    <Package className="h-8 w-8" />
-                                    <span>অর্ডার ট্র্যাক করুন</span>
+                                    <Package className="h-6 w-6 md:h-8 md:w-8" />
+                                    <span className="text-xs md:text-sm">অর্ডার ট্র্যাক করুন</span>
                                 </Button>
                                 <Button 
                                     variant="outline"
-                                    className="h-24 flex flex-col gap-2"
+                                    className="h-20 md:h-24 flex flex-col gap-1 md:gap-2 touch-manipulation"
                                     onClick={() => setActiveTab('profile')}
                                 >
-                                    <User className="h-8 w-8" />
-                                    <span>প্রোফাইল</span>
+                                    <User className="h-6 w-6 md:h-8 md:w-8" />
+                                    <span className="text-xs md:text-sm">প্রোফাইল</span>
                                 </Button>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </MobileCard>
 
                     {/* Recent Orders */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>📦 সাম্প্রতিক অর্ডার</CardTitle>
-                        </CardHeader>
-                        <CardContent>
+                    <MobileCard>
+                        <div className="p-4">
+                            <h3 className="text-lg font-semibold mb-4">📦 সাম্প্রতিক অর্ডার</h3>
                             {orders.length > 0 ? (
                                 <div className="space-y-3">
                                     {orders.slice(0, 5).map(order => (
@@ -310,71 +306,68 @@ const CustomerDashboard: React.FC = () => {
                                     </Button>
                                 </div>
                             )}
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </MobileCard>
                 </div>
             )}
 
             {/* My Orders */}
             {activeTab === 'orders' && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>📦 আমার অর্ডার ({orders.length})</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {orders.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>অর্ডার ID</TableHead>
-                                            <TableHead>পণ্য</TableHead>
-                                            <TableHead>মোট</TableHead>
-                                            <TableHead>স্ট্যাটাস</TableHead>
-                                            <TableHead>তারিখ</TableHead>
-                                            <TableHead>অ্যাকশন</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {orders.map(order => {
-                                            const displayStatus = getDisplayStatus(order);
-                                            return (
-                                                <TableRow key={order.id}>
-                                                    <TableCell className="font-mono">#{order.id}</TableCell>
-                                                    <TableCell className="font-medium">{order.cropTitle}</TableCell>
-                                                    <TableCell className="font-bold text-green-600">৳{order.totalAmount}</TableCell>
-                                                    <TableCell>
-                                                        <Badge className={getStatusColor(displayStatus)}>
-                                                            {getStatusLabel(displayStatus)}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-sm text-muted-foreground">
+                <div className="space-y-4">
+                    <h2 className="text-xl font-semibold">📦 আমার অর্ডার ({orders.length})</h2>
+                    {orders.length > 0 ? (
+                        <div className="space-y-3">
+                            {orders.map(order => {
+                                const displayStatus = getDisplayStatus(order);
+                                return (
+                                    <MobileCard key={order.id} padding="md">
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="font-mono text-sm font-semibold">#{order.id}</p>
+                                                    <p className="font-medium">{order.cropTitle}</p>
+                                                </div>
+                                                <Badge className={getStatusColor(displayStatus)}>
+                                                    {getStatusLabel(displayStatus)}
+                                                </Badge>
+                                            </div>
+                                            
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-muted-foreground">মোট:</span>
+                                                    <span className="font-bold text-green-600">৳{order.totalAmount}</span>
+                                                </div>
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-muted-foreground">তারিখ:</span>
+                                                    <span className="text-muted-foreground">
                                                         {new Date(order.createdAt).toLocaleDateString('bn-BD')}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex gap-2">
-                                                            <Button 
-                                                                size="sm" 
-                                                                variant="outline"
-                                                                onClick={() => setTrackingModal({ show: true, order })}
-                                                            >
-                                                                <Truck className="h-4 w-4 mr-1" /> ট্র্যাক
-                                                            </Button>
-                                                            <Button 
-                                                                size="sm" 
-                                                                variant="outline"
-                                                                onClick={() => handleDownloadInvoice(order.id)}
-                                                            >
-                                                                ইনভয়েস
-                                                            </Button>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })}
-                                    </TableBody>
-                                </Table>
-                            </div>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="outline"
+                                                    className="flex-1 touch-manipulation"
+                                                    onClick={() => setTrackingModal({ show: true, order })}
+                                                >
+                                                    <Truck className="h-4 w-4 mr-1" /> ট্র্যাক
+                                                </Button>
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="outline"
+                                                    className="flex-1 touch-manipulation"
+                                                    onClick={() => handleDownloadInvoice(order.id)}
+                                                >
+                                                    ইনভয়েস
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </MobileCard>
+                                );
+                            })}
+                        </div>
                         ) : (
                             <div className="text-center py-8 text-muted-foreground">
                                 <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
@@ -387,24 +380,24 @@ const CustomerDashboard: React.FC = () => {
                                 </Button>
                             </div>
                         )}
-                    </CardContent>
-                </Card>
+                </div>
             )}
 
             {/* Profile */}
             {activeTab === 'profile' && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex justify-between items-center">
-                            <span>👤 আমার প্রোফাইল</span>
+                <MobileCard>
+                    <div className="p-4 md:p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <span>👤 আমার প্রোফাইল</span>
+                            </h3>
                             {!editingProfile && (
                                 <Button variant="outline" onClick={() => setEditingProfile(true)}>
                                     ✏️ সম্পাদনা
                                 </Button>
                             )}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                        </div>
+
                         {profile && (
                             <div className="space-y-4">
                                 {editingProfile ? (
@@ -503,8 +496,8 @@ const CustomerDashboard: React.FC = () => {
                                 )}
                             </div>
                         )}
-                    </CardContent>
-                </Card>
+                    </div>
+                </MobileCard>
             )}
 
             {/* Tracking Modal */}
@@ -557,22 +550,6 @@ const CustomerDashboard: React.FC = () => {
                 </div>
             )}
         </DashboardLayout>
-    );
-};
-
-const StatCard: React.FC<{ title: string; value: number; icon: string; color: string }> = ({ title, value, icon, color }) => {
-    const colors: Record<string, string> = {
-        blue: 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800',
-        green: 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800',
-        purple: 'bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800',
-        yellow: 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
-    };
-    return (
-        <div className={`rounded-lg border p-4 ${colors[color] || colors.blue}`}>
-            <div className="text-2xl mb-1">{icon}</div>
-            <div className="text-2xl font-bold">{value}</div>
-            <div className="text-sm text-muted-foreground">{title}</div>
-        </div>
     );
 };
 

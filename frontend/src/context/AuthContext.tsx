@@ -55,12 +55,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setToken(newToken);
         setUser(userData);
 
-        // Redirect based on role
-        if (userData.role === 'ROLE_ADMIN') navigate('/admin');
-        else if (userData.role === 'ROLE_FARMER') navigate('/farmer');
-        else if (userData.role === 'ROLE_AGRONOMIST') navigate('/agronomist');
-        else if (userData.role === 'ROLE_GENERAL_CUSTOMER' || userData.role === 'ROLE_CUSTOMER') navigate('/customer');
-        else navigate('/buyer');
+        // Enhanced redirect based on role with mobile considerations
+        const getRoleBasedPath = (role: string) => {
+            switch (role) {
+                case 'ROLE_ADMIN': return '/admin';
+                case 'ROLE_FARMER': return '/farmer';
+                case 'ROLE_AGRONOMIST': return '/agronomist';
+                case 'ROLE_GENERAL_CUSTOMER':
+                case 'ROLE_CUSTOMER': return '/customer';
+                case 'ROLE_BUYER': return '/buyer';
+                default: return '/';
+            }
+        };
+
+        const targetPath = getRoleBasedPath(userData.role);
+        
+        // Check if mobile device and adjust redirect if needed
+        const isMobile = window.innerWidth < 768;
+        if (isMobile) {
+            // For mobile, we might want to add a welcome screen or tutorial
+            navigate(targetPath);
+        } else {
+            navigate(targetPath);
+        }
     };
 
     const logout = () => {

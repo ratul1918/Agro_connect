@@ -10,6 +10,8 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import MobileCard from '../components/ui/MobileCard';
+import MobileStatCard from '../components/ui/MobileStatCard';
 import ChangePasswordPage from '../pages/ChangePasswordPage';
 import MessagesPage from '../pages/MessagesPage';
 
@@ -270,11 +272,11 @@ const BuyerDashboard: React.FC = () => {
             {/* Overview */}
             {activeTab === 'overview' && (
                 <div className="space-y-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <StatCard title="Available Crops" value={crops.length} icon="🌾" color="green" />
-                        <StatCard title="My Orders" value={orders.length} icon="📦" color="blue" />
-                        <StatCard title="Active Bids" value={bids.filter(b => b.status === 'PENDING').length} icon="💰" color="yellow" />
-                        <StatCard title="Accepted Bids" value={bids.filter(b => b.status === 'ACCEPTED').length} icon="✅" color="purple" />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                        <MobileStatCard title="Available Crops" value={crops.length} icon={<span className="text-2xl">🌾</span>} color="green" />
+                        <MobileStatCard title="My Orders" value={orders.length} icon={<span className="text-2xl">📦</span>} color="blue" />
+                        <MobileStatCard title="Active Bids" value={bids.filter(b => b.status === 'PENDING').length} icon={<span className="text-2xl">💰</span>} color="yellow" />
+                        <MobileStatCard title="Accepted Bids" value={bids.filter(b => b.status === 'ACCEPTED').length} icon={<span className="text-2xl">✅</span>} color="purple" />
                     </div>
 
                     {/* Accepted Bids Alert - Go to Pay */}
@@ -370,55 +372,57 @@ const BuyerDashboard: React.FC = () => {
 
             {/* My Orders */}
             {activeTab === 'my-orders' && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>📦 My Orders ({orders.length})</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>ID</TableHead>
-                                        <TableHead>Crop</TableHead>
-                                        <TableHead>Farmer</TableHead>
-                                        <TableHead>Total</TableHead>
-                                        <TableHead>Advance Paid</TableHead>
-                                        <TableHead>Due</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Invoice</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {orders.map(o => (
-                                        <TableRow key={o.id}>
-                                            <TableCell>{o.id}</TableCell>
-                                            <TableCell className="font-medium">{o.cropTitle}</TableCell>
-                                            <TableCell>{o.farmerName}</TableCell>
-                                            <TableCell>৳{o.totalAmount}</TableCell>
-                                            <TableCell className="text-green-600">৳{o.advanceAmount}</TableCell>
-                                            <TableCell className="text-red-600">৳{o.dueAmount}</TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className={getStatusColor(o.status)}>{o.status}</Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex gap-2">
-                                                    <Button size="sm" variant="outline" onClick={() => handleDownloadInvoice(o.id)}>
-                                                        Invoice
-                                                    </Button>
-                                                    <Button size="sm" variant="outline" className="text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => setTrackingModal({ show: true, order: o })}>
-                                                        <Truck className="h-4 w-4 mr-1" /> Track
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                            {orders.length === 0 && <p className="text-muted-foreground text-center py-8">No orders yet. Place bids on crops to get started!</p>}
+                <div className="space-y-4">
+                    <h2 className="text-xl font-semibold">📦 My Orders ({orders.length})</h2>
+                    <div className="space-y-3">
+                        {orders.map(o => (
+                            <MobileCard key={o.id} padding="md">
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="font-mono text-sm font-semibold">#{o.id}</p>
+                                            <p className="font-medium">{o.cropTitle}</p>
+                                            <p className="text-sm text-muted-foreground">{o.farmerName}</p>
+                                        </div>
+                                        <Badge variant="outline" className={getStatusColor(o.status)}>
+                                            {o.status}
+                                        </Badge>
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Total:</span>
+                                            <span className="font-medium">৳{o.totalAmount}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Advance Paid:</span>
+                                            <span className="font-medium text-green-600">৳{o.advanceAmount}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Due:</span>
+                                            <span className="font-medium text-red-600">৳{o.dueAmount}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <Button size="sm" variant="outline" className="flex-1 touch-manipulation" onClick={() => handleDownloadInvoice(o.id)}>
+                                            Invoice
+                                        </Button>
+                                        <Button size="sm" variant="outline" className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50 touch-manipulation" onClick={() => setTrackingModal({ show: true, order: o })}>
+                                            <Truck className="h-4 w-4 mr-1" /> Track
+                                        </Button>
+                                    </div>
+                                </div>
+                            </MobileCard>
+                        ))}
+                    </div>
+                    {orders.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                            <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p>No orders yet. Place bids on crops to get started!</p>
                         </div>
-                    </CardContent>
-                </Card>
+                    )}
+                </div>
             )}
 
             {/* My Bids */}

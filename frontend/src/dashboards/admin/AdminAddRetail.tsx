@@ -61,50 +61,52 @@ const AdminAddRetail: React.FC<AdminAddRetailProps> = ({ onSuccess }) => {
 
     return (
         <div className="animate-in slide-in-from-bottom-4 duration-500">
-            <div className="card bg-base-100 shadow-xl max-w-3xl border-l-4 border-orange-500">
+            <div className="card bg-white dark:bg-gray-800 shadow-xl max-w-3xl border border-gray-100 dark:border-gray-700 border-l-4 border-l-orange-500">
                 <div className="card-body">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="p-3 bg-orange-100 rounded-lg">
-                            <ShoppingBag className="w-8 h-8 text-orange-600" />
+                        <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                            <ShoppingBag className="w-8 h-8 text-orange-600 dark:text-orange-400" />
                         </div>
                         <div>
-                            <h2 className="card-title text-2xl text-orange-700">Add Retail Product</h2>
-                            <p className="text-sm text-base-content/60">Add products for retail marketplace (100gm - 10kg)</p>
+                            <h2 className="card-title text-2xl text-orange-700 dark:text-orange-400">Add Retail Product</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Add products for retail marketplace (100gm - 10kg)</p>
                         </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text font-medium">Product Name</span>
+                                <span className="label-text font-medium dark:text-gray-300">Product Name</span>
                             </label>
                             <Input
                                 placeholder="e.g., Premium Basmati Rice"
                                 value={formData.title}
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
                                 required
+                                className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
                             />
                         </div>
 
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text font-medium">Description</span>
+                                <span className="label-text font-medium dark:text-gray-300">Description</span>
                             </label>
                             <Textarea
                                 placeholder="Product details, quality, origin..."
                                 value={formData.description}
                                 onChange={e => setFormData({ ...formData, description: e.target.value })}
                                 rows={3}
+                                className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Category</span>
+                                    <span className="label-text font-medium dark:text-gray-300">Category</span>
                                 </label>
                                 <select
-                                    className="select select-bordered w-full"
+                                    className="select select-bordered w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                     value={formData.cropTypeId}
                                     onChange={e => setFormData({ ...formData, cropTypeId: e.target.value })}
                                 >
@@ -119,8 +121,8 @@ const AdminAddRetail: React.FC<AdminAddRetailProps> = ({ onSuccess }) => {
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Quantity (Retail)</span>
-                                    <span className="label-text-alt text-orange-600">Max 10kg</span>
+                                    <span className="label-text font-medium dark:text-gray-300">Quantity (Retail)</span>
+                                    <span className="label-text-alt text-orange-600 dark:text-orange-400">Max 10kg</span>
                                 </label>
                                 <Input
                                     type="number"
@@ -129,15 +131,16 @@ const AdminAddRetail: React.FC<AdminAddRetailProps> = ({ onSuccess }) => {
                                     value={formData.quantity}
                                     onChange={e => setFormData({ ...formData, quantity: e.target.value })}
                                     required
+                                    className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                 />
                             </div>
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Unit</span>
+                                    <span className="label-text font-medium dark:text-gray-300">Unit</span>
                                 </label>
                                 <select
-                                    className="select select-bordered w-full"
+                                    className="select select-bordered w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                     value={formData.unit}
                                     onChange={e => setFormData({ ...formData, unit: e.target.value })}
                                 >
@@ -150,7 +153,7 @@ const AdminAddRetail: React.FC<AdminAddRetailProps> = ({ onSuccess }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Price (৳ per unit)</span>
+                                    <span className="label-text font-medium dark:text-gray-300">Price (৳ per unit)</span>
                                 </label>
                                 <Input
                                     type="number"
@@ -158,41 +161,43 @@ const AdminAddRetail: React.FC<AdminAddRetailProps> = ({ onSuccess }) => {
                                     value={formData.minPrice}
                                     onChange={e => setFormData({ ...formData, minPrice: e.target.value })}
                                     required
+                                    className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                 />
                             </div>
 
                             <div className="form-control">
                                 <label className="label">
-                                    <span className="label-text font-medium">Location</span>
+                                    <span className="label-text font-medium dark:text-gray-300">Location</span>
                                 </label>
                                 <Input
                                     placeholder="District/Region"
                                     value={formData.location}
                                     onChange={e => setFormData({ ...formData, location: e.target.value })}
                                     required
+                                    className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                 />
                             </div>
                         </div>
 
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text font-medium">Product Images</span>
+                                <span className="label-text font-medium dark:text-gray-300">Product Images</span>
                             </label>
                             <Input
                                 type="file"
                                 multiple
                                 accept="image/*"
                                 onChange={e => setImages(e.target.files)}
-                                className="file-input file-input-bordered w-full"
+                                className="file-input file-input-bordered w-full dark:bg-gray-700 dark:text-white dark:border-gray-600 cursor-pointer"
                             />
                             <label className="label">
-                                <span className="label-text-alt">Max 5 images, JPG/PNG</span>
+                                <span className="label-text-alt dark:text-gray-400">Max 5 images, JPG/PNG</span>
                             </label>
                         </div>
 
-                        <div className="alert alert-warning bg-orange-50 border-orange-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                            <span className="text-orange-800">Retail products are for small quantities (100gm - 10kg)</span>
+                        <div className="alert alert-warning bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            <span className="text-orange-800 dark:text-orange-200">Retail products are for small quantities (100gm - 10kg)</span>
                         </div>
 
                         <Button

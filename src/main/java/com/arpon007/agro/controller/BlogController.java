@@ -4,6 +4,7 @@ import com.arpon007.agro.model.Blog;
 import com.arpon007.agro.model.User;
 import com.arpon007.agro.repository.BlogRepository;
 import com.arpon007.agro.repository.UserRepository;
+import com.arpon007.agro.service.CloudinaryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +19,13 @@ public class BlogController {
 
     private final BlogRepository blogRepository;
     private final UserRepository userRepository;
+    private final CloudinaryService cloudinaryService;
 
-    public BlogController(BlogRepository blogRepository, UserRepository userRepository) {
+    public BlogController(BlogRepository blogRepository, UserRepository userRepository,
+            CloudinaryService cloudinaryService) {
         this.blogRepository = blogRepository;
         this.userRepository = userRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
     // ==================== PUBLIC ENDPOINTS ====================
@@ -60,34 +64,23 @@ public class BlogController {
         return ResponseEntity.ok(blogRepository.findByAuthorId(user.getId()));
     }
 
-    // Helper to save image
+    // Helper to save image to Cloudinary
     private String saveCoverImage(MultipartFile file) {
         if (file == null || file.isEmpty())
             return null;
-        try {
-            String UPLOAD_DIR = "uploads/blogs/";
-            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(UPLOAD_DIR));
 
-            String original = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image";
-            String safeName = original.replaceAll("[^a-zA-Z0-9._-]", "_");
-            String fileName = java.util.UUID.randomUUID() + "_" + safeName;
-            java.nio.file.Path path = java.nio.file.Paths.get(UPLOAD_DIR).resolve(fileName);
-
-            java.nio.file.Files.write(path, file.getBytes(),
-                    java.nio.file.StandardOpenOption.CREATE,
-                    java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
-
-            return "/uploads/blogs/" + fileName;
-        } catch (java.io.IOException e) {
-            throw new RuntimeException("Failed to save image", e);
+        String imageUrl = cloudinaryService.uploadImage(file, "agro/blogs");
+        if (imageUrl == null) {
+            throw new RuntimeException("Failed to upload image to Cloudinary");
         }
+        return imageUrl;
     }
 
     @PostMapping
     public ResponseEntity<Blog> createBlog(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
-            @RequestParam(value = "coverImage", required = false) org.springframework.web.multipart.MultipartFile coverImage,
+            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage,
             @RequestParam("blogType") String blogType,
             @RequestParam(value = "isPublished", defaultValue = "false") boolean isPublished,
             Authentication authentication) {
@@ -121,7 +114,7 @@ public class BlogController {
             @PathVariable Long id,
             @RequestParam("title") String title,
             @RequestParam("content") String content,
-            @RequestParam(value = "coverImage", required = false) org.springframework.web.multipart.MultipartFile coverImage,
+            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage,
             @RequestParam("blogType") String blogType,
             @RequestParam(value = "isPublished", defaultValue = "false") boolean isPublished,
             Authentication authentication) {

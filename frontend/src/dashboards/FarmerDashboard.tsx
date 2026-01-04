@@ -12,6 +12,8 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import MobileCard from '../components/ui/MobileCard';
+import MobileStatCard from '../components/ui/MobileStatCard';
 import ChangePasswordPage from '../pages/ChangePasswordPage';
 import AIChatPage from '../pages/AIChatPage';
 import MessagesPage from '../pages/MessagesPage';
@@ -507,14 +509,14 @@ const FarmerDashboard: React.FC = () => {
             {/* Overview */}
             {activeTab === 'overview' && (
                 <div className="space-y-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <StatCard title="মোট ফসল" value={myCrops.length} icon="🌾" color="green" />
-                        <StatCard title="অর্ডার" value={orders.length} icon="📦" color="blue" />
-                        <StatCard title="অপেক্ষমাণ টাকা" value={`৳${pendingMoney}`} icon="💰" color="yellow" />
-                        <StatCard title="মোট আয়" value={`৳${totalIncome}`} icon="💵" color="purple" />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                        <MobileStatCard title="মোট ফসল" value={myCrops.length} icon={<span className="text-2xl">🌾</span>} color="green" />
+                        <MobileStatCard title="অর্ডার" value={orders.length} icon={<span className="text-2xl">📦</span>} color="blue" />
+                        <MobileStatCard title="অপেক্ষমাণ টাকা" value={`৳${pendingMoney}`} icon={<span className="text-2xl">💰</span>} color="yellow" />
+                        <MobileStatCard title="মোট আয়" value={`৳${totalIncome}`} icon={<span className="text-2xl">💵</span>} color="purple" />
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid md:grid-cols-2 gap-4 md:gap-6">
                         {/* Sales Chart */}
                         <Card className="col-span-1">
                             <CardHeader>
@@ -1022,75 +1024,88 @@ const FarmerDashboard: React.FC = () => {
 
             {/* Orders */}
             {activeTab === 'orders' && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>অর্ডারের তালিকা</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Order ID</TableHead>
-                                        <TableHead>ফসল</TableHead>
-                                        <TableHead>ক্রেতা</TableHead>
-                                        <TableHead>মোট</TableHead>
-                                        <TableHead>অগ্রিম</TableHead>
-                                        <TableHead>বাকি</TableHead>
-                                        <TableHead>স্ট্যাটাস</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                        <TableHead>Invoice</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {orders.map(o => (
-                                        <TableRow key={o.id}>
-                                            <TableCell>{o.id}</TableCell>
-                                            <TableCell className="font-medium">{o.cropTitle}</TableCell>
-                                            <TableCell>{o.buyerName}</TableCell>
-                                            <TableCell>৳{o.totalAmount}</TableCell>
-                                            <TableCell>৳{o.advanceAmount}</TableCell>
-                                            <TableCell>৳{o.dueAmount}</TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className={getStatusColor(o.status)}>{o.status}</Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                {o.status === 'PENDING' ? (
-                                                    <div className="flex gap-2">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="default"
-                                                            className="bg-green-600 hover:bg-green-700 text-white"
-                                                            onClick={() => handleAcceptOrder(o.id)}
-                                                            disabled={loading}
-                                                        >
-                                                            <Check className="w-4 h-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="destructive"
-                                                            onClick={() => handleRejectOrder(o.id)}
-                                                            disabled={loading}
-                                                        >
-                                                            <X className="w-4 h-4" />
-                                                        </Button>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-xs text-muted-foreground">-</span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button size="sm" variant="ghost" onClick={() => window.open(`http://localhost:8080/api/orders/${o.id}/invoice`, '_blank')}>
-                                                    <Printer className="w-4 h-4" />
+                <div className="space-y-4">
+                    <h2 className="text-xl font-semibold">অর্ডারের তালিকা</h2>
+                    <div className="space-y-3">
+                        {orders.map(o => (
+                            <MobileCard key={o.id} padding="md">
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="font-semibold text-lg">#{o.id}</p>
+                                            <p className="text-sm text-muted-foreground">{o.cropTitle}</p>
+                                        </div>
+                                        <Badge variant="outline" className={getStatusColor(o.status)}>
+                                            {o.status}
+                                        </Badge>
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">ক্রেতা:</span>
+                                            <span className="font-medium">{o.buyerName}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">মোট:</span>
+                                            <span className="font-medium">৳{o.totalAmount}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">অগ্রিম:</span>
+                                            <span className="font-medium text-green-600">৳{o.advanceAmount}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">বাকি:</span>
+                                            <span className="font-medium text-orange-600">৳{o.dueAmount}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-2 pt-2">
+                                        {o.status === 'PENDING' ? (
+                                            <>
+                                                <Button
+                                                    size="sm"
+                                                    variant="default"
+                                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                                                    onClick={() => handleAcceptOrder(o.id)}
+                                                    disabled={loading}
+                                                >
+                                                    <Check className="w-4 h-4 mr-1" />
+                                                    Accept
                                                 </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                                <Button
+                                                    size="sm"
+                                                    variant="destructive"
+                                                    className="flex-1"
+                                                    onClick={() => handleRejectOrder(o.id)}
+                                                    disabled={loading}
+                                                >
+                                                    <X className="w-4 h-4 mr-1" />
+                                                    Reject
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="flex-1"
+                                                onClick={() => window.open(`http://localhost:8080/api/orders/${o.id}/invoice`, '_blank')}
+                                            >
+                                                <Printer className="w-4 h-4 mr-1" />
+                                                Invoice
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </MobileCard>
+                        ))}
+                    </div>
+                    {orders.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                            <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p>কোন অর্ডার নেই</p>
                         </div>
-                    </CardContent>
-                </Card>
+                    )}
+                </div>
             )}
 
             {/* Exports */}

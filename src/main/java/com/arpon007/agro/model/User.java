@@ -21,6 +21,7 @@ public class User {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private Set<String> roles;
+    private Long roleId; // Helper field for direct role access
 
     public User() {
     }
@@ -188,5 +189,13 @@ public class User {
 
     public void setRoles(Set<String> roles) {
         this.roles = roles;
+    }
+
+    public Long getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(Long roleId) {
+        this.roleId = roleId;
     }
 }

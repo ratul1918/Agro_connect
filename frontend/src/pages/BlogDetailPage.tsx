@@ -118,7 +118,7 @@ const BlogDetailPage: React.FC = () => {
                     {blog.coverImageUrl ? (
                         <div className="h-64 md:h-80 overflow-hidden">
                             <img 
-                                src={`http://localhost:8080${blog.coverImageUrl}`}
+                                src={blog.coverImageUrl.startsWith('http') ? blog.coverImageUrl : `http://localhost:8080${blog.coverImageUrl}`}
                                 alt={blog.title}
                                 className="w-full h-full object-cover"
                             />
@@ -210,7 +210,7 @@ const BlogDetailPage: React.FC = () => {
                                         {relatedBlog.coverImageUrl ? (
                                             <div className="h-32 overflow-hidden">
                                                 <img 
-                                                    src={`http://localhost:8080${relatedBlog.coverImageUrl}`}
+                                                    src={relatedBlog.coverImageUrl.startsWith('http') ? relatedBlog.coverImageUrl : `http://localhost:8080${relatedBlog.coverImageUrl}`}
                                                     alt={relatedBlog.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                 />

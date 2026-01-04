@@ -38,8 +38,10 @@ CREATE TABLE IF NOT EXISTS users (
     post_code VARCHAR(10), -- Post code (numeric)
     profile_image_url VARCHAR(255),
     is_verified BOOLEAN DEFAULT FALSE,
+    role_id INT, -- Main role for the user
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS user_roles (
@@ -738,5 +740,23 @@ SET @sql = IF(@column_exists = 0,
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+
+-- =================================================================================
+-- 3. SEEDING INITIAL DATA
+-- =================================================================================
+
+-- Seed Crop Types (if empty)
+INSERT IGNORE INTO crop_type (id, name_en, name_bn) VALUES
+(1, 'Rice', 'ধান'),
+(2, 'Wheat', 'গম'),
+(3, 'Potato', 'আলু'),
+(4, 'Tomato', 'টমেটো'),
+(5, 'Onion', 'পেঁয়াজ'),
+(6, 'Jute', 'পাট'),
+(7, 'Corn', 'ভুট্টা'),
+(8, 'Vegetables', 'শাকসবজি'),
+(9, 'Fruits', 'ফল'),
+(10, 'Spices', 'মসলা');
 
 SET FOREIGN_KEY_CHECKS = 1;

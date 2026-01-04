@@ -10,28 +10,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class CropService {
 
     private static final Logger log = LoggerFactory.getLogger(CropService.class);
     private final CropRepository cropRepository;
-    private final String UPLOAD_DIR = "uploads/crops/";
+    private final CloudinaryService cloudinaryService;
 
-    public CropService(CropRepository cropRepository) {
+    public CropService(CropRepository cropRepository, CloudinaryService cloudinaryService) {
         this.cropRepository = cropRepository;
-        try {
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
-        } catch (IOException e) {
-            log.error("Failed to create upload directory {}", UPLOAD_DIR, e);
-        }
+        this.cloudinaryService = cloudinaryService;
     }
 
     @Transactional
@@ -40,19 +31,12 @@ public class CropService {
         if (images != null) {
             for (MultipartFile file : images) {
                 if (!file.isEmpty()) {
-                    String original = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image";
-                    String safeName = original.replaceAll("[^a-zA-Z0-9._-]", "_");
-                    String fileName = UUID.randomUUID() + "_" + safeName;
-                    Path dir = Paths.get(UPLOAD_DIR);
-                    Files.createDirectories(dir);
-                    Path path = dir.resolve(fileName);
-                    try {
-                        Files.write(path, file.getBytes(), StandardOpenOption.CREATE,
-                                StandardOpenOption.TRUNCATE_EXISTING);
-                        imageUrls.add("/uploads/crops/" + fileName);
-                    } catch (IOException e) {
-                        // Skip failing file but continue with others
-                        log.error("Failed to save image {}", fileName, e);
+                    String imageUrl = cloudinaryService.uploadImage(file, "agro/crops");
+                    if (imageUrl != null) {
+                        imageUrls.add(imageUrl);
+                        log.info("Uploaded crop image to Cloudinary: {}", imageUrl);
+                    } else {
+                        log.warn("Failed to upload image to Cloudinary: {}", file.getOriginalFilename());
                     }
                 }
             }
@@ -68,18 +52,12 @@ public class CropService {
             List<String> imageUrls = new ArrayList<>();
             for (MultipartFile file : images) {
                 if (!file.isEmpty()) {
-                    String original = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image";
-                    String safeName = original.replaceAll("[^a-zA-Z0-9._-]", "_");
-                    String fileName = UUID.randomUUID() + "_" + safeName;
-                    Path dir = Paths.get(UPLOAD_DIR);
-                    Files.createDirectories(dir);
-                    Path path = dir.resolve(fileName);
-                    try {
-                        Files.write(path, file.getBytes(), StandardOpenOption.CREATE,
-                                StandardOpenOption.TRUNCATE_EXISTING);
-                        imageUrls.add("/uploads/crops/" + fileName);
-                    } catch (IOException e) {
-                        log.error("Failed to save image {}", fileName, e);
+                    String imageUrl = cloudinaryService.uploadImage(file, "agro/crops");
+                    if (imageUrl != null) {
+                        imageUrls.add(imageUrl);
+                        log.info("Uploaded crop image to Cloudinary: {}", imageUrl);
+                    } else {
+                        log.warn("Failed to upload image to Cloudinary: {}", file.getOriginalFilename());
                     }
                 }
             }

@@ -72,6 +72,7 @@ A comprehensive digital platform connecting farmers, buyers, and agricultural ex
 | JWT                 | 0.12.6  | Token-based Authentication     |
 | MySQL               | 8.0+    | Database                       |
 | Flyway              | -       | Database Migrations            |
+| Cloudinary          | 1.39.0  | Cloud Image Storage            |
 | Apache HttpClient 5 | -       | AI API Calls                   |
 
 ### Frontend
@@ -89,6 +90,12 @@ A comprehensive digital platform connecting farmers, buyers, and agricultural ex
 | Service       | Model     | Purpose                   |
 | ------------- | --------- | ------------------------- |
 | Google Gemini | 2.0 Flash | Agricultural AI Assistant |
+
+### Cloud Services
+
+| Service    | Purpose                     |
+| ---------- | --------------------------- |
+| Cloudinary | Image upload & CDN delivery |
 
 ---
 
@@ -300,6 +307,11 @@ MAIL_PASSWORD=your_app_password
 # Admin
 ADMIN_EMAIL=admin@agro.com
 ADMIN_PASSWORD=admin123
+
+# Cloudinary (Get from https://console.cloudinary.com/pm/settings/api-keys)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 #### 4. Start Backend
@@ -325,23 +337,26 @@ The frontend will start at `http://localhost:5173`
 
 ## ⚙️ Environment Configuration
 
-| Variable         | Description            | Default                 |
-| ---------------- | ---------------------- | ----------------------- |
-| `DB_HOST`        | MySQL host             | `localhost`             |
-| `DB_PORT`        | MySQL port             | `3306`                  |
-| `DB_NAME`        | Database name          | `agro_connect`          |
-| `DB_USERNAME`    | Database user          | `root`                  |
-| `DB_PASSWORD`    | Database password      | -                       |
-| `JWT_SECRET`     | JWT signing key        | (default provided)      |
-| `JWT_EXPIRATION` | Token expiry (ms)      | `86400000` (24h)        |
-| `AI_GEMINI_KEY`  | Gemini API key         | -                       |
-| `MAIL_HOST`      | SMTP server            | `smtp.gmail.com`        |
-| `MAIL_PORT`      | SMTP port              | `587`                   |
-| `MAIL_USERNAME`  | Email address          | -                       |
-| `MAIL_PASSWORD`  | Email password         | -                       |
-| `ADMIN_EMAIL`    | Initial admin email    | `admin@agro.com`        |
-| `ADMIN_PASSWORD` | Initial admin password | `admin123`              |
-| `FRONTEND_URL`   | Frontend URL           | `http://localhost:5173` |
+| Variable                | Description            | Default                 |
+| ----------------------- | ---------------------- | ----------------------- |
+| `DB_HOST`               | MySQL host             | `localhost`             |
+| `DB_PORT`               | MySQL port             | `3306`                  |
+| `DB_NAME`               | Database name          | `agro_connect`          |
+| `DB_USERNAME`           | Database user          | `root`                  |
+| `DB_PASSWORD`           | Database password      | -                       |
+| `JWT_SECRET`            | JWT signing key        | (default provided)      |
+| `JWT_EXPIRATION`        | Token expiry (ms)      | `86400000` (24h)        |
+| `AI_GEMINI_KEY`         | Gemini API key         | -                       |
+| `MAIL_HOST`             | SMTP server            | `smtp.gmail.com`        |
+| `MAIL_PORT`             | SMTP port              | `587`                   |
+| `MAIL_USERNAME`         | Email address          | -                       |
+| `MAIL_PASSWORD`         | Email password         | -                       |
+| `ADMIN_EMAIL`           | Initial admin email    | `admin@agro.com`        |
+| `ADMIN_PASSWORD`        | Initial admin password | `admin123`              |
+| `FRONTEND_URL`          | Frontend URL           | `http://localhost:5173` |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name  | -                       |
+| `CLOUDINARY_API_KEY`    | Cloudinary API key     | -                       |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret  | -                       |
 
 ---
 

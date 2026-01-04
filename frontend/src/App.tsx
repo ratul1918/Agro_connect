@@ -37,6 +37,7 @@ import CustomerDashboard from './dashboards/CustomerDashboard';
 
 // Components
 import PrivateRoute from './components/PrivateRoute';
+import MobileDashboardContainer from './components/MobileDashboardContainer';
 
 // Theme-aware Toaster
 const ThemedToaster = () => {
@@ -103,11 +104,11 @@ function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* Protected Dashboard Routes */}
-            <Route path="/admin/*" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
-            <Route path="/farmer/*" element={<PrivateRoute><FarmerDashboard /></PrivateRoute>} />
-            <Route path="/buyer/*" element={<PrivateRoute><BuyerDashboard /></PrivateRoute>} />
-            <Route path="/agronomist/*" element={<PrivateRoute><AgronomistDashboard /></PrivateRoute>} />
-            <Route path="/customer/*" element={<PrivateRoute><CustomerDashboard /></PrivateRoute>} />
+            <Route path="/admin/*" element={<PrivateRoute><MobileDashboardContainer><AdminDashboard /></MobileDashboardContainer></PrivateRoute>} />
+            <Route path="/farmer/*" element={<PrivateRoute><MobileDashboardContainer><FarmerDashboard /></MobileDashboardContainer></PrivateRoute>} />
+            <Route path="/buyer/*" element={<PrivateRoute><MobileDashboardContainer><BuyerDashboard /></MobileDashboardContainer></PrivateRoute>} />
+            <Route path="/agronomist/*" element={<PrivateRoute><MobileDashboardContainer><AgronomistDashboard /></MobileDashboardContainer></PrivateRoute>} />
+            <Route path="/customer/*" element={<PrivateRoute><MobileDashboardContainer><CustomerDashboard /></MobileDashboardContainer></PrivateRoute>} />
 
             {/* Catch all */}
             <Route path="*" element={<Navigate to="/" />} />

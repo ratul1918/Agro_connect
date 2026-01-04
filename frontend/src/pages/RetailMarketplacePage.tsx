@@ -123,16 +123,16 @@ const RetailMarketplacePage: React.FC = () => {
                                 placeholder="Search for products..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 bg-white text-gray-900"
+                                className="pl-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
                             />
                         </div>
                         <select
                             value={selectedDistrict}
                             onChange={(e) => setSelectedDistrict(e.target.value)}
-                            className="px-4 py-2 rounded-lg border-0 focus:ring-2 focus:ring-orange-300 bg-white text-gray-900 font-semibold"
+                            className="px-4 py-2 rounded-lg border-0 focus:ring-2 focus:ring-orange-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold"
                         >
                             {districts.map((district) => (
-                                <option key={district} value={district} className="text-gray-900 font-semibold">{district}</option>
+                                <option key={district} value={district} className="text-gray-900 dark:text-gray-100 font-semibold">{district}</option>
                             ))}
                         </select>
                     </div>
@@ -143,9 +143,9 @@ const RetailMarketplacePage: React.FC = () => {
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Sidebar Filters */}
                     <div className="lg:w-64 flex-shrink-0">
-                        <Card>
+                        <Card className="dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader>
-                                <CardTitle className="flex items-center">
+                                <CardTitle className="flex items-center dark:text-white">
                                     <Filter className="h-5 w-5 mr-2" />
                                     Categories
                                 </CardTitle>
@@ -157,8 +157,8 @@ const RetailMarketplacePage: React.FC = () => {
                                             key={category}
                                             onClick={() => setSelectedCategory(category === 'All' ? '' : category)}
                                             className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${(category === 'All' && !selectedCategory) || selectedCategory === category
-                                                ? 'bg-orange-100 text-orange-700 font-medium'
-                                                : 'hover:bg-gray-100'
+                                                ? 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-200 font-medium'
+                                                : 'hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300'
                                                 }`}
                                         >
                                             {category}
@@ -172,10 +172,10 @@ const RetailMarketplacePage: React.FC = () => {
                     {/* Product Grid */}
                     <div className="flex-1">
                         <div className="flex justify-between items-center mb-6">
-                            <p className="text-gray-600">
+                            <p className="text-gray-600 dark:text-gray-400">
                                 Showing <span className="font-semibold">{filteredProducts.length}</span> products
                             </p>
-                            <select className="px-4 py-2 border rounded-lg">
+                            <select className="px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
                                 <option>Sort by: Latest</option>
                                 <option>Price: Low to High</option>
                                 <option>Price: High to Low</option>
@@ -209,11 +209,11 @@ const RetailMarketplacePage: React.FC = () => {
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {filteredProducts.map((product) => (
                                     <Link to={`/crop/${product.id}`} key={product.id}>
-                                        <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                                        <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full dark:bg-gray-800 dark:border-gray-700">
                                             <div className="h-48 bg-gradient-to-br from-orange-100 to-orange-200 rounded-t-lg flex items-center justify-center overflow-hidden">
                                                 {product.images && product.images.length > 0 ? (
                                                     <img
-                                                        src={`http://localhost:8080${product.images[0]}`}
+                                                        src={product.images[0].startsWith('http') ? product.images[0] : `http://localhost:8080${product.images[0]}`}
                                                         alt={product.title}
                                                         className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                                                     />
@@ -223,27 +223,27 @@ const RetailMarketplacePage: React.FC = () => {
                                             </div>
                                             <CardContent className="pt-4">
                                                 <div className="flex items-center justify-between mb-2">
-                                                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
+                                                    <span className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-200 px-2 py-1 rounded-full">
                                                         {product.cropTypeName}
                                                     </span>
-                                                    <span className="text-xs text-gray-500 flex items-center">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                                                         <MapPin className="h-3 w-3 mr-1" />
                                                         {product.location}
                                                     </span>
                                                 </div>
-                                                <h3 className="font-semibold text-lg text-gray-900 mb-1">{product.title}</h3>
-                                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
+                                                <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-1">{product.title}</h3>
+                                                <p className="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2">{product.description}</p>
 
-                                                <div className="border-t pt-3 mt-2">
+                                                <div className="border-t dark:border-gray-700 pt-3 mt-2">
                                                     <div className="flex items-center justify-between">
                                                         <div>
-                                                            <p className="text-orange-600 font-bold text-lg">
+                                                            <p className="text-orange-600 dark:text-orange-400 font-bold text-lg">
                                                                 ৳{product.minPrice}/{product.unit}
                                                             </p>
                                                         </div>
                                                         <div className="text-right">
-                                                            <p className="text-xs text-gray-500">Available</p>
-                                                            <p className="font-semibold text-gray-700">{product.quantity} {product.unit}</p>
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400">Available</p>
+                                                            <p className="font-semibold text-gray-700 dark:text-gray-200">{product.quantity} {product.unit}</p>
                                                         </div>
                                                     </div>
                                                 </div>
