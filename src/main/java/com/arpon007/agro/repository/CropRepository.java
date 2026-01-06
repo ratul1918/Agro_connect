@@ -332,13 +332,34 @@ public class CropRepository {
 
     /**
      * Delete a crop by ID
+     * Deletes all related records first to prevent foreign key constraint errors
      */
     public void deleteById(Long cropId) {
-        // First delete crop images
-        String deleteImagesSql = "DELETE FROM crop_images WHERE crop_id = ?";
-        jdbcTemplate.update(deleteImagesSql, cropId);
-        // Then delete the crop
-        String deleteCropSql = "DELETE FROM crops WHERE id = ?";
-        jdbcTemplate.update(deleteCropSql, cropId);
+        // Delete related bids first
+        try {
+            jdbcTemplate.update("DELETE FROM bids WHERE crop_id = ?", cropId);
+        } catch (Exception e) {
+            // Table might not exist or no records
+        }
+
+        // Delete related cart items
+        try {
+            jdbcTemplate.update("DELETE FROM cart_items WHERE crop_id = ?", cropId);
+        } catch (Exception e) {
+            // Table might not exist or no records
+        }
+
+        // Delete related orders (set crop_id to NULL instead of deleting orders)
+        try {
+            jdbcTemplate.update("UPDATE orders SET crop_id = NULL WHERE crop_id = ?", cropId);
+        } catch (Exception e) {
+            // Table might not exist or no records
+        }
+
+        // Delete crop images
+        jdbcTemplate.update("DELETE FROM crop_images WHERE crop_id = ?", cropId);
+
+        // Finally delete the crop
+        jdbcTemplate.update("DELETE FROM crops WHERE id = ?", cropId);
     }
 }

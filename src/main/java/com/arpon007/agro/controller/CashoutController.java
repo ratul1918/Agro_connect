@@ -94,7 +94,7 @@ public class CashoutController {
                         CashoutRequest request = cashoutService.getRequestById(id);
 
                         // Only approved cashouts have invoices
-                        if (!"APPROVED".equals(request.getStatus())) {
+                        if (!request.isApproved()) {
                                 return ResponseEntity.badRequest()
                                                 .body("<h1>Invoice only available for approved cashouts</h1>");
                         }

@@ -6,7 +6,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { useNotification } from '../context/NotificationContext';
-import api from '../api/axios';
+import api, { BASE_URL } from '../api/axios';
 import { Leaf, Package, Ship, FileCheck, Plus, BarChart3, MessageSquare, Users, Printer, Check, X, Trash2, Edit2, PackageX, DollarSign, Wallet, Bot } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -619,7 +619,7 @@ const FarmerDashboard: React.FC = () => {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Badge variant="outline" className={getStatusColor(o.status)}>{o.status}</Badge>
-                                            <a href={`http://localhost:8080/api/orders/${o.id}/invoice`} target="_blank" rel="noopener noreferrer">
+                                            <a href={`${BASE_URL.replace('/api', '')}/api/orders/${o.id}/invoice`} target="_blank" rel="noopener noreferrer">
                                                 <Button size="sm" variant="outline">📄</Button>
                                             </a>
                                         </div>
@@ -699,7 +699,7 @@ const FarmerDashboard: React.FC = () => {
                                                         {req.status === 'APPROVED' ? '✅ অনুমোদিত' : req.status === 'REJECTED' ? '❌ প্রত্যাখ্যাত' : '⏳ অপেক্ষমাণ'}
                                                     </Badge>
                                                     {req.status === 'APPROVED' && (
-                                                        <a href={`http://localhost:8080/api/cashout/${req.id}/invoice`} target="_blank" rel="noopener noreferrer">
+                                                        <a href={`${BASE_URL.replace('/api', '')}/api/cashout/${req.id}/invoice`} target="_blank" rel="noopener noreferrer">
                                                             <Button size="sm" variant="outline">📄 Invoice</Button>
                                                         </a>
                                                     )}
@@ -1006,7 +1006,7 @@ const FarmerDashboard: React.FC = () => {
                                                     </TableCell>
                                                     <TableCell>
                                                         {req.status === 'APPROVED' && (
-                                                            <a href={`http://localhost:8080/api/cashout/${req.id}/invoice`} target="_blank" rel="noopener noreferrer">
+                                                            <a href={`${BASE_URL.replace('/api', '')}/api/cashout/${req.id}/invoice`} target="_blank" rel="noopener noreferrer">
                                                                 <Button size="sm" variant="outline">📄 ডাউনলোড</Button>
                                                             </a>
                                                         )}
@@ -1088,7 +1088,7 @@ const FarmerDashboard: React.FC = () => {
                                                 size="sm"
                                                 variant="outline"
                                                 className="flex-1"
-                                                onClick={() => window.open(`http://localhost:8080/api/orders/${o.id}/invoice`, '_blank')}
+                                                onClick={() => window.open(`${BASE_URL.replace('/api', '')}/api/orders/${o.id}/invoice`, '_blank')}
                                             >
                                                 <Printer className="w-4 h-4 mr-1" />
                                                 Invoice
