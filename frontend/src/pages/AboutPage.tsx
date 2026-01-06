@@ -9,10 +9,10 @@ const AboutPage: React.FC = () => {
     const { t } = useLanguage();
 
     const team = [
-        { name: "Muhammad Hasan", role: "Founder & CEO", emoji: "👨‍💼" },
-        { name: "Fatima Ahmed", role: "Head of Operations", emoji: "👩‍💼" },
-        { name: "Karim Rahman", role: "Tech Lead", emoji: "👨‍💻" },
-        { name: "Aisha Khan", role: "Community Manager", emoji: "👩‍💼" }
+        { name: "MD SHAZAN MAHMUD ARPON", role: "Lead Developer", emoji: "👨‍💻" },
+        { name: "RAFIUR RAHMAN", role: "Developer", emoji: "👨‍💻" },
+        { name: "MD SAZZAD HOSSAIN SAZID", role: "Developer", emoji: "👨‍💻" },
+        { name: "KHALID ADNAN", role: "Developer", emoji: "👨‍💻" }
     ];
 
     const values = [

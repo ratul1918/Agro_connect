@@ -77,7 +77,8 @@ public class AuthService {
         String token = jwtUtil.generateToken(userDetails, savedUser.getId(), request.getRole().toUpperCase());
 
         return new AuthResponse(token, savedUser.getId(), savedUser.getEmail(), roleName, savedUser.getFullName(),
-                savedUser.getProfileImageUrl());
+                savedUser.getProfileImageUrl(), savedUser.getPhone(), savedUser.getDivision(), savedUser.getDistrict(),
+                savedUser.getUpazila(), savedUser.getThana(), savedUser.getPostCode());
     }
 
     public AuthResponse login(AuthRequest request) {
@@ -125,15 +126,17 @@ public class AuthService {
             role = user.getRoles().iterator().next();
         }
         System.out.println("User role: " + role);
-        
-        // Remove ROLE_ prefix for JWT token since Spring Security adds it automatically when checking hasRole()
+
+        // Remove ROLE_ prefix for JWT token since Spring Security adds it automatically
+        // when checking hasRole()
         String tokenRole = role.startsWith("ROLE_") ? role.substring(5) : role;
 
         String token = jwtUtil.generateToken(userDetails, user.getId(), tokenRole);
         System.out.println("=== LOGIN SUCCESS ===");
 
         return new AuthResponse(token, user.getId(), user.getEmail(), "ROLE_" + tokenRole, user.getFullName(),
-                user.getProfileImageUrl());
+                user.getProfileImageUrl(), user.getPhone(), user.getDivision(), user.getDistrict(), user.getUpazila(),
+                user.getThana(), user.getPostCode());
     }
 
     public void forgotPassword(String email) {
@@ -177,7 +180,11 @@ public class AuthService {
         return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    @Transactional
     public void updateUserProfile(String email, java.util.Map<String, String> payload) {
+        System.out.println("Updating profile for: " + email);
+        System.out.println("Payload: " + payload);
+
         com.arpon007.agro.model.User user = getUserByEmail(email);
 
         if (payload.containsKey("fullName")) {
@@ -205,7 +212,9 @@ public class AuthService {
             user.setPostCode(payload.get("postCode"));
         }
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        System.out.println("User saved successfully: " + savedUser.getId());
+        System.out.println("Saved District: " + savedUser.getDistrict());
     }
 
     public void changePassword(String email, String currentPassword, String newPassword) {

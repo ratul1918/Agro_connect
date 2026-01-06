@@ -10,7 +10,7 @@ import { User, Mail, Edit, Save, X, Camera, Shield, Activity, Map as MapIcon } f
 import api from '../api/axios';
 
 const ProfilePage: React.FC = () => {
-    const { user, isAuthenticated } = useAuth();
+    const { user, isAuthenticated, refreshUser } = useAuth();
     const { t, language } = useLanguage();
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
@@ -116,9 +116,9 @@ const ProfilePage: React.FC = () => {
         setMessage('');
         try {
             await api.put('/auth/profile', formData);
+            await refreshUser(); // Fetch fresh user data immediately
             setMessage(t('profile.success'));
             setIsEditing(false);
-            setTimeout(() => window.location.reload(), 1500);
         } catch (error: any) {
             setMessage(error.response?.data?.message || t('profile.error'));
         } finally {

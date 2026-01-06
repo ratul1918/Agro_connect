@@ -1,10 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&family=Baloo+Da+2:wght@400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Martian+Mono:wght@100..800&display=swap');
+@import './styles/mobile.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import './styles/mobile.css';
 
 @layer base {
   :root {

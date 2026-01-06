@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getCurrentUser } from '../api/endpoints';
 
 interface User {
     id: number;
@@ -20,6 +21,7 @@ interface AuthContextType {
     token: string | null;
     login: (token: string, userData: User) => void;
     logout: () => void;
+    refreshUser: () => Promise<void>;
     isAuthenticated: boolean;
 }
 
@@ -30,23 +32,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
     const navigate = useNavigate();
 
-    useEffect(() => {
-        // Ideally verify token or fetch user profile on load
+    const refreshUser = async () => {
         const storedToken = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
-        
-        console.log('AuthContext useEffect - token:', !!storedToken);
-        console.log('AuthContext useEffect - user:', storedUser);
-        
-        if (storedUser && storedToken) {
+        if (storedToken) {
             try {
-                setUser(JSON.parse(storedUser));
+                const response = await getCurrentUser();
+                const userData = response.data;
+                console.log('Refreshed user data:', userData);
+                setUser(userData);
+                localStorage.setItem('user', JSON.stringify(userData));
             } catch (error) {
-                console.error('Failed to parse stored user:', error);
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
+                console.error('Failed to refresh user:', error);
+                // Do not auto-logout here to prevent loops. The axios interceptor handles explicit auth failures.
             }
         }
+    };
+
+    useEffect(() => {
+        const initAuth = async () => {
+            const storedToken = localStorage.getItem('token');
+            if (storedToken) {
+                await refreshUser();
+            } else {
+                 // Try to load from cache if network fails or on first rapid load
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                     try {
+                        setUser(JSON.parse(storedUser));
+                    } catch (e) {
+                         console.error('Failed to parse cached user', e);
+                    }
+                }
+            }
+        };
+
+        initAuth();
     }, []);
 
     const login = (newToken: string, userData: User) => {
@@ -89,7 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+        <AuthContext.Provider value={{ user, token, login, logout, refreshUser, isAuthenticated: !!token }}>
             {children}
         </AuthContext.Provider>
     );
