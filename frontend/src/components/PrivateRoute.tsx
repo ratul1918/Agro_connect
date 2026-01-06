@@ -13,27 +13,10 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
     children, 
     allowedRoles = [] 
 }) => {
-    const { isAuthenticated, user, token } = useAuth();
+    const { isAuthenticated, user, isLoading } = useAuth();
     const location = useLocation();
     
-    // Check localStorage as fallback for authentication
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    const hasStoredAuth = storedToken && storedUser;
-    
-    // Loading state while checking authentication
-    const [isLoading, setIsLoading] = React.useState(true);
-    
-    React.useEffect(() => {
-        // Simulate authentication check
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 100);
-        
-        return () => clearTimeout(timer);
-    }, []);
-    
-    // Show loading spinner while checking auth
+    // Show loading spinner while AuthContext is validating the token
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
@@ -45,26 +28,14 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
         );
     }
     
-    if (!isAuthenticated && !hasStoredAuth) {
+    // After loading is complete, check authentication
+    if (!isAuthenticated) {
         // Store the attempted location for redirect after login
         return <Navigate to="/auth" state={{ from: location }} replace />;
     }
     
-    // Parse stored user if not available in context
-    let userData = user;
-    if (!userData && storedUser) {
-        try {
-            userData = JSON.parse(storedUser);
-        } catch (error) {
-            console.error('Failed to parse stored user:', error);
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-            return <Navigate to="/auth" replace />;
-        }
-    }
-    
     // Role-based access control
-    if (allowedRoles.length > 0 && userData && !allowedRoles.includes(userData.role)) {
+    if (allowedRoles.length > 0 && user && !allowedRoles.includes(user.role)) {
         // Redirect to appropriate dashboard based on user role
         const getDashboardPath = (role: string) => {
             switch (role) {
@@ -78,14 +49,14 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
             }
         };
         
-        return <Navigate to={getDashboardPath(userData.role)} replace />;
+        return <Navigate to={getDashboardPath(user.role)} replace />;
     }
     
     return (
         <>
             {children}
             {/* Show mobile navigation only on dashboard routes */}
-            {userData && location.pathname.includes('/dashboard') && (
+            {user && location.pathname.includes('/dashboard') && (
                 <MobileRoleNavigation currentPath={location.pathname} />
             )}
         </>
