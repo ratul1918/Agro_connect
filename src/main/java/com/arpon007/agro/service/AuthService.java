@@ -77,8 +77,7 @@ public class AuthService {
         String token = jwtUtil.generateToken(userDetails, savedUser.getId(), request.getRole().toUpperCase());
 
         return new AuthResponse(token, savedUser.getId(), savedUser.getEmail(), roleName, savedUser.getFullName(),
-                savedUser.getProfileImageUrl(), savedUser.getPhone(), savedUser.getDivision(), savedUser.getDistrict(),
-                savedUser.getUpazila(), savedUser.getThana(), savedUser.getPostCode());
+                savedUser.getProfileImageUrl());
     }
 
     public AuthResponse login(AuthRequest request) {
@@ -135,8 +134,7 @@ public class AuthService {
         System.out.println("=== LOGIN SUCCESS ===");
 
         return new AuthResponse(token, user.getId(), user.getEmail(), "ROLE_" + tokenRole, user.getFullName(),
-                user.getProfileImageUrl(), user.getPhone(), user.getDivision(), user.getDistrict(), user.getUpazila(),
-                user.getThana(), user.getPostCode());
+                user.getProfileImageUrl());
     }
 
     public void forgotPassword(String email) {
