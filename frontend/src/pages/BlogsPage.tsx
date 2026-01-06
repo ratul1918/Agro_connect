@@ -33,9 +33,10 @@ const BlogsPage: React.FC = () => {
             const res = await api.get('/blogs');
             setBlogPosts(res.data);
             setError(null);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to fetch blogs:', err);
-            setError('Failed to load blogs. Please try again later.');
+            const errorMessage = err.response?.data?.message || err.message || 'Failed to load blogs. Please try again later.';
+            setError(errorMessage);
             setBlogPosts([]);
         } finally {
             setLoading(false);

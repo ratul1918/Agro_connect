@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trash2, Package, Printer, Search, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import { Input } from '../../components/ui/input';
+import api from '../../api/axios';
 
 interface AdminOrdersProps {
     orders: any[];
@@ -60,9 +61,9 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
 
     const handleDownloadInvoice = async (orderId: number) => {
         try {
-            const response = await import('../../api/axios').then(m => m.default.get(`/orders/${orderId}/invoice`, {
+            const response = await api.get(`/orders/${orderId}/invoice`, {
                 responseType: 'blob'
-            }));
+            });
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
@@ -419,9 +420,9 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
                                         className="btn btn-outline dark:text-gray-300 dark:hover:bg-gray-700 flex-1 gap-2"
                                         onClick={async () => {
                                             try {
-                                                const response = await import('../../api/axios').then(m => m.default.get(`/orders/${selectedOrder.id}/invoice`, {
+                                                const response = await api.get(`/orders/${selectedOrder.id}/invoice`, {
                                                     responseType: 'text'
-                                                }));
+                                                });
                                                 const win = window.open('', '_blank');
                                                 if (win) {
                                                     win.document.write(response.data);

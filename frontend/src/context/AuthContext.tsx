@@ -41,9 +41,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 console.log('Refreshed user data:', userData);
                 setUser(userData);
                 localStorage.setItem('user', JSON.stringify(userData));
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to refresh user:', error);
-                // Do not auto-logout here to prevent loops. The axios interceptor handles explicit auth failures.
+                // Clear token if it's invalid/expired (401)
+                if (error.status === 401 || (error.response && error.response.status === 401)) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    setToken(null);
+                    setUser(null);
+                }
             }
         }
     };
