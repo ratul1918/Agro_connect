@@ -58,10 +58,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - no authentication required
                         .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/signup",
-                                "/api/auth/forgot-password",
-                                "/api/auth/reset-password",
+                                "/api/auth/**", // Auth endpoints
                                 "/api/public/**", // Explicitly public endpoints
                                 "/api/shop/products/**", // Retail shop
                                 "/api/shop/crop-types", // Crop types (public for filters)
@@ -76,6 +73,7 @@ public class SecurityConfig {
                                 "/uploads/**" // Uploaded files
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/crops", "/api/crops/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // All other requests need authentication
                         .anyRequest().authenticated())
                 // Allow anonymous access to public endpoints
@@ -116,7 +114,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization")); // Expose auth header
-        configuration.setAllowCredentials(true); // Allow credentials
+        configuration.setAllowCredentials(false); // Disabled to allow * origin
         configuration.setMaxAge(3600L); // Cache preflight for 1 hour
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

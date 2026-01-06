@@ -33,7 +33,7 @@ interface Upazila {
 const AuthPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { login, isAuthenticated } = useAuth();
+    const { login, isAuthenticated, isLoading } = useAuth();
     const { success } = useNotification();
 
     const [activeTab, setActiveTab] = useState<'login' | 'signup'>(
@@ -141,10 +141,10 @@ const AuthPage: React.FC = () => {
     }, [signupData.district, filteredDistricts]);
 
     useEffect(() => {
-        if (isAuthenticated) {
+        if (!isLoading && isAuthenticated) {
             navigate('/');
         }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, isLoading, navigate]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -209,6 +209,15 @@ const AuthPage: React.FC = () => {
     };
 
     
+
+    
+    if (isLoading) {
+        return (
+             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 dark:from-gray-900 dark:to-gray-800">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-green-100 dark:from-gray-900 dark:to-gray-800">

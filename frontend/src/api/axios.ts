@@ -52,15 +52,7 @@ api.interceptors.response.use(
             if (isExplicitAuthFailure) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                // Don't redirect if already on auth page
-                if (!window.location.pathname.includes('/auth')) {
-                    // Use setTimeout to avoid redirect loops during component initialization
-                    setTimeout(() => {
-                        if (!window.location.pathname.includes('/auth')) {
-                            window.location.href = '/auth';
-                        }
-                    }, 100);
-                }
+                // Removed forced redirect to prevent page refresh loops
             }
         }
 

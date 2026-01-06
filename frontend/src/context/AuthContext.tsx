@@ -23,6 +23,7 @@ interface AuthContextType {
     logout: () => void;
     refreshUser: () => Promise<void>;
     isAuthenticated: boolean;
+    isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,6 +31,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [isLoading, setIsLoading] = useState<boolean>(!!localStorage.getItem('token'));
     const navigate = useNavigate();
 
     const refreshUser = async () => {
@@ -50,7 +52,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setToken(null);
                     setUser(null);
                 }
+            } finally {
+                setIsLoading(false);
             }
+        } else {
+            setIsLoading(false);
         }
     };
 
@@ -115,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, refreshUser, isAuthenticated: !!token }}>
+        <AuthContext.Provider value={{ user, token, login, logout, refreshUser, isAuthenticated: !!token, isLoading }}>
             {children}
         </AuthContext.Provider>
     );
