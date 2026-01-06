@@ -178,12 +178,22 @@ const CustomerDashboard: React.FC = () => {
             link.click();
             link.remove();
         } catch (error: any) {
-            console.error("Failed to download invoice", error);
-            if (error?.status === 401) {
-                // Token expired, will be handled by axios interceptor
-                return;
+            console.error("Failed to download invoice PDF", error);
+            // Fallback to HTML invoice if PDF fails
+            try {
+                const response = await api.get(`/orders/${orderId}/invoice`, {
+                    responseType: 'text'
+                });
+                const win = window.open('', '_blank');
+                if (win) {
+                    win.document.write(response.data);
+                    win.document.close();
+                } else {
+                    alert('Please allow popups to view the invoice.');
+                }
+            } catch (e) {
+                alert('Failed to download invoice. Please try again.');
             }
-            alert('Failed to download invoice. Please try again.');
         }
     };
 

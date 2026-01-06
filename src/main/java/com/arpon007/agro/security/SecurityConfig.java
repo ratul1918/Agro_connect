@@ -72,6 +72,8 @@ public class SecurityConfig {
                                 "/favicon.ico", // Favicon
                                 "/uploads/**" // Uploaded files
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/orders/*/invoice", "/api/orders/*/invoice/pdf")
+                        .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/crops", "/api/crops/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // All other requests need authentication

@@ -92,6 +92,9 @@ public class InvoiceService {
                 // Retail: No platform fee, No advance payment display
             }
 
+            // Determine payment method - Retail = COD, B2B = Advance Payment
+            String paymentMethod = isB2B ? "Advance Payment" : "Cash on Delivery";
+
             return template
                     .replace("{{customer_name}}", buyerName)
                     .replace("{{customer_email}}", buyerEmail)
@@ -100,6 +103,7 @@ public class InvoiceService {
                     .replace("{{invoice_number}}", "INV-" + order.getId())
                     .replace("{{date}}", new SimpleDateFormat("dd MMM yyyy").format(new Date()))
                     .replace("{{order_id}}", String.valueOf(order.getId()))
+                    .replace("{{payment_method}}", paymentMethod)
                     .replace("{{product_name}}", cropTitle)
                     .replace("{{farmer_name}}", farmerName)
                     .replace("{{quantity}}", "1") // Quantity handling placeholder
