@@ -82,7 +82,7 @@ public class BlogController {
             @RequestParam("content") String content,
             @RequestParam(value = "coverImage", required = false) MultipartFile coverImage,
             @RequestParam("blogType") String blogType,
-            @RequestParam(value = "isPublished", defaultValue = "false") boolean isPublished,
+            @RequestParam(value = "isPublished", defaultValue = "true") boolean isPublished,
             Authentication authentication) {
 
         User user = userRepository.findByEmail(authentication.getName())

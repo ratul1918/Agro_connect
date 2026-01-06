@@ -1,5 +1,6 @@
 package com.arpon007.agro.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.sql.Timestamp;
 
 public class Blog {
@@ -86,6 +87,7 @@ public class Blog {
         this.blogType = blogType;
     }
 
+    @JsonProperty("isPublished")
     public boolean isPublished() {
         return isPublished;
     }

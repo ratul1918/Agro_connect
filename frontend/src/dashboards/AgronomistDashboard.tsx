@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import MobileCard from '../components/ui/MobileCard';
 import { BookOpen, MessageSquare, Users, Edit2, Trash2, X } from 'lucide-react';
+import { BASE_URL } from '../api/axios';
 
 interface Blog {
     id: number;
@@ -217,7 +218,7 @@ const AgronomistDashboard: React.FC = () => {
                                 <div>
                                     <label className="block text-sm font-medium">Type</label>
                                     <select
-                                        className="w-full border rounded p-2 text-sm"
+                                        className="w-full border rounded p-2 text-sm bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                         value={formData.blogType}
                                         onChange={e => setFormData({ ...formData, blogType: e.target.value as 'NORMAL' | 'TIP' })}
                                     >
@@ -259,7 +260,7 @@ const AgronomistDashboard: React.FC = () => {
                                             {/* Blog Cover Image */}
                                             {blog.coverImageUrl && (
                                                 <img 
-                                                    src={`http://localhost:8080${blog.coverImageUrl}`} 
+                                                    src={blog.coverImageUrl.startsWith('http') ? blog.coverImageUrl : `${BASE_URL.replace('/api', '')}${blog.coverImageUrl}`} 
                                                     alt={blog.title}
                                                     className="w-full h-48 object-cover rounded-lg"
                                                 />
@@ -298,9 +299,9 @@ const AgronomistDashboard: React.FC = () => {
 
             {activeTab === 'farmers' && (
                 <div className="space-y-6">
-                    <div className="bg-white p-6 rounded shadow">
-                        <h3 className="text-xl font-bold mb-4">👥 Connected Farmers</h3>
-                        <p className="text-gray-500">No farmers connected yet.</p>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded shadow">
+                        <h3 className="text-xl font-bold mb-4 dark:text-white">👥 Connected Farmers</h3>
+                        <p className="text-gray-500 dark:text-gray-400">No farmers connected yet.</p>
                     </div>
                 </div>
             )}
@@ -308,19 +309,19 @@ const AgronomistDashboard: React.FC = () => {
             {/* Edit Blog Modal */}
             {editingBlog && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center p-4 border-b">
-                            <h2 className="text-xl font-bold">✏️ Edit Blog</h2>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+                            <h2 className="text-xl font-bold dark:text-white">✏️ Edit Blog</h2>
                             <button 
                                 onClick={() => setEditingBlog(null)}
-                                className="p-1 hover:bg-gray-100 rounded"
+                                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-5 h-5 dark:text-white" />
                             </button>
                         </div>
                         <form onSubmit={handleUpdate} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Title</label>
+                                <label className="block text-sm font-medium mb-1 dark:text-gray-300">Title</label>
                                 <Input
                                     value={editFormData.title}
                                     onChange={e => setEditFormData({ ...editFormData, title: e.target.value })}
@@ -330,7 +331,7 @@ const AgronomistDashboard: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Content</label>
+                                <label className="block text-sm font-medium mb-1 dark:text-gray-300">Content</label>
                                 <Textarea
                                     value={editFormData.content}
                                     onChange={e => setEditFormData({ ...editFormData, content: e.target.value })}
@@ -342,15 +343,15 @@ const AgronomistDashboard: React.FC = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Cover Image</label>
+                                    <label className="block text-sm font-medium mb-1 dark:text-gray-300">Cover Image</label>
                                     {editingBlog.coverImageUrl && (
                                         <div className="mb-2">
                                             <img 
-                                                src={`http://localhost:8080${editingBlog.coverImageUrl}`}
+                                                src={editingBlog.coverImageUrl.startsWith('http') ? editingBlog.coverImageUrl : `${BASE_URL.replace('/api', '')}${editingBlog.coverImageUrl}`}
                                                 alt="Current cover"
                                                 className="w-32 h-20 object-cover rounded border"
                                             />
-                                            <p className="text-xs text-gray-500 mt-1">Current image</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Current image</p>
                                         </div>
                                     )}
                                     <input
@@ -363,12 +364,12 @@ const AgronomistDashboard: React.FC = () => {
                                             }
                                         }}
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">Leave empty to keep current image</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave empty to keep current image</p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Type</label>
+                                    <label className="block text-sm font-medium mb-1 dark:text-gray-300">Type</label>
                                     <select
-                                        className="w-full border rounded p-2"
+                                        className="w-full border rounded p-2 bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
                                         value={editFormData.blogType}
                                         onChange={e => setEditFormData({ ...editFormData, blogType: e.target.value as 'NORMAL' | 'TIP' })}
                                     >
@@ -385,7 +386,7 @@ const AgronomistDashboard: React.FC = () => {
                                     onChange={e => setEditFormData({ ...editFormData, isPublished: e.target.checked })}
                                     id="edit-published"
                                 />
-                                <label htmlFor="edit-published">Published</label>
+                                <label htmlFor="edit-published" className="dark:text-gray-300">Published</label>
                             </div>
 
                             <div className="flex gap-2 pt-4">
