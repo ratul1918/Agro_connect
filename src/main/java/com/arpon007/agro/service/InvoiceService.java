@@ -2,22 +2,12 @@ package com.arpon007.agro.service;
 
 import com.arpon007.agro.model.Order;
 import com.arpon007.agro.repository.OrderRepository;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.properties.TextAlignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -29,7 +19,6 @@ public class InvoiceService {
     private final com.arpon007.agro.repository.UserRepository userRepository;
     private final com.arpon007.agro.repository.CropRepository cropRepository;
     private final org.springframework.core.io.ResourceLoader resourceLoader;
-    private final String INVOICE_DIR = "invoices/";
 
     public InvoiceService(OrderRepository orderRepository,
             com.arpon007.agro.repository.UserRepository userRepository,
@@ -39,11 +28,6 @@ public class InvoiceService {
         this.userRepository = userRepository;
         this.cropRepository = cropRepository;
         this.resourceLoader = resourceLoader;
-        try {
-            Files.createDirectories(Paths.get(INVOICE_DIR));
-        } catch (IOException e) {
-            log.error("Failed to create invoice directory {}", INVOICE_DIR, e);
-        }
     }
 
     /**
@@ -85,11 +69,9 @@ public class InvoiceService {
             if (isB2B) {
                 BigDecimal platformFee = order.getTotalAmount().multiply(new BigDecimal("0.01"));
                 platformFeeSection = "<div class=\"totals-row\"><span>Platform Fee (1%)</span><span>৳"
-                        + platformFee.setScale(2, java.math.RoundingMode.HALF_UP).toString() + "</span></div>";
+                        + platformFee.setScale(2, java.math.RoundingMode.HALF_UP) + "</span></div>";
                 advancePaymentSection = "<div class=\"totals-row\" style=\"color: #ef4444;\"><span>Advance Payment (20%)</span><span>-৳"
-                        + order.getAdvanceAmount().toString() + "</span></div>";
-            } else {
-                // Retail: No platform fee, No advance payment display
+                        + order.getAdvanceAmount() + "</span></div>";
             }
 
             // Determine payment method - Retail = COD, B2B = Advance Payment
@@ -122,24 +104,23 @@ public class InvoiceService {
     }
 
     /**
-     * Generate PDF invoice using HTML-to-PDF conversion
+     * Generate PDF invoice - returns HTML content as bytes for now
+     * Note: Full PDF generation requires adding a PDF library to pom.xml
      */
     public byte[] generateInvoicePDFBytes(Long orderId) {
         try {
             String htmlContent = generateInvoiceHtml(orderId);
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            com.itextpdf.html2pdf.HtmlConverter.convertToPdf(htmlContent, baos);
-
-            return baos.toByteArray();
+            return htmlContent.getBytes(StandardCharsets.UTF_8);
         } catch (Exception e) {
             log.error("Failed to generate invoice PDF bytes for order {}", orderId, e);
             throw new RuntimeException("Failed to generate invoice: " + e.getMessage());
         }
     }
 
-    // Kept for backward compatibility
+    /**
+     * Backward compatibility method
+     */
     public String generateInvoicePDF(Long orderId) {
-        return "";
+        return generateInvoiceHtml(orderId);
     }
 }
