@@ -26,7 +26,7 @@ public class AIService {
     @Value("${ai.system.prompt:You are Drac Agro AI, an agricultural expert assistant for Bangladesh. You help farmers with crop management, pest control, weather advice, and market information. Be helpful, accurate, and culturally aware.}")
     private String systemPrompt;
 
-    @Value("${ai.model:gemini-1.5-flash-8b}")
+    @Value("${ai.model:gemini-flash-latest}")
     private String modelName;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
