@@ -11,6 +11,7 @@ import { Leaf, Mail, Lock, User, Phone, MapPin } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import ScrollableSelect from '../components/ui/scrollable-select';
+import { locationData } from '../data/locationData';
 
 // Types for Bangladesh location data (matching bdapis.com response)
 interface Division {
@@ -72,65 +73,50 @@ const AuthPage: React.FC = () => {
     const [signupSuccess, setSignupSuccess] = useState(false);
 
     // Fetch divisions on component mount
+    // Fetch divisions from static data (API is unstable)
     useEffect(() => {
-        const fetchDivisions = async () => {
-            try {
-                setLocationLoading(true);
-                const response = await fetch('https://bdapis.com/api/v1.2/divisions');
-                const data = await response.json();
-                setDivisions(data.data || []);
-            } catch (error) {
-                console.error('Error fetching divisions:', error);
-                // Fallback to static data if API fails
-                setDivisions([
-                    { division: 'Dhaka', divisionbn: 'ঢাকা' },
-                    { division: 'Chattogram', divisionbn: 'চট্টগ্রাম' },
-                    { division: 'Rajshahi', divisionbn: 'রাজশাহী' },
-                    { division: 'Khulna', divisionbn: 'খুলনা' },
-                    { division: 'Barishal', divisionbn: 'বরিশাল' },
-                    { division: 'Sylhet', divisionbn: 'সিলেট' },
-                    { division: 'Rangpur', divisionbn: 'রংপুর' },
-                    { division: 'Mymensingh', divisionbn: 'ময়মনসিংহ' }
-                ]);
-            } finally {
-                setLocationLoading(false);
-            }
-        };
-
-        fetchDivisions();
+        const staticDivisions = Object.values(locationData).map(d => ({
+            division: d.division,
+            divisionbn: d.divisionbn
+        }));
+        setDivisions(staticDivisions);
+        setLocationLoading(false);
     }, []);
 
     // Fetch districts when division changes
     useEffect(() => {
-        const fetchDistricts = async () => {
-            if (signupData.division) {
-                try {
-                    const response = await fetch(`https://bdapis.com/api/v1.2/division/${signupData.division}`);
-                    const data = await response.json();
-                    setFilteredDistricts(data.data || []);
-                } catch (error) {
-                    console.error('Error fetching districts:', error);
-                    setFilteredDistricts([]);
-                }
+        if (signupData.division) {
+            const divisionData = locationData[signupData.division];
+            if (divisionData) {
+                console.log(`Loading static districts for ${signupData.division}`);
+                setFilteredDistricts(divisionData.districts.map(d => ({
+                    district: d.district,
+                    districtbn: d.districtbn,
+                    upazilla: d.upazillas
+                })));
             } else {
                 setFilteredDistricts([]);
             }
             // Reset district and upazila when division changes
             setSignupData(prev => ({ ...prev, district: '', upazila: '', thana: '' }));
             setFilteredUpazilas([]);
-        };
-
-        fetchDistricts();
+        } else {
+            setFilteredDistricts([]);
+            setSignupData(prev => ({ ...prev, district: '', upazila: '', thana: '' }));
+            setFilteredUpazilas([]);
+        }
     }, [signupData.division]);
 
     // Filter upazilas when district changes
     useEffect(() => {
-        if (signupData.district) {
+        if (signupData.district && filteredDistricts && filteredDistricts.length > 0) {
             const selectedDistrict = filteredDistricts.find(d => d.district === signupData.district);
-            if (selectedDistrict && selectedDistrict.upazilla) {
+            if (selectedDistrict && selectedDistrict.upazilla && Array.isArray(selectedDistrict.upazilla)) {
                 const upazilaList: Upazila[] = selectedDistrict.upazilla.map(name => ({ name }));
+                console.log(`Upazilas for ${signupData.district}:`, upazilaList);
                 setFilteredUpazilas(upazilaList);
             } else {
+                console.warn(`No upazilas found for district: ${signupData.district}`);
                 setFilteredUpazilas([]);
             }
         } else {
@@ -482,12 +468,12 @@ const AuthPage: React.FC = () => {
                                                     id="signup-district"
                                                     value={signupData.district}
                                                     onChange={(value) => setSignupData({ ...signupData, district: value })}
-                                                    options={filteredDistricts.map((d) => ({
-                                                        value: d.district,
-                                                        label: `${d.district} (${d.districtbn})`
-                                                    }))}
+                                                    options={filteredDistricts && Array.isArray(filteredDistricts) ? filteredDistricts.map((d) => ({
+                                                        value: d.district || '',
+                                                        label: `${d.district || ''} (${d.districtbn || ''})`
+                                                    })) : []}
                                                     placeholder="Select District"
-                                                    disabled={!signupData.division || filteredDistricts.length === 0}
+                                                    disabled={!signupData.division || !filteredDistricts || filteredDistricts.length === 0}
                                                     icon={<MapPin className="h-5 w-5" />}
                                                     maxHeight={200}
                                                 />
@@ -501,12 +487,12 @@ const AuthPage: React.FC = () => {
                                                         id="signup-upazila"
                                                         value={signupData.upazila}
                                                         onChange={(value) => setSignupData({ ...signupData, upazila: value, thana: value })}
-                                                        options={filteredUpazilas.map((u) => ({
-                                                            value: u.name,
-                                                            label: u.name
-                                                        }))}
+                                                        options={filteredUpazilas && Array.isArray(filteredUpazilas) ? filteredUpazilas.map((u) => ({
+                                                            value: u.name || '',
+                                                            label: u.name || ''
+                                                        })) : []}
                                                         placeholder="Select Upazila"
-                                                        disabled={!signupData.district || filteredUpazilas.length === 0}
+                                                        disabled={!signupData.district || !filteredUpazilas || filteredUpazilas.length === 0}
                                                         maxHeight={180}
                                                     />
                                                 </div>
@@ -516,12 +502,12 @@ const AuthPage: React.FC = () => {
                                                         id="signup-thana"
                                                         value={signupData.thana}
                                                         onChange={(value) => setSignupData({ ...signupData, thana: value })}
-                                                        options={filteredUpazilas.map((u) => ({
-                                                            value: u.name,
-                                                            label: u.name
-                                                        }))}
+                                                        options={filteredUpazilas && Array.isArray(filteredUpazilas) ? filteredUpazilas.map((u) => ({
+                                                            value: u.name || '',
+                                                            label: u.name || ''
+                                                        })) : []}
                                                         placeholder="Select Thana"
-                                                        disabled={!signupData.district || filteredUpazilas.length === 0}
+                                                        disabled={!signupData.district || !filteredUpazilas || filteredUpazilas.length === 0}
                                                         maxHeight={180}
                                                     />
                                                 </div>
