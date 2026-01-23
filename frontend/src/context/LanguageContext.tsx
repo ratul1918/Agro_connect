@@ -168,6 +168,67 @@ const translations: Translations = {
 
     // Common
     'common.loading': { en: 'Loading...', bn: 'লোড হচ্ছে...' },
+
+    // Dashboard Common
+    'dashboard.overview': { en: 'Overview', bn: 'সারসংক্ষেপ' },
+    'dashboard.add_crop': { en: 'Add Crop', bn: 'ফসল যোগ করুন' },
+    'dashboard.my_crops': { en: 'My Crops', bn: 'আমার ফসল' },
+    'dashboard.orders': { en: 'Orders', bn: 'অর্ডার তালিকা' },
+    'dashboard.exports': { en: 'Exports', bn: 'রপ্তানি' },
+    'dashboard.bids': { en: 'Bids', bn: 'বিড সমূহ' },
+    'dashboard.messages': { en: 'Messages', bn: 'বার্তা' },
+    'dashboard.wallet': { en: 'Wallet', bn: 'ওয়ালেট' },
+    'dashboard.ai_chat': { en: 'AI Assistant', bn: 'এআই সহকারী' },
+    'dashboard.settings': { en: 'Settings', bn: 'সেটিংস' },
+    'dashboard.logout': { en: 'Logout', bn: 'লগআউট' },
+    'dashboard.title': { en: 'Dashboard', bn: 'ড্যাশবোর্ড' },
+    'dashboard.subtitle': { en: 'Manage your farming activities efficiently', bn: 'আপনার কৃষি কার্যক্রম দক্ষতার সাথে পরিচালনা করুন' },
+
+    // Farmer Dashboard
+    'farmer.total_crops': { en: 'Total Crops', bn: 'মোট ফসল' },
+    'farmer.total_orders': { en: 'Total Orders', bn: 'মোট অর্ডার' },
+    'farmer.pending_money': { en: 'Pending Amount', bn: 'অপেক্ষমাণ টাকা' },
+    'farmer.total_income': { en: 'Total Income', bn: 'মোট আয়' },
+    'farmer.sales_overview': { en: 'Sales Overview', bn: 'বিক্রয় সারসংক্ষেপ' },
+    'farmer.sales_desc': { en: 'Income statistics for the last few days', bn: 'গত কয়েক দিনের আয়ের পরিসংখ্যান' },
+    'farmer.crop_dist': { en: 'Crop Distribution', bn: 'ফসল বণ্টন' },
+    'farmer.crop_dist_desc': { en: 'Distribution of crops in stock', bn: 'মজুদ ফসলের বণ্টন' },
+    'farmer.todays_market': { en: 'Today\'s Market Price', bn: 'আজকের বাজার দর' },
+    'farmer.market_desc': { en: 'Government market rates (per kg/unit)', bn: 'সরকারি বাজার দর (প্রতি কেজি/একক)' },
+    'farmer.recent_orders': { en: 'Recent Orders', bn: 'সাম্প্রতিক অর্ডার' },
+    'farmer.pending_bids': { en: 'Pending Bids', bn: 'অপেক্ষমাণ বিড' },
+    'farmer.transaction_history': { en: 'Transaction History', bn: 'লেনদেনের ইতিহাস' },
+    'farmer.cashout_history': { en: 'Cashout History', bn: 'উত্তোলনের ইতিহাস' },
+    'farmer.no_data': { en: 'No data available', bn: 'কোন তথ্য নেই' },
+    'farmer.accept': { en: 'Accept', bn: 'গ্রহণ করুন' },
+    'farmer.reject': { en: 'Reject', bn: 'প্রত্যাখ্যান করুন' },
+
+    // Marketplace
+    'market.retail_title': { en: 'Retail Shop', bn: 'খুচরা দোকান' },
+    'market.retail_subtitle': { en: 'Quality products curated by our team', bn: 'আমাদের টিম দ্বারা নির্বাচিত মানের পণ্য' },
+    'market.b2b_title': { en: 'B2B Marketplace', bn: 'পাইকারি বাজার' },
+    'market.b2b_subtitle': { en: 'Wholesale marketplace for farmers and buyers', bn: 'কৃষক ও ক্রেতাদের জন্য পাইকারি বাজার' },
+    'market.search_placeholder': { en: 'Search for products...', bn: 'পণ্য অনুসন্ধান করুন...' },
+    'market.filter_category': { en: 'Categories', bn: 'বিভাগ' },
+    'market.sort_latest': { en: 'Sort by: Latest', bn: 'সাজান: নতুন' },
+    'market.sort_low_high': { en: 'Price: Low to High', bn: 'মূল্য: কম থেকে বেশি' },
+    'market.sort_high_low': { en: 'Price: High to Low', bn: 'মূল্য: বেশি থেকে কম' },
+    'market.showing': { en: 'Showing', bn: 'দেখানো হচ্ছে' },
+    'market.products': { en: 'products', bn: 'টি পণ্য' },
+    'market.buy_now': { en: 'Buy Now', bn: 'এখনই কিনুন' },
+    'market.place_bid': { en: 'Place Bid', bn: 'বিড করুন' },
+    'market.min_order': { en: 'Min Order', bn: 'নূন্যতম অর্ডার' },
+    'market.available': { en: 'Available', bn: 'মজুদ' },
+    'market.login_bid': { en: 'Login to Bid', bn: 'বিড করতে লগইন করুন' },
+    'market.wholesale_badge': { en: 'Wholesale', bn: 'পাইকারি' },
+
+    // Common Actions
+    'action.edit': { en: 'Edit', bn: 'সম্পাদনা' },
+    'action.delete': { en: 'Delete', bn: 'মুছুন' },
+    'action.save': { en: 'Save', bn: 'সংরক্ষণ' },
+    'action.cancel': { en: 'Cancel', bn: 'বাতিল' },
+    'action.view': { en: 'View', bn: 'দেখুন' },
+    'action.clear_filters': { en: 'Clear Filters', bn: 'ফিল্টার মুছুন' },
 };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

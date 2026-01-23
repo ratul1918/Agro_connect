@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { Toaster } from 'react-hot-toast';
 
 // Layouts
@@ -74,48 +75,50 @@ const ThemedToaster = () => {
 function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            {/* Public Routes with Navbar & Footer */}
-            <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
-            <Route path="/marketplace" element={<Navigate to="/marketplace/retail" />} />
-            <Route path="/marketplace/retail" element={<PublicLayout><RetailMarketplacePage /></PublicLayout>} />
-            <Route path="/marketplace/b2b" element={<PublicLayout><B2BMarketplacePage /></PublicLayout>} />
-            <Route path="/crop/:id" element={<PublicLayout><ProductDetailsPage /></PublicLayout>} />
-            <Route path="/cart" element={<PublicLayout><CartPage /></PublicLayout>} />
-            <Route path="/checkout" element={<PublicLayout><CheckoutPage /></PublicLayout>} />
-            <Route path="/orders" element={<PublicLayout><OrdersPage /></PublicLayout>} />
-            <Route path="/market-prices" element={<PublicLayout><MarketPricesPage /></PublicLayout>} />
-            <Route path="/blogs" element={<PublicLayout><BlogsPage /></PublicLayout>} />
-            <Route path="/blogs/:id" element={<PublicLayout><BlogDetailPage /></PublicLayout>} />
-            <Route path="/about" element={<PublicLayout><AboutPage /></PublicLayout>} />
+      <LanguageProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              {/* Public Routes with Navbar & Footer */}
+              <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
+              <Route path="/marketplace" element={<Navigate to="/marketplace/retail" />} />
+              <Route path="/marketplace/retail" element={<PublicLayout><RetailMarketplacePage /></PublicLayout>} />
+              <Route path="/marketplace/b2b" element={<PublicLayout><B2BMarketplacePage /></PublicLayout>} />
+              <Route path="/crop/:id" element={<PublicLayout><ProductDetailsPage /></PublicLayout>} />
+              <Route path="/cart" element={<PublicLayout><CartPage /></PublicLayout>} />
+              <Route path="/checkout" element={<PublicLayout><CheckoutPage /></PublicLayout>} />
+              <Route path="/orders" element={<PublicLayout><OrdersPage /></PublicLayout>} />
+              <Route path="/market-prices" element={<PublicLayout><MarketPricesPage /></PublicLayout>} />
+              <Route path="/blogs" element={<PublicLayout><BlogsPage /></PublicLayout>} />
+              <Route path="/blogs/:id" element={<PublicLayout><BlogDetailPage /></PublicLayout>} />
+              <Route path="/about" element={<PublicLayout><AboutPage /></PublicLayout>} />
 
-            {/* Profile & Settings Routes (Protected) */}
-            <Route path="/profile" element={<PublicLayout><PrivateRoute><ProfilePage /></PrivateRoute></PublicLayout>} />
-            <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
-            <Route path="/messages" element={<PrivateRoute><NavOnlyLayout><MessagesPage /></NavOnlyLayout></PrivateRoute>} />
-            <Route path="/agronomists" element={<PrivateRoute><NavOnlyLayout><AgronomistDirectoryPage /></NavOnlyLayout></PrivateRoute>} />
+              {/* Profile & Settings Routes (Protected) */}
+              <Route path="/profile" element={<PublicLayout><PrivateRoute><ProfilePage /></PrivateRoute></PublicLayout>} />
+              <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
+              <Route path="/messages" element={<PrivateRoute><NavOnlyLayout><MessagesPage /></NavOnlyLayout></PrivateRoute>} />
+              <Route path="/agronomists" element={<PrivateRoute><NavOnlyLayout><AgronomistDirectoryPage /></NavOnlyLayout></PrivateRoute>} />
 
-            {/* Auth Routes (no navbar/footer) */}
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/login" element={<Navigate to="/auth" />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
+              {/* Auth Routes (no navbar/footer) */}
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/login" element={<Navigate to="/auth" />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-            {/* Protected Dashboard Routes */}
-            <Route path="/admin/*" element={<PrivateRoute><MobileDashboardContainer><AdminDashboard /></MobileDashboardContainer></PrivateRoute>} />
-            <Route path="/farmer/*" element={<PrivateRoute><MobileDashboardContainer><FarmerDashboard /></MobileDashboardContainer></PrivateRoute>} />
-            <Route path="/buyer/*" element={<PrivateRoute><MobileDashboardContainer><BuyerDashboard /></MobileDashboardContainer></PrivateRoute>} />
-            <Route path="/agronomist/*" element={<PrivateRoute><MobileDashboardContainer><AgronomistDashboard /></MobileDashboardContainer></PrivateRoute>} />
-            <Route path="/customer/*" element={<PrivateRoute><MobileDashboardContainer><CustomerDashboard /></MobileDashboardContainer></PrivateRoute>} />
+              {/* Protected Dashboard Routes */}
+              <Route path="/admin/*" element={<PrivateRoute><MobileDashboardContainer><AdminDashboard /></MobileDashboardContainer></PrivateRoute>} />
+              <Route path="/farmer/*" element={<PrivateRoute><MobileDashboardContainer><FarmerDashboard /></MobileDashboardContainer></PrivateRoute>} />
+              <Route path="/buyer/*" element={<PrivateRoute><MobileDashboardContainer><BuyerDashboard /></MobileDashboardContainer></PrivateRoute>} />
+              <Route path="/agronomist/*" element={<PrivateRoute><MobileDashboardContainer><AgronomistDashboard /></MobileDashboardContainer></PrivateRoute>} />
+              <Route path="/customer/*" element={<PrivateRoute><MobileDashboardContainer><CustomerDashboard /></MobileDashboardContainer></PrivateRoute>} />
 
-            {/* Catch all */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-          <ThemedToaster />
-        </AuthProvider>
-      </BrowserRouter>
+              {/* Catch all */}
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+            <ThemedToaster />
+          </AuthProvider>
+        </BrowserRouter>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

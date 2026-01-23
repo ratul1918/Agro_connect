@@ -143,8 +143,8 @@ const HomePage: React.FC = () => {
                         >
                             <div className="relative z-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl skew-y-3 group-hover:skew-y-2 transition-transform duration-700">
                                 <img
-                                    src="https://images.unsplash.com/photo-1595856552697-393c8374d7ae?q=80&w=1200"
-                                    alt="Argiculture"
+                                    src="/hero_agriculture.png"
+                                    alt="Agriculture"
                                     className="rounded-2xl shadow-inner w-full h-auto object-cover aspect-[4/3]"
                                 />
 

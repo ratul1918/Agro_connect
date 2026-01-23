@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { addCrop, getMarketPrices } from '../api/endpoints';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Button } from '../components/ui/button';
+import { useLanguage } from '../context/LanguageContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { useNotification } from '../context/NotificationContext';
@@ -89,6 +91,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 
 const FarmerDashboard: React.FC = () => {
     const { success, error } = useNotification();
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
     const [orders, setOrders] = useState<Order[]>([]);
@@ -470,25 +473,25 @@ const FarmerDashboard: React.FC = () => {
     };
 
     const sidebarItems = [
-        { label: 'সারাংশ (Overview)', icon: BarChart3, value: 'overview' },
-        { label: 'ফসল যোগ করুন (Add Crop)', icon: Plus, value: 'add-crop' },
-        { label: 'আমার ফসল (My Crops)', icon: Leaf, value: 'my-crops' },
-        { label: 'অর্ডার (Orders)', icon: Package, value: 'orders' },
-        { label: 'রপ্তানি (Exports)', icon: Ship, value: 'exports' },
-        { label: 'বিড (Bids)', icon: FileCheck, value: 'bids' },
-        { label: 'বার্তা (Messages)', icon: MessageSquare, value: 'messages', onClick: () => navigate('/messages') },
-        { label: 'ওয়ালেট (Wallet)', icon: DollarSign, value: 'wallet' },
-        { label: 'AI সহায়তা (AI Chat)', icon: Bot, value: 'ai-chat' },
+        { label: 'dashboard.overview', icon: BarChart3, value: 'overview' },
+        { label: 'dashboard.add_crop', icon: Plus, value: 'add-crop' },
+        { label: 'dashboard.my_crops', icon: Leaf, value: 'my-crops' },
+        { label: 'dashboard.orders', icon: Package, value: 'orders' },
+        { label: 'dashboard.exports', icon: Ship, value: 'exports' },
+        { label: 'dashboard.bids', icon: FileCheck, value: 'bids' },
+        { label: 'dashboard.messages', icon: MessageSquare, value: 'messages', onClick: () => navigate('/messages') },
+        { label: 'dashboard.wallet', icon: DollarSign, value: 'wallet' },
+        { label: 'dashboard.ai_chat', icon: Bot, value: 'ai-chat' },
     ];
 
     const getTitle = () => {
-        if (activeTab === 'change-password') return 'Change Password';
-        if (activeTab === 'ai-chat') return 'AI সহায়তা (AI Chat)';
-        if (activeTab === 'blogs') return 'ব্লগ ও কৃষি টিপস';
-        if (activeTab === 'messages') return 'বার্তা (Messages)';
-        if (activeTab === 'find-agronomist') return 'কৃষিবিদ খুঁজুন (Find Agronomist)';
+        if (activeTab === 'change-password') return t('dashboard.settings');
+        if (activeTab === 'ai-chat') return t('dashboard.ai_chat');
+        if (activeTab === 'blogs') return t('dashboard.blogs') || 'Blogs & Tips';
+        if (activeTab === 'messages') return t('dashboard.messages');
+        if (activeTab === 'find-agronomist') return 'Agonomist Directory';
         const item = sidebarItems.find(i => i.value === activeTab);
-        return item ? item.label : 'Dashboard';
+        return item ? t(item.label) : 'Dashboard';
     };
 
     const handleTabChange = (tab: string) => {
@@ -510,39 +513,41 @@ const FarmerDashboard: React.FC = () => {
             {activeTab === 'overview' && (
                 <div className="space-y-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                        <MobileStatCard title="মোট ফসল" value={myCrops.length} icon={<span className="text-2xl">🌾</span>} color="green" />
-                        <MobileStatCard title="অর্ডার" value={orders.length} icon={<span className="text-2xl">📦</span>} color="blue" />
-                        <MobileStatCard title="অপেক্ষমাণ টাকা" value={`৳${pendingMoney}`} icon={<span className="text-2xl">💰</span>} color="yellow" />
-                        <MobileStatCard title="মোট আয়" value={`৳${totalIncome}`} icon={<span className="text-2xl">💵</span>} color="purple" />
+                        <MobileStatCard title={t('farmer.total_crops')} value={myCrops.length} icon={<span className="text-2xl">🌾</span>} color="green" />
+                        <MobileStatCard title={t('farmer.total_orders')} value={orders.length} icon={<span className="text-2xl">📦</span>} color="blue" />
+                        <MobileStatCard title={t('farmer.pending_money')} value={`৳${pendingMoney}`} icon={<span className="text-2xl">💰</span>} color="yellow" />
+                        <MobileStatCard title={t('farmer.total_income')} value={`৳${totalIncome}`} icon={<span className="text-2xl">💵</span>} color="purple" />
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4 md:gap-6">
                         {/* Sales Chart */}
-                        <Card className="col-span-1">
+                        <Card className="col-span-1 shadow-sm hover:shadow-md transition-shadow">
                             <CardHeader>
-                                <CardTitle>আয় ও বিক্রয় (Sales Overview)</CardTitle>
-                                <CardDescription>গত কয়েকদিনের আয়ের পরিসংখ্যান</CardDescription>
+                                <CardTitle>{t('farmer.sales_overview')}</CardTitle>
+                                <CardDescription>{t('farmer.sales_desc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="h-[300px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={orders.filter(o => o.status === 'COMPLETED' || o.status === 'DELIVERED').slice(0, 10)}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="cropTitle" />
-                                        <YAxis />
-                                        <Tooltip />
+                                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                                        <XAxis dataKey="cropTitle" fontSize={12} />
+                                        <YAxis fontSize={12} />
+                                        <Tooltip
+                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                        />
                                         <Legend />
-                                        <Bar dataKey="totalAmount" name="টাকা (BDT)" fill="#16a34a" />
+                                        <Bar dataKey="totalAmount" name="BDT" fill="#16a34a" radius={[4, 4, 0, 0]} />
                                     </BarChart>
                                 </ResponsiveContainer>
-                                {orders.filter(o => o.status === 'COMPLETED').length === 0 && <p className="text-center text-muted-foreground mt-[-150px]">কোন বিক্রয় তথ্য নেই</p>}
+                                {orders.filter(o => o.status === 'COMPLETED').length === 0 && <p className="text-center text-muted-foreground mt-[-150px]">{t('farmer.no_data')}</p>}
                             </CardContent>
                         </Card>
 
                         {/* Crop Distribution Pie Chart */}
-                        <Card className="col-span-1">
+                        <Card className="col-span-1 shadow-sm hover:shadow-md transition-shadow">
                             <CardHeader>
-                                <CardTitle>ফসল বন্টন (Crop Distribution)</CardTitle>
-                                <CardDescription>মজুদ ফসলের পরিমাণ</CardDescription>
+                                <CardTitle>{t('farmer.crop_dist')}</CardTitle>
+                                <CardDescription>{t('farmer.crop_dist_desc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="h-[300px]">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -554,6 +559,7 @@ const FarmerDashboard: React.FC = () => {
                                             cx="50%"
                                             cy="50%"
                                             outerRadius={80}
+                                            innerRadius={60}
                                             fill="#8884d8"
                                             label
                                         >
@@ -561,29 +567,29 @@ const FarmerDashboard: React.FC = () => {
                                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                             ))}
                                         </Pie>
-                                        <Tooltip />
+                                        <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                                         <Legend />
                                     </PieChart>
                                 </ResponsiveContainer>
-                                {myCrops.length === 0 && <p className="text-center text-muted-foreground mt-[-150px]">কোন ফসল নেই</p>}
+                                {myCrops.length === 0 && <p className="text-center text-muted-foreground mt-[-150px]">{t('farmer.no_data')}</p>}
                             </CardContent>
                         </Card>
 
                         {/* Market Prices */}
-                        <Card className="col-span-2">
+                        <Card className="col-span-2 shadow-sm hover:shadow-md transition-shadow">
                             <CardHeader>
-                                <CardTitle>আজকের বাজার দর (Today's Market Price)</CardTitle>
-                                <CardDescription>সরকারি বাজার দর (প্রতি কেজি/একক)</CardDescription>
+                                <CardTitle>{t('farmer.todays_market')}</CardTitle>
+                                <CardDescription>{t('farmer.market_desc')}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="overflow-x-auto">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>ফসল</TableHead>
-                                                <TableHead>জেলা</TableHead>
-                                                <TableHead>দর (টকা)</TableHead>
-                                                <TableHead>তারিখ</TableHead>
+                                                <TableHead>Crop</TableHead>
+                                                <TableHead>District</TableHead>
+                                                <TableHead>Price (BDT)</TableHead>
+                                                <TableHead>Date</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -597,7 +603,7 @@ const FarmerDashboard: React.FC = () => {
                                             ))}
                                             {marketPrices.length === 0 && (
                                                 <TableRow>
-                                                    <TableCell colSpan={4} className="text-center text-muted-foreground">বাজার দর পাওয়া যায়নি</TableCell>
+                                                    <TableCell colSpan={4} className="text-center text-muted-foreground">{t('farmer.no_data')}</TableCell>
                                                 </TableRow>
                                             )}
                                         </TableBody>
@@ -606,57 +612,57 @@ const FarmerDashboard: React.FC = () => {
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="shadow-sm hover:shadow-md transition-shadow">
                             <CardHeader>
-                                <CardTitle>সাম্প্রতিক অর্ডার</CardTitle>
+                                <CardTitle>{t('farmer.recent_orders')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {orders.slice(0, 5).map(o => (
-                                    <div key={o.id} className="flex justify-between items-center py-2 border-b last:border-0 border-border">
+                                    <div key={o.id} className="flex justify-between items-center py-3 border-b last:border-0 border-border">
                                         <div className="flex-1">
                                             <div className="font-medium">{o.cropTitle}</div>
-                                            <div className="text-sm text-muted-foreground">ক্রেতা: {o.buyerName} • ৳{o.totalAmount}</div>
+                                            <div className="text-sm text-muted-foreground">Buyer: {o.buyerName} • ৳{o.totalAmount}</div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Badge variant="outline" className={getStatusColor(o.status)}>{o.status}</Badge>
                                             <a href={`${BASE_URL.replace('/api', '')}/api/orders/${o.id}/invoice`} target="_blank" rel="noopener noreferrer">
-                                                <Button size="sm" variant="outline">📄</Button>
+                                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0"><Printer className="h-4 w-4" /></Button>
                                             </a>
                                         </div>
                                     </div>
                                 ))}
-                                {orders.length === 0 && <p className="text-muted-foreground">কোন অর্ডার নেই</p>}
+                                {orders.length === 0 && <p className="text-muted-foreground text-center py-4">{t('farmer.no_data')}</p>}
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="shadow-sm hover:shadow-md transition-shadow">
                             <CardHeader>
-                                <CardTitle>অপেক্ষমাণ বিড</CardTitle>
+                                <CardTitle>{t('farmer.pending_bids')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {bids.filter(b => b.status === 'PENDING').slice(0, 5).map(b => (
-                                    <div key={b.id} className="flex justify-between items-center py-2 border-b last:border-0 border-border">
+                                    <div key={b.id} className="flex justify-between items-center py-3 border-b last:border-0 border-border">
                                         <div>
                                             <div className="font-medium">{b.cropTitle}</div>
                                             <div className="text-sm text-muted-foreground">৳{b.amount} - {b.buyerName}</div>
                                         </div>
                                         <div className="flex gap-2">
-                                            <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleBidAction(b.id, 'accept')}>গ্রহণ</Button>
-                                            <Button size="sm" variant="destructive" onClick={() => handleBidAction(b.id, 'reject')}>বাতিল</Button>
+                                            <Button size="sm" className="bg-green-600 hover:bg-green-700 h-8 text-xs" onClick={() => handleBidAction(b.id, 'accept')}>{t('farmer.accept')}</Button>
+                                            <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={() => handleBidAction(b.id, 'reject')}>{t('farmer.reject')}</Button>
                                         </div>
                                     </div>
                                 ))}
-                                {bids.filter(b => b.status === 'PENDING').length === 0 && <p className="text-muted-foreground">কোন অপেক্ষমাণ বিড নেই</p>}
+                                {bids.filter(b => b.status === 'PENDING').length === 0 && <p className="text-muted-foreground text-center py-4">{t('farmer.no_data')}</p>}
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="shadow-sm hover:shadow-md transition-shadow">
                             <CardHeader>
-                                <CardTitle>লেনদেনের ইতিহাস</CardTitle>
+                                <CardTitle>{t('farmer.transaction_history')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {transactions.length === 0 ? (
-                                    <p className="text-muted-foreground text-center py-4">কোন লেনদেন নেই</p>
+                                    <p className="text-muted-foreground text-center py-4">{t('farmer.no_data')}</p>
                                 ) : (
                                     <div className="space-y-2">
                                         {transactions.slice(0, 5).map((t, idx) => (
@@ -664,7 +670,7 @@ const FarmerDashboard: React.FC = () => {
                                                 <div>
                                                     <div className="font-medium text-sm">{t.description}</div>
                                                     <div className="text-xs text-muted-foreground">
-                                                        {new Date(t.createdAt).toLocaleDateString('bn-BD')} • {t.source}
+                                                        {new Date(t.createdAt).toLocaleDateString()} • {t.source}
                                                     </div>
                                                 </div>
                                                 <div className={`font-bold ${t.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}>
@@ -677,13 +683,13 @@ const FarmerDashboard: React.FC = () => {
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="shadow-sm hover:shadow-md transition-shadow">
                             <CardHeader>
-                                <CardTitle>নগদ উত্তোলনের ইতিহাস</CardTitle>
+                                <CardTitle>{t('farmer.cashout_history')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {cashoutRequests.length === 0 ? (
-                                    <p className="text-muted-foreground text-center py-4">কোন নগদ উত্তোলনের অনুরোধ নেই</p>
+                                    <p className="text-muted-foreground text-center py-4">{t('farmer.no_data')}</p>
                                 ) : (
                                     <div className="space-y-2">
                                         {cashoutRequests.slice(0, 5).map((req: any) => (
@@ -691,16 +697,16 @@ const FarmerDashboard: React.FC = () => {
                                                 <div className="flex-1">
                                                     <div className="font-medium">৳{req.amount}</div>
                                                     <div className="text-xs text-muted-foreground">
-                                                        {new Date(req.requestedAt).toLocaleDateString('bn-BD')} • {req.paymentMethod}
+                                                        {new Date(req.requestedAt).toLocaleDateString()} • {req.paymentMethod}
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <Badge variant={req.status === 'APPROVED' ? 'default' : req.status === 'REJECTED' ? 'destructive' : 'outline'}>
-                                                        {req.status === 'APPROVED' ? '✅ অনুমোদিত' : req.status === 'REJECTED' ? '❌ প্রত্যাখ্যাত' : '⏳ অপেক্ষমাণ'}
+                                                        {req.status}
                                                     </Badge>
                                                     {req.status === 'APPROVED' && (
                                                         <a href={`${BASE_URL.replace('/api', '')}/api/cashout/${req.id}/invoice`} target="_blank" rel="noopener noreferrer">
-                                                            <Button size="sm" variant="outline">📄 Invoice</Button>
+                                                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0"><Printer className="h-4 w-4" /></Button>
                                                         </a>
                                                     )}
                                                 </div>
@@ -1039,7 +1045,7 @@ const FarmerDashboard: React.FC = () => {
                                             {o.status}
                                         </Badge>
                                     </div>
-                                    
+
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-sm">
                                             <span className="text-muted-foreground">ক্রেতা:</span>
@@ -1185,19 +1191,19 @@ const FarmerDashboard: React.FC = () => {
 
             {/* Bids */}
             {activeTab === 'bids' && (
-                <Card>
+                <Card className="shadow-sm">
                     <CardHeader>
-                        <CardTitle>প্রাপ্ত বিডসমূহ</CardTitle>
+                        <CardTitle>{t('dashboard.bids')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>ফসল</TableHead>
-                                    <TableHead>ক্রেতা</TableHead>
-                                    <TableHead>বিড পরিমাণ</TableHead>
-                                    <TableHead>স্ট্যাটাস</TableHead>
-                                    <TableHead>অ্যাকশন</TableHead>
+                                    <TableHead>Crop</TableHead>
+                                    <TableHead>Buyer</TableHead>
+                                    <TableHead>Bid Amount</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Action</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -1212,11 +1218,11 @@ const FarmerDashboard: React.FC = () => {
                                         <TableCell>
                                             <Badge variant="outline" className={getStatusColor(b.status)}>{b.status}</Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-right">
                                             {b.status === 'PENDING' && (
-                                                <div className="flex gap-2">
-                                                    <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleBidAction(b.id, 'accept')}>গ্রহণ</Button>
-                                                    <Button size="sm" variant="destructive" onClick={() => handleBidAction(b.id, 'reject')}>বাতিল</Button>
+                                                <div className="flex gap-2 justify-end">
+                                                    <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleBidAction(b.id, 'accept')}>{t('farmer.accept')}</Button>
+                                                    <Button size="sm" variant="destructive" onClick={() => handleBidAction(b.id, 'reject')}>{t('farmer.reject')}</Button>
                                                 </div>
                                             )}
                                         </TableCell>
@@ -1224,6 +1230,7 @@ const FarmerDashboard: React.FC = () => {
                                 ))}
                             </TableBody>
                         </Table>
+                        {bids.length === 0 && <p className="text-center py-8 text-muted-foreground">{t('farmer.no_data')}</p>}
                     </CardContent>
                 </Card>
             )}
@@ -1240,14 +1247,14 @@ const FarmerDashboard: React.FC = () => {
             {/* Blogs Tab */}
             {activeTab === 'blogs' && (
                 <div className="space-y-6">
-                    <Card>
+                    <Card className="shadow-sm">
                         <CardHeader>
-                            <CardTitle>কৃষি পরামর্শ ও ব্লগ</CardTitle>
-                            <CardDescription>বিশেষজ্ঞদের কাছ থেকে আধুনিক কৃষি পদ্ধতি এবং টিপস জানুন</CardDescription>
+                            <CardTitle>Agricultural Tips & Blogs</CardTitle>
+                            <CardDescription>Expert advice and modern farming techniques</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {blogs.length === 0 ? (
-                                <div className="text-center py-10 text-muted-foreground">কোন ব্লগ বা টিপস পাওয়া যায়নি</div>
+                                <div className="text-center py-10 text-muted-foreground">{t('farmer.no_data')}</div>
                             ) : (
                                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {blogs.map(blog => (
@@ -1260,7 +1267,7 @@ const FarmerDashboard: React.FC = () => {
                                             <CardContent className="p-5">
                                                 <div className="flex justify-between items-start mb-2">
                                                     <Badge variant={blog.type === 'TIP' ? 'secondary' : 'default'} className="mb-2">
-                                                        {blog.type === 'TIP' ? '💡 কৃষি টিপস' : '📝 নিবন্ধ'}
+                                                        {blog.type === 'TIP' ? '💡 Tip' : '📝 Article'}
                                                     </Badge>
                                                     <span className="text-xs text-muted-foreground">{new Date(blog.createdAt).toLocaleDateString()}</span>
                                                 </div>
@@ -1268,7 +1275,6 @@ const FarmerDashboard: React.FC = () => {
                                                 <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 mb-4">{blog.content.substring(0, 100)}...</p>
                                                 <div className="flex justify-between items-center text-xs text-muted-foreground pt-4 border-t border-gray-100 dark:border-gray-700">
                                                     <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {blog.authorName || 'Agronomist'}</span>
-                                                    {/* Ideally link to full blog view if needed */}
                                                 </div>
                                             </CardContent>
                                         </Card>
