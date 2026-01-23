@@ -12,6 +12,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -37,6 +38,17 @@ public class AIService {
 
     @Value("${ai.retry.delay:3000}")
     private int baseRetryDelay;
+
+    @PostConstruct
+    public void init() {
+        if (geminiApiKey == null || geminiApiKey.isEmpty()) {
+            System.out.println("⚠️ WARNING: AI_GEMINI_KEY is not configured. AI chat will not work.");
+            System.out.println("   Please set AI_GEMINI_KEY in your .env file or environment variables.");
+        } else {
+            System.out.println("✅ AI Service initialized with Gemini API key (length: " + geminiApiKey.length() + ")");
+            System.out.println("   Model: " + modelName);
+        }
+    }
 
     /**
      * Get AI response for a user query
