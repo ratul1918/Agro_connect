@@ -21,6 +21,7 @@ import AIChatPage from '../pages/AIChatPage';
 import MessagesPage from '../pages/MessagesPage';
 import AgronomistDirectoryPage from '../pages/AgronomistDirectoryPage';
 import ConfirmModal from '../components/ConfirmModal';
+import WeatherWidget from '../components/WeatherWidget';
 
 interface Order {
     id: number;
@@ -518,6 +519,9 @@ const FarmerDashboard: React.FC = () => {
                         <MobileStatCard title={t('farmer.pending_money')} value={`৳${pendingMoney}`} icon={<span className="text-2xl">💰</span>} color="yellow" />
                         <MobileStatCard title={t('farmer.total_income')} value={`৳${totalIncome}`} icon={<span className="text-2xl">💵</span>} color="purple" />
                     </div>
+
+                    {/* Weather Section */}
+                    <WeatherWidget className="shadow-sm hover:shadow-md transition-shadow" />
 
                     <div className="grid md:grid-cols-2 gap-4 md:gap-6">
                         {/* Sales Chart */}
