@@ -185,6 +185,7 @@ const translations: Translations = {
     'dashboard.subtitle': { en: 'Manage your farming activities efficiently', bn: 'আপনার কৃষি কার্যক্রম দক্ষতার সাথে পরিচালনা করুন' },
 
     // Farmer Dashboard
+    'farmer.add_crop': { en: 'Add Crop', bn: 'ফসল যোগ করুন' },
     'farmer.total_crops': { en: 'Total Crops', bn: 'মোট ফসল' },
     'farmer.total_orders': { en: 'Total Orders', bn: 'মোট অর্ডার' },
     'farmer.pending_money': { en: 'Pending Amount', bn: 'অপেক্ষমাণ টাকা' },
@@ -221,6 +222,48 @@ const translations: Translations = {
     'market.available': { en: 'Available', bn: 'মজুদ' },
     'market.login_bid': { en: 'Login to Bid', bn: 'বিড করতে লগইন করুন' },
     'market.wholesale_badge': { en: 'Wholesale', bn: 'পাইকারি' },
+
+    // B2B Marketplace
+    'b2b.title': { en: 'B2B Marketplace', bn: 'পাইকারি বাজার' },
+    'b2b.subtitle': { en: 'Wholesale marketplace for bulk agricultural products', bn: 'পাইকারি কৃষি পণ্যের বাজার' },
+    'b2b.search_placeholder': { en: 'Search for bulk crops...', bn: 'পাইকারি ফসল অনুসন্ধান করুন...' },
+    'b2b.buyer_msg_title': { en: 'Welcome, Buyer', bn: 'স্বাগতম, ক্রেতা' },
+    'b2b.buyer_msg_desc': { en: 'Browse and bid on bulk agricultural products', bn: 'পাইকারি কৃষি পণ্যে ব্রাউজ ও বিড করুন' },
+    'b2b.admin_msg': { en: 'Admin Mode - You can manage all products', bn: 'এডমিন মোড - আপনি সব পণ্য পরিচালনা করতে পারেন' },
+    'b2b.farmer_msg': { en: 'List your crops for bulk sale to buyers', bn: 'ক্রেতাদের কাছে পাইকারি বিক্রির জন্য আপনার ফসল তালিকাভুক্ত করুন' },
+    'b2b.guest_msg_1': { en: 'Want to buy or sell in bulk?', bn: 'পাইকারি কিনতে বা বিক্রি করতে চান?' },
+    'b2b.guest_msg_2': { en: 'to get started!', bn: 'শুরু করতে!' },
+    'b2b.register_farmer': { en: 'Register as Farmer', bn: 'কৃষক হিসেবে নিবন্ধন করুন' },
+    'b2b.register_buyer': { en: 'Register as Buyer', bn: 'ক্রেতা হিসেবে নিবন্ধন করুন' },
+    'b2b.or': { en: 'or', bn: 'অথবা' },
+    'b2b.wholesale': { en: 'Wholesale', bn: 'পাইকারি' },
+    'b2b.min_price': { en: 'Minimum Price', bn: 'নূন্যতম মূল্য' },
+    'b2b.place_bid': { en: 'Place Bid', bn: 'বিড করুন' },
+    'b2b.login_to_bid': { en: 'Login to Bid', bn: 'বিড করতে লগইন করুন' },
+    'b2b.categories': { en: 'Categories', bn: 'বিভাগসমূহ' },
+    'b2b.all_categories': { en: 'All Categories', bn: 'সব বিভাগ' },
+
+    // Retail Marketplace
+    'retail.title': { en: 'Retail Shop', bn: 'খুচরা দোকান' },
+    'retail.subtitle': { en: 'Fresh farm products delivered to your doorstep', bn: 'তাজা কৃষি পণ্য আপনার দোরগোড়ায়' },
+    'retail.add_product': { en: 'Add Product', bn: 'পণ্য যোগ করুন' },
+    'retail.search_placeholder': { en: 'Search for products...', bn: 'পণ্য অনুসন্ধান করুন...' },
+    'retail.all_districts': { en: 'All Districts', bn: 'সব জেলা' },
+    'retail.categories': { en: 'Categories', bn: 'বিভাগসমূহ' },
+    'retail.all_categories': { en: 'All Categories', bn: 'সব বিভাগ' },
+    'retail.showing': { en: 'Showing', bn: 'দেখানো হচ্ছে' },
+    'retail.products': { en: 'products', bn: 'টি পণ্য' },
+    'retail.no_products': { en: 'No Products Found', bn: 'কোন পণ্য পাওয়া যায়নি' },
+    'retail.no_products_desc': { en: 'Try adjusting your search or filter to find what you are looking for.', bn: 'আপনি যা খুঁজছেন তা খুঁজে পেতে অনুসন্ধান বা ফিল্টার সামঞ্জস্য করার চেষ্টা করুন।' },
+    'retail.clear_filters': { en: 'Clear Filters', bn: 'ফিল্টার মুছুন' },
+    'retail.price': { en: 'Price', bn: 'মূল্য' },
+    'retail.stock': { en: 'In Stock', bn: 'মজুদ আছে' },
+    'retail.buy_now': { en: 'Buy Now', bn: 'এখনই কিনুন' },
+    'retail.out_of_stock': { en: 'Out of Stock', bn: 'স্টক নেই' },
+
+    // Admin
+    'admin.add_product': { en: 'Add Product', bn: 'পণ্য যোগ করুন' },
+    'admin.manage_products': { en: 'Manage Products', bn: 'পণ্য পরিচালনা করুন' },
 
     // Common Actions
     'action.edit': { en: 'Edit', bn: 'সম্পাদনা' },
