@@ -23,6 +23,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     // Public paths that don't need JWT processing
     private static final List<String> PUBLIC_PATHS = List.of(
+            "/",
             "/api/auth/login",
             "/api/auth/signup",
             "/api/auth/forgot-password",
