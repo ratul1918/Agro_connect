@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from '../api/axiosConfig';
+import axios, { BASE_URL } from '../api/axiosConfig';
 import { Loader2, Package, Calendar, MapPin, DollarSign, CheckCircle, Truck, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -74,7 +74,7 @@ const OrdersPage: React.FC = () => {
                                 <CardContent className="pt-4">
                                     <div className="flex gap-4">
                                         <img
-                                            src={order.cropImage ? `http://localhost:8080${order.cropImage}` : 'https://via.placeholder.com/80'}
+                                            src={order.cropImage ? `${BASE_URL}${order.cropImage}` : 'https://via.placeholder.com/80'}
                                             alt={order.cropTitle}
                                             className="h-20 w-20 object-cover rounded-md"
                                         />

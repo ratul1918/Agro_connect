@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Calendar, User, ArrowLeft, Tag, Eye, Loader2 } from 'lucide-react';
-import api from '../api/axios';
+import api, { BASE_URL } from '../api/axios';
 
 interface Blog {
     id: number;
@@ -34,7 +34,7 @@ const BlogDetailPage: React.FC = () => {
                 // Fetch the specific blog
                 const res = await api.get(`/blogs/${id}`);
                 setBlog(res.data);
-                
+
                 // Fetch all blogs for "related" section
                 const allRes = await api.get('/blogs');
                 const allBlogs = allRes.data as Blog[];
@@ -59,10 +59,10 @@ const BlogDetailPage: React.FC = () => {
     const formatDate = (dateString: string) => {
         try {
             const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
             });
         } catch {
             return dateString;
@@ -117,8 +117,8 @@ const BlogDetailPage: React.FC = () => {
                     {/* Header Image */}
                     {blog.coverImageUrl ? (
                         <div className="h-64 md:h-80 overflow-hidden">
-                            <img 
-                                src={blog.coverImageUrl.startsWith('http') ? blog.coverImageUrl : `http://localhost:8080${blog.coverImageUrl}`}
+                            <img
+                                src={blog.coverImageUrl.startsWith('http') ? blog.coverImageUrl : `${BASE_URL}${blog.coverImageUrl}`}
                                 alt={blog.title}
                                 className="w-full h-full object-cover"
                             />
@@ -209,8 +209,8 @@ const BlogDetailPage: React.FC = () => {
                                     <Card className="hover:shadow-lg transition-shadow h-full overflow-hidden">
                                         {relatedBlog.coverImageUrl ? (
                                             <div className="h-32 overflow-hidden">
-                                                <img 
-                                                    src={relatedBlog.coverImageUrl.startsWith('http') ? relatedBlog.coverImageUrl : `http://localhost:8080${relatedBlog.coverImageUrl}`}
+                                                <img
+                                                    src={relatedBlog.coverImageUrl.startsWith('http') ? relatedBlog.coverImageUrl : `${BASE_URL}${relatedBlog.coverImageUrl}`}
                                                     alt={relatedBlog.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                 />

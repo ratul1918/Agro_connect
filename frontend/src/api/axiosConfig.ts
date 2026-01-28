@@ -1,10 +1,11 @@
 import axios from 'axios';
 
 // Prioritize VITE_ env var but fallback for compatibility if needed
-const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:8080/api';
+const API_URL = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const BASE_URL = API_URL.replace('/api', '');
 
 const api = axios.create({
-    baseURL: BASE_URL,
+    baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -24,4 +25,5 @@ api.interceptors.request.use(
     }
 );
 
+export { BASE_URL, API_URL };
 export default api;

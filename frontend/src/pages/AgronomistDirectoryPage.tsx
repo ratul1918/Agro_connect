@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Search, Phone, MessageCircle, MapPin, User, Send, X, Loader2 } from 'lucide-react';
-import api from '../api/axios';
+import api, { BASE_URL } from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 
 interface Agronomist {
@@ -131,7 +131,7 @@ const AgronomistDirectoryPage: React.FC = () => {
                                                 <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
                                                     {agronomist.profileImageUrl ? (
                                                         <img
-                                                            src={`http://localhost:8080${agronomist.profileImageUrl}`}
+                                                            src={`${BASE_URL}${agronomist.profileImageUrl}`}
                                                             alt={agronomist.fullName}
                                                             className="w-full h-full object-cover"
                                                         />
@@ -200,7 +200,7 @@ const AgronomistDirectoryPage: React.FC = () => {
                                 <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
                                     {selectedAgronomist.profileImageUrl ? (
                                         <img
-                                            src={`http://localhost:8080${selectedAgronomist.profileImageUrl}`}
+                                            src={`${BASE_URL}${selectedAgronomist.profileImageUrl}`}
                                             alt={selectedAgronomist.fullName}
                                             className="w-full h-full object-cover rounded-full"
                                         />

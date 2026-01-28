@@ -1,5 +1,6 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
+import { BASE_URL } from '../../api/axios';
 
 interface AdminBlogsProps {
     blogs: any[];
@@ -13,7 +14,7 @@ const AdminBlogs: React.FC<AdminBlogsProps> = ({ blogs, handleDeleteBlog }) => {
                 <div key={blog.id} className="card bg-base-100 shadow-xl image-full group">
                     <figure>
                         <img
-                            src={blog.coverImageUrl ? `http://localhost:8080${blog.coverImageUrl}` : "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2670&auto=format&fit=crop"}
+                            src={blog.coverImageUrl ? `${BASE_URL}${blog.coverImageUrl}` : "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2670&auto=format&fit=crop"}
                             alt={blog.title}
                             className="group-hover:scale-110 transition duration-500 w-full h-full object-cover"
                         />

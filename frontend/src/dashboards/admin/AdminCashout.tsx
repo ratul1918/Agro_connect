@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Check, X, AlertCircle, Clock, CheckCircle, XCircle, DollarSign } from 'lucide-react';
-import api from '../../api/axios';
+import api, { BASE_URL } from '../../api/axios';
 import { Button } from '../../components/ui/button';
 
 // Helper function to get server base URL for invoices
-const getServerBaseUrl = () => {
-    return (import.meta as any)?.env?.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8080';
-};
 
 interface AdminCashoutProps {
     handleCashoutAction: (id: number, action: 'approve' | 'reject') => void;
@@ -30,7 +27,7 @@ const AdminCashout: React.FC<AdminCashoutProps> = ({ handleCashoutAction, key })
             const res = await api.get('/admin/cashout/all');
             console.log('Cashout requests response:', res.data);
             const allRequests = res.data;
-            
+
             // Separate pending and history requests
             const pending = (allRequests.pending || []).sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime());
             const history = [
@@ -38,7 +35,7 @@ const AdminCashout: React.FC<AdminCashoutProps> = ({ handleCashoutAction, key })
                 ...(allRequests.rejected || []),
                 ...(allRequests.paid || [])
             ].sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime());
-            
+
             setPendingRequests(pending);
             setHistoryRequests(history);
             setRequests([...pending, ...history]);
@@ -218,14 +215,14 @@ const AdminCashout: React.FC<AdminCashoutProps> = ({ handleCashoutAction, key })
                                         </td>
                                         <td>
                                             {req.invoiceUrl && (
-                                                <a 
-                                                    href={`${getServerBaseUrl()}${req.invoiceUrl}`} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer" 
+                                                <a
+                                                    href={`${BASE_URL}${req.invoiceUrl}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                     className="text-blue-500 hover:underline text-sm inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
                                                     title={`View invoice for request #${req.id}`}
                                                     onClick={(e) => {
-                                                        console.log('Invoice clicked:', `${getServerBaseUrl()}${req.invoiceUrl}`);
+                                                        console.log('Invoice clicked:', `${BASE_URL}${req.invoiceUrl}`);
                                                     }}
                                                 >
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

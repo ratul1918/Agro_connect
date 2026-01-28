@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Search, Filter, MapPin, TrendingUp, Package, Plus, Store } from 'lucide-react';
-import axios from '../api/axiosConfig';
+import axios, { BASE_URL } from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import BidModal from '../components/BidModal';
@@ -225,8 +225,8 @@ const B2BMarketplacePage: React.FC = () => {
                                             key={category}
                                             onClick={() => setSelectedCategory(category === 'All' ? '' : category)}
                                             className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between group ${(category === 'All' && !selectedCategory) || selectedCategory === category
-                                                    ? 'bg-blue-600 text-white shadow-md'
-                                                    : 'hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                                                ? 'bg-blue-600 text-white shadow-md'
+                                                : 'hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                                                 }`}
                                         >
                                             <span className="font-medium">{category === "All" ? t('retail.all_categories') : category}</span>
@@ -302,7 +302,7 @@ const B2BMarketplacePage: React.FC = () => {
                                                     <div className="relative h-56 overflow-hidden bg-gray-100 dark:bg-gray-700">
                                                         {crop.images && crop.images.length > 0 ? (
                                                             <img
-                                                                src={crop.images[0].startsWith('http') ? crop.images[0] : `http://localhost:8080${crop.images[0]}`}
+                                                                src={crop.images[0].startsWith('http') ? crop.images[0] : `${BASE_URL}${crop.images[0]}`}
                                                                 alt={crop.title}
                                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                             />

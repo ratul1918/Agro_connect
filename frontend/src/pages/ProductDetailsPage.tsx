@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
-import axios from '../api/axiosConfig';
+import axios, { BASE_URL } from '../api/axiosConfig';
 import { Loader2, ArrowLeft, ShoppingCart, TrendingUp } from 'lucide-react';
 import BidModal from '../components/BidModal';
 
@@ -156,7 +156,7 @@ const ProductDetailsPage: React.FC = () => {
                 <div className={`md:w-1/2 bg-gray-100 flex items-center justify-center p-6 bg-gradient-to-br ${bgGradient} overflow-hidden`}>
                     {product.images && product.images.length > 0 ? (
                         <img
-                            src={product.images[0].startsWith('http') ? product.images[0] : `http://localhost:8080${product.images[0]}`}
+                            src={product.images[0].startsWith('http') ? product.images[0] : `${BASE_URL}${product.images[0]}`}
                             alt={product.title}
                             className="max-h-[500px] w-full object-contain rounded-lg shadow-sm transition-transform duration-500 hover:scale-125 cursor-pointer"
                         />
@@ -328,7 +328,7 @@ const ProductDetailsPage: React.FC = () => {
                                 {/* Invoice Download Button */}
                                 {orderPlaced && invoiceUrl && (
                                     <a
-                                        href={`http://localhost:8080${invoiceUrl}`}
+                                        href={`${BASE_URL}${invoiceUrl}`}
                                         download
                                         className="block w-full"
                                     >

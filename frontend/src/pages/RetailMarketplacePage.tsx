@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Search, Filter, MapPin, ShoppingCart, Store, Plus, Loader2 } from 'lucide-react';
-import axios from '../api/axiosConfig';
+import axios, { BASE_URL } from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -192,8 +192,8 @@ const RetailMarketplacePage: React.FC = () => {
                                             key={category}
                                             onClick={() => setSelectedCategory(category === 'All' ? '' : category)}
                                             className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between group ${(category === 'All' && !selectedCategory) || selectedCategory === category
-                                                    ? 'bg-orange-500 text-white shadow-md'
-                                                    : 'hover:bg-orange-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                                                ? 'bg-orange-500 text-white shadow-md'
+                                                : 'hover:bg-orange-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                                                 }`}
                                         >
                                             <span className="font-medium">{category === "All" ? t('retail.all_categories') : category}</span>
@@ -264,7 +264,7 @@ const RetailMarketplacePage: React.FC = () => {
                                                     <div className="relative h-56 overflow-hidden bg-gray-100 dark:bg-gray-700">
                                                         {product.images && product.images.length > 0 ? (
                                                             <img
-                                                                src={product.images[0].startsWith('http') ? product.images[0] : `http://localhost:8080${product.images[0]}`}
+                                                                src={product.images[0].startsWith('http') ? product.images[0] : `${BASE_URL}${product.images[0]}`}
                                                                 alt={product.title}
                                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                             />

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getAllUsers, deleteUser, deleteCropAdmin, updateCrop } from '../api/endpoints';
 import { useNotification } from '../context/NotificationContext';
 import { useConfirm, usePrompt } from '../components/ConfirmDialog';
-import api from '../api/axios';
+import api, { BASE_URL } from '../api/axios';
 import {
     BarChart3, Users, Leaf, ShoppingCart, Ship, FileCheck, BookOpen,
     UserPlus, Settings, DollarSign, Plus
@@ -348,12 +348,12 @@ const AdminDashboard: React.FC = () => {
                     getStatusColor={getStatusColor}
                 />
             )}
-            
+
             {/* Users */}
             {activeTab === 'users' && (
                 <AdminUsers users={users} handleDeleteUser={handleDeleteUser} />
             )}
-            
+
             {/* Add Products */}
             {activeTab === 'add-product' && (
                 <AdminAddProduct onSuccess={fetchData} />
@@ -364,7 +364,7 @@ const AdminDashboard: React.FC = () => {
             {activeTab === 'add-b2b' && (
                 <AdminAddB2B onSuccess={fetchData} />
             )}
-            
+
             {/* Crops */}
             {activeTab === 'crops' && (
                 <AdminCrops
@@ -379,7 +379,7 @@ const AdminDashboard: React.FC = () => {
                     loading={loading}
                 />
             )}
-            
+
             {/* Orders */}
             {activeTab === 'orders' && (
                 <AdminOrders
@@ -389,7 +389,7 @@ const AdminDashboard: React.FC = () => {
                     handleDeleteOrder={handleDeleteOrder}
                 />
             )}
-            
+
             {/* Exports */}
             {activeTab === 'exports' && (
                 <AdminExports
@@ -397,17 +397,17 @@ const AdminDashboard: React.FC = () => {
                     handleExportAction={handleExportAction}
                 />
             )}
-            
+
             {/* Bids */}
             {activeTab === 'bids' && (
                 <AdminBids bids={bids} />
             )}
-            
+
             {/* Blogs */}
             {activeTab === 'blogs' && (
                 <AdminBlogs blogs={blogs} handleDeleteBlog={handleDeleteBlog} />
             )}
-            
+
             {/* Agronomist */}
             {activeTab === 'agronomist' && (
                 <AdminAgronomist
@@ -418,7 +418,7 @@ const AdminDashboard: React.FC = () => {
                     loading={loading}
                 />
             )}
-            
+
             {/* Config */}
             {activeTab === 'config' && (
                 <AdminConfig
@@ -428,12 +428,12 @@ const AdminDashboard: React.FC = () => {
                     loading={loading}
                 />
             )}
-            
+
             {/* Cashout */}
             {activeTab === 'cashout' && (
-                <AdminCashout 
+                <AdminCashout
                     key={cashoutRefresh.toString()}
-                    handleCashoutAction={handleCashoutAction} 
+                    handleCashoutAction={handleCashoutAction}
                 />
             )}
 
@@ -536,7 +536,7 @@ const AdminDashboard: React.FC = () => {
                                         {editingCrop.images.map((img: string, idx: number) => (
                                             <img
                                                 key={idx}
-                                                src={`http://localhost:8080${img}`}
+                                                src={`${BASE_URL}${img}`}
                                                 alt={`Product ${idx + 1}`}
                                                 className="w-20 h-20 object-cover rounded border"
                                             />

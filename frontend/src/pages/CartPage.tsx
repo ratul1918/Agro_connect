@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
-import axios from '../api/axiosConfig';
+import axios, { BASE_URL } from '../api/axiosConfig';
 import { Trash2, ShoppingCart, ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 
@@ -132,7 +132,7 @@ const CartPage: React.FC = () => {
                             {items.map((item, index) => (
                                 <li key={item.id || index} className="p-6 flex items-center">
                                     <img
-                                        src={item.image ? `http://localhost:8080${item.image}` : 'https://via.placeholder.com/100?text=Crop'}
+                                        src={item.image ? `${BASE_URL}${item.image}` : 'https://via.placeholder.com/100?text=Crop'}
                                         alt={item.title}
                                         className="h-20 w-20 object-cover rounded-md border border-gray-200"
                                     />
