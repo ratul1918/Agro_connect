@@ -32,6 +32,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/ws/",
             "/error",
             "/favicon.ico",
+            "/health",
             "/uploads/");
 
     public JwtAuthFilter(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {

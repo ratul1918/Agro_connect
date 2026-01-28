@@ -77,6 +77,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/cashout/*/invoice")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/crops", "/api/crops/**").permitAll()
+                        .requestMatchers("/health").permitAll() // Added /health endpoint
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // All other requests need authentication
                         .anyRequest().authenticated())
