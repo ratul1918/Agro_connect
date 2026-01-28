@@ -15,7 +15,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/cashout")
-@CrossOrigin(origins = "${app.frontend.url}")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminCashoutController {
 

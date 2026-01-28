@@ -15,7 +15,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cashout")
-@CrossOrigin(origins = "${app.frontend.url}")
 public class CashoutController {
 
         private final CashoutService cashoutService;
