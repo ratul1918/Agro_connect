@@ -18,6 +18,8 @@ import com.arpon007.agro.model.User;
 import com.arpon007.agro.repository.PasswordResetTokenRepository;
 import com.arpon007.agro.repository.UserRepository;
 import com.arpon007.agro.security.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class AuthService {
@@ -29,6 +31,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
     private final EmailService emailService;
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
@@ -48,7 +51,13 @@ public class AuthService {
 
     @Transactional
     public AuthResponse signup(SignupRequest request) {
+        logger.info("=== SIGNUP ATTEMPT ===");
+        logger.info("Email: {}", request.getEmail());
+        logger.info("Full Name: {}", request.getFullName());
+        logger.info("Role: {}", request.getRole());
+
         if (userRepository.existsByEmail(request.getEmail())) {
+            logger.warn("Signup failed: Email {} already exists", request.getEmail());
             throw new RuntimeException("Email already exists");
         }
 
@@ -66,50 +75,64 @@ public class AuthService {
         user.setVerified(true); // User verified to prevent 'disabled' error
         user.setEmailVerified(true); // Auto-verify email for now as requested
 
-        User savedUser = userRepository.save(user);
+        User savedUser;
+        try {
+            savedUser = userRepository.save(user);
+            logger.info("User saved successfully with ID: {}", savedUser.getId());
+        } catch (Exception e) {
+            logger.error("Failed to save user {}: {}", request.getEmail(), e.getMessage(), e);
+            throw new RuntimeException("Signup failed due to database error");
+        }
 
         // Assign Role
-        String roleName = "ROLE_" + request.getRole().toUpperCase();
-        userRepository.addRole(savedUser.getId(), roleName);
+        try {
+            String roleName = "ROLE_" + request.getRole().toUpperCase();
+            userRepository.addRole(savedUser.getId(), roleName);
+            logger.info("Role {} assigned to user ID: {}", roleName, savedUser.getId());
+        } catch (Exception e) {
+            logger.error("Failed to assign role to user ID {}: {}", savedUser.getId(), e.getMessage());
+            // We continue as the user is saved, though it might cause issues later
+        }
 
         // Generate Token
         var userDetails = userDetailsService.loadUserByUsername(savedUser.getEmail());
         String token = jwtUtil.generateToken(userDetails, savedUser.getId(), request.getRole().toUpperCase());
 
-        return new AuthResponse(token, savedUser.getId(), savedUser.getEmail(), roleName, savedUser.getFullName(),
+        logger.info("=== SIGNUP SUCCESS ===");
+        return new AuthResponse(token, savedUser.getId(), savedUser.getEmail(),
+                "ROLE_" + request.getRole().toUpperCase(), savedUser.getFullName(),
                 savedUser.getProfileImageUrl());
     }
 
     public AuthResponse login(AuthRequest request) {
-        System.out.println("=== LOGIN ATTEMPT ===");
-        System.out.println("Email: " + request.getEmail());
+        logger.info("=== LOGIN ATTEMPT ===");
+        logger.info("Email: {}", request.getEmail());
 
         // Check if user exists first
         var existingUser = userRepository.findByEmail(request.getEmail());
         if (existingUser.isEmpty()) {
-            System.out.println("ERROR: User not found with email: " + request.getEmail());
+            logger.error("ERROR: User not found in database with email: {}", request.getEmail());
+            // Double check count to see if DB is empty
+            logger.info("Total users currently in DB: {}", userRepository.countAll());
             throw new RuntimeException("Invalid email or password");
         }
 
         User user = existingUser.get();
-        System.out.println("User found: ID=" + user.getId() + ", Name=" + user.getFullName());
-        System.out.println("Password hash in DB: " + user.getPasswordHash().substring(0, 20) + "...");
+        logger.info("User found: ID={}, Name={}", user.getId(), user.getFullName());
 
-        // Check password manually first for debugging
+        // Check password matches
         boolean passwordMatches = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
-        System.out.println("Password matches: " + passwordMatches);
-
         if (!passwordMatches) {
-            System.out.println("ERROR: Password does not match!");
+            logger.error("ERROR: Password does not match for email: {}", request.getEmail());
             throw new RuntimeException("Invalid email or password");
         }
 
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-            System.out.println("Authentication successful via AuthenticationManager");
+            logger.info("Authentication successful via AuthenticationManager");
         } catch (Exception e) {
-            System.out.println("ERROR during authentication: " + e.getMessage());
+            logger.error("ERROR during session authentication: {}", e.getMessage());
             throw new RuntimeException("Invalid email or password");
         }
 
@@ -118,20 +141,20 @@ public class AuthService {
         // Check if user has roles - if not, assign default ROLE_GENERAL_CUSTOMER
         String role;
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            System.out.println("User has no roles, assigning ROLE_GENERAL_CUSTOMER");
+            logger.info("User has no roles, assigning ROLE_GENERAL_CUSTOMER");
             userRepository.addRole(user.getId(), "ROLE_GENERAL_CUSTOMER");
             role = "ROLE_GENERAL_CUSTOMER";
         } else {
             role = user.getRoles().iterator().next();
         }
-        System.out.println("User role: " + role);
+        logger.info("User role: {}", role);
 
         // Remove ROLE_ prefix for JWT token since Spring Security adds it automatically
         // when checking hasRole()
         String tokenRole = role.startsWith("ROLE_") ? role.substring(5) : role;
 
         String token = jwtUtil.generateToken(userDetails, user.getId(), tokenRole);
-        System.out.println("=== LOGIN SUCCESS ===");
+        logger.info("=== LOGIN SUCCESS ===");
 
         return new AuthResponse(token, user.getId(), user.getEmail(), "ROLE_" + tokenRole, user.getFullName(),
                 user.getProfileImageUrl());

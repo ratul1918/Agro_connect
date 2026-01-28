@@ -10,11 +10,14 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Repository
 public class UserRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(UserRepository.class);
 
     public UserRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -28,7 +31,10 @@ public class UserRepository {
                 user.setRoles(getUserRoles(user.getId()));
             }
             return Optional.ofNullable(user);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            return Optional.empty();
         } catch (Exception e) {
+            logger.error("Error finding user by email {}: {}", email, e.getMessage(), e);
             return Optional.empty();
         }
     }
@@ -37,6 +43,11 @@ public class UserRepository {
         String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
         return count != null && count > 0;
+    }
+
+    public Integer countAll() {
+        String sql = "SELECT COUNT(*) FROM users";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
     }
 
     public User save(User user) {
@@ -131,7 +142,10 @@ public class UserRepository {
                 user.setRoles(getUserRoles(user.getId()));
             }
             return Optional.ofNullable(user);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            return Optional.empty();
         } catch (Exception e) {
+            logger.error("Error finding user by ID {}: {}", id, e.getMessage(), e);
             return Optional.empty();
         }
     }

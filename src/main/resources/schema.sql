@@ -5,12 +5,9 @@
 -- Charset: utf8mb4 (Full Bangla Support)
 -- =================================================================================
 
--- Create database if not exists
-CREATE DATABASE IF NOT EXISTS agro_connect 
-    CHARACTER SET utf8mb4 
-    COLLATE utf8mb4_unicode_ci;
-
-USE agro_connect;
+-- Database: MySQL
+-- Charset: utf8mb4 (Full Bangla Support)
+-- =================================================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -427,7 +424,7 @@ ON DUPLICATE KEY UPDATE name=name;
 
 -- Add division column if not exists
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'users' 
                       AND COLUMN_NAME = 'division');
 SET @sql = IF(@column_exists = 0, 
@@ -439,7 +436,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add upazila column if not exists
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'users' 
                       AND COLUMN_NAME = 'upazila');
 SET @sql = IF(@column_exists = 0, 
@@ -451,7 +448,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add thana column if not exists
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'users' 
                       AND COLUMN_NAME = 'thana');
 SET @sql = IF(@column_exists = 0, 
@@ -463,7 +460,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add post_code column if not exists
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'users' 
                       AND COLUMN_NAME = 'post_code');
 SET @sql = IF(@column_exists = 0, 
@@ -475,7 +472,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add country column if not exists
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'users' 
                       AND COLUMN_NAME = 'country');
 SET @sql = IF(@column_exists = 0, 
@@ -491,7 +488,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add wholesale_price column
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'crops' 
                       AND COLUMN_NAME = 'wholesale_price');
 SET @sql = IF(@column_exists = 0, 
@@ -503,7 +500,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add min_wholesale_qty column
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'crops' 
                       AND COLUMN_NAME = 'min_wholesale_qty');
 SET @sql = IF(@column_exists = 0, 
@@ -515,7 +512,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add retail_price column
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'crops' 
                       AND COLUMN_NAME = 'retail_price');
 SET @sql = IF(@column_exists = 0, 
@@ -527,7 +524,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add min_retail_qty column
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'crops' 
                       AND COLUMN_NAME = 'min_retail_qty');
 SET @sql = IF(@column_exists = 0, 
@@ -539,7 +536,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add max_retail_qty column
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'crops' 
                       AND COLUMN_NAME = 'max_retail_qty');
 SET @sql = IF(@column_exists = 0, 
@@ -551,7 +548,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add profit_margin_percent column
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'crops' 
                       AND COLUMN_NAME = 'profit_margin_percent');
 SET @sql = IF(@column_exists = 0, 
@@ -563,7 +560,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add fixed_cost_per_unit column
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'crops' 
                       AND COLUMN_NAME = 'fixed_cost_per_unit');
 SET @sql = IF(@column_exists = 0, 
@@ -589,7 +586,7 @@ UPDATE users SET is_verified = TRUE, email_verified = TRUE WHERE is_verified = F
 
 -- Add marketplace_type column to crops table
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'crops' 
                       AND COLUMN_NAME = 'marketplace_type');
 SET @sql = IF(@column_exists = 0, 
@@ -601,7 +598,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add delivery_status column to orders table
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'orders' 
                       AND COLUMN_NAME = 'delivery_status');
 SET @sql = IF(@column_exists = 0, 
@@ -613,7 +610,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add customer_mobile column to orders table
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'orders' 
                       AND COLUMN_NAME = 'customer_mobile');
 SET @sql = IF(@column_exists = 0, 
@@ -625,7 +622,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add customer_address column to orders table
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'orders' 
                       AND COLUMN_NAME = 'customer_address');
 SET @sql = IF(@column_exists = 0, 
@@ -695,7 +692,7 @@ CREATE TABLE IF NOT EXISTS platform_income (
 
 -- Add quantity column to bids
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'bids' 
                       AND COLUMN_NAME = 'quantity');
 SET @sql = IF(@column_exists = 0, 
@@ -707,7 +704,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add farmer_counter_price column to bids
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'bids' 
                       AND COLUMN_NAME = 'farmer_counter_price');
 SET @sql = IF(@column_exists = 0, 
@@ -719,7 +716,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add last_action_by column to bids
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'bids' 
                       AND COLUMN_NAME = 'last_action_by');
 SET @sql = IF(@column_exists = 0, 
@@ -731,7 +728,7 @@ DEALLOCATE PREPARE stmt;
 
 -- Add updated_at column to bids
 SET @column_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
-                      WHERE TABLE_SCHEMA = 'agro_connect' 
+                      WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = 'bids' 
                       AND COLUMN_NAME = 'updated_at');
 SET @sql = IF(@column_exists = 0, 
