@@ -58,20 +58,23 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - no authentication required
                         .requestMatchers(
-                                "/api/auth/**", // Auth endpoints
-                                "/api/public/**", // Explicitly public endpoints
-                                "/api/shop/products/**", // Retail shop
-                                "/api/shop/crop-types", // Crop types (public for filters)
-                                "/api/blogs", // Public blog posts
-                                "/api/blogs/tips", // Public tips
-                                "/api/blogs/articles", // Public articles
-                                "/api/blogs/**", // Individual blog posts
-                                "/api/ai/**", // AI chat
-                                "/ws/**", // WebSocket
-                                "/error", // Error page
-                                "/favicon.ico", // Favicon
-                                "/uploads/**" // Uploaded files
-                        ).permitAll()
+                                "/api/auth/login",
+                                "/api/auth/signup",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password",
+                                "/api/public/**",
+                                "/api/ai/**",
+                                "/api/shop/products/**",
+                                "/api/shop/crop-types",
+                                "/api/blogs",
+                                "/api/blogs/tips",
+                                "/api/blogs/articles",
+                                "/api/blogs/**",
+                                "/ws/**",
+                                "/error",
+                                "/favicon.ico",
+                                "/uploads/**")
+                        .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/orders/*/invoice", "/api/orders/*/invoice/pdf")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/cashout/*/invoice")

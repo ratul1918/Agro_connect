@@ -80,8 +80,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            // Token invalid or expired - just continue without authentication
-            logger.debug("JWT token validation failed: " + e.getMessage());
+            // Token invalid or expired
+            logger.error("JWT token validation failed for path " + request.getServletPath() + ": " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
