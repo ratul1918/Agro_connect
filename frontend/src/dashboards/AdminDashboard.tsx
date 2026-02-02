@@ -14,8 +14,6 @@ import AdminOverview from './admin/AdminOverview';
 import AdminUsers from './admin/AdminUsers';
 import AdminCrops from './admin/AdminCrops';
 import AdminAddProduct from './admin/AdminAddProduct';
-import AdminAddRetail from './admin/AdminAddRetail';
-import AdminAddB2B from './admin/AdminAddB2B';
 import AdminOrders from './admin/AdminOrders';
 import AdminExports from './admin/AdminExports';
 import AdminBids from './admin/AdminBids';
@@ -55,7 +53,7 @@ const AdminDashboard: React.FC = () => {
         { label: 'Add Retail Product', icon: Plus, value: 'add-retail' },
         { label: 'All Products', icon: Leaf, value: 'crops' },
         { label: 'Orders', icon: ShoppingCart, value: 'orders' },
-        { label: 'Export Apps', icon: Ship, value: 'exports' },
+        { label: 'Export Crops', icon: Ship, value: 'exports' },
         { label: 'Bids', icon: FileCheck, value: 'bids' },
         { label: 'Cashouts', icon: DollarSign, value: 'cashout' },
         { label: 'Blogs', icon: BookOpen, value: 'blogs' },
@@ -356,13 +354,13 @@ const AdminDashboard: React.FC = () => {
 
             {/* Add Products */}
             {activeTab === 'add-product' && (
-                <AdminAddProduct onSuccess={fetchData} />
+                <AdminAddProduct onSuccess={fetchData} defaultMarketType="BOTH" />
             )}
             {activeTab === 'add-retail' && (
-                <AdminAddRetail onSuccess={fetchData} />
+                <AdminAddProduct onSuccess={fetchData} defaultMarketType="RETAIL" />
             )}
             {activeTab === 'add-b2b' && (
-                <AdminAddB2B onSuccess={fetchData} />
+                <AdminAddProduct onSuccess={fetchData} defaultMarketType="B2B" />
             )}
 
             {/* Crops */}
