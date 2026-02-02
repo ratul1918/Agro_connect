@@ -725,74 +725,192 @@ const FarmerDashboard: React.FC = () => {
             )}
 
             {/* Add Crop */}
+            {/* Add Crop */}
             {activeTab === 'add-crop' && (
-                <Card className="max-w-2xl">
-                    <CardHeader>
-                        <CardTitle>নতুন ফসলের তথ্য দিন</CardTitle>
-                        <CardDescription>আপনার উৎপাদিত ফসলের বিস্তারিত তথ্য দিয়ে বিক্রির জন্য তালিকাভুক্ত করুন।</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleAddCrop} className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">ফসলের নাম</label>
-                                <Input placeholder="যেমন: মিনিকেট চাল" value={title} onChange={e => setTitle(e.target.value)} required />
-                            </div>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full max-w-4xl mx-auto"
+                >
+                    <div className="relative glass-card overflow-hidden rounded-3xl border border-white/20 dark:border-gray-800 shadow-2xl bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl">
+                        {/* Decorative background gradients */}
+                        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl"></div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">বিবরণ</label>
-                                <Textarea placeholder="ফসলের গুণাগুণ সম্পর্কে লিখুন..." value={desc} onChange={e => setDesc(e.target.value)} />
-                            </div>
-
-                            <div className="grid md:grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">ধরন</label>
-                                    <select className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                        value={type} onChange={e => setType(e.target.value)}>
-                                        <option value="1">ধান (Rice)</option>
-                                        <option value="2">গম (Wheat)</option>
-                                        <option value="3">আলু (Potato)</option>
-                                        <option value="4">টমেটো (Tomato)</option>
-                                        <option value="5">পেঁয়াজ (Onion)</option>
-                                        <option value="6">পাট (Jute)</option>
-                                    </select>
+                        <div className="relative p-8">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/20 text-white">
+                                    <Plus className="w-6 h-6" />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">পরিমাণ</label>
-                                    <Input type="number" placeholder="0" value={qty} onChange={e => setQty(e.target.value)} required />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">একক</label>
-                                    <select className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                        value={unit} onChange={e => setUnit(e.target.value)}>
-                                        <option value="kg">কেজি (kg)</option>
-                                        <option value="ton">টন (ton)</option>
-                                        <option value="maund">মণ (maund)</option>
-                                    </select>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">নতুন ফসলের তথ্য দিন</h2>
+                                    <p className="text-gray-500 dark:text-gray-400">আপনার উৎপাদিত ফসলের বিস্তারিত তথ্য দিয়ে বিক্রির জন্য তালিকাভুক্ত করুন।</p>
                                 </div>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">ন্যূনতম মূল্য (টাকা)</label>
-                                    <Input type="number" placeholder="Example: 5000" value={price} onChange={e => setPrice(e.target.value)} required />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">অবস্থান</label>
-                                    <Input placeholder="জেলা/উপজেলা" value={location} onChange={e => setLocation(e.target.value)} required />
-                                </div>
-                            </div>
+                            <form onSubmit={handleAddCrop} className="space-y-6">
+                                {/* Basic Info Section */}
+                                <div className="space-y-4">
+                                    <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                        <FileCheck className="w-4 h-4" />
+                                        সাধারণ তথ্য
+                                    </h3>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">ছবি আপলোড</label>
-                                <Input type="file" multiple onChange={e => setImages(e.target.files)} className="cursor-pointer" />
-                            </div>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">ফসলের নাম</label>
+                                            <Input
+                                                placeholder="যেমন: মিনিকেট চাল"
+                                                value={title}
+                                                onChange={e => setTitle(e.target.value)}
+                                                required
+                                                className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 transition-all"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">ধরন</label>
+                                            <select
+                                                className="w-full h-10 px-3 rounded-md border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                                                value={type}
+                                                onChange={e => setType(e.target.value)}
+                                            >
+                                                <option value="1">ধান (Rice)</option>
+                                                <option value="2">গম (Wheat)</option>
+                                                <option value="3">আলু (Potato)</option>
+                                                <option value="4">টমেটো (Tomato)</option>
+                                                <option value="5">পেঁয়াজ (Onion)</option>
+                                                <option value="6">পাট (Jute)</option>
+                                            </select>
+                                        </div>
+                                    </div>
 
-                            <Button type="submit" disabled={loading} className="w-full bg-green-600 hover:bg-green-700">
-                                {loading ? 'আপলোড হচ্ছে...' : 'আপলোড করুন'}
-                            </Button>
-                        </form>
-                    </CardContent>
-                </Card>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">বিবরণ</label>
+                                        <Textarea
+                                            placeholder="ফসলের গুণাগুণ সম্পর্কে লিখুন..."
+                                            value={desc}
+                                            onChange={e => setDesc(e.target.value)}
+                                            rows={3}
+                                            className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 transition-all resize-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-gray-100 dark:border-gray-800/50 my-6"></div>
+
+                                {/* Inventory & Pricing */}
+                                <div className="space-y-4">
+                                    <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                        <DollarSign className="w-4 h-4" />
+                                        মূল্য এবং পরিমাণ
+                                    </h3>
+
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">পরিমাণ</label>
+                                                <Input
+                                                    type="number"
+                                                    placeholder="0"
+                                                    value={qty}
+                                                    onChange={e => setQty(e.target.value)}
+                                                    required
+                                                    className="bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">একক</label>
+                                                <select
+                                                    className="w-full h-10 px-3 rounded-md border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                                                    value={unit}
+                                                    onChange={e => setUnit(e.target.value)}
+                                                >
+                                                    <option value="kg">কেজি (kg)</option>
+                                                    <option value="ton">টন (ton)</option>
+                                                    <option value="maund">মণ (maund)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">ন্যূনতম মূল্য (টাকা)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-2.5 text-gray-500">৳</span>
+                                                <Input
+                                                    type="number"
+                                                    placeholder="Example: 5000"
+                                                    value={price}
+                                                    onChange={e => setPrice(e.target.value)}
+                                                    required
+                                                    className="pl-8 bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">অবস্থান</label>
+                                        <div className="relative">
+                                            <div className="absolute left-3 top-2.5 w-4 h-4 text-gray-400">
+                                                <span className="text-lg">📍</span>
+                                            </div>
+                                            <Input
+                                                placeholder="জেলা/উপজেলা"
+                                                value={location}
+                                                onChange={e => setLocation(e.target.value)}
+                                                required
+                                                className="pl-9 bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-gray-100 dark:border-gray-800/50 my-6"></div>
+
+                                {/* Image Upload */}
+                                <div className="space-y-4">
+                                    <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                        <span className="text-lg">🖼️</span>
+                                        মিডিয়া
+                                    </h3>
+
+                                    <div className="bg-white/50 dark:bg-gray-800/50 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-8 text-center hover:border-green-500/50 transition-colors cursor-pointer relative group">
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            onChange={e => setImages(e.target.files)}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        />
+                                        <div className="space-y-2 pointer-events-none">
+                                            <div className="w-12 h-12 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                                                <Plus className="w-6 h-6" />
+                                            </div>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                ছবি আপলোড করতে ক্লিক করুন
+                                            </p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                সর্বোচ্চ ৫টি ছবি (JPG, PNG)
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {images && <p className="text-sm text-green-600 font-medium text-center">{images.length} টি ছবি নির্বাচিত হয়েছে</p>}
+                                </div>
+
+                                {/* Submit Button */}
+                                <div className="pt-4">
+                                    <Button
+                                        type="submit"
+                                        className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-green-600/20 transform hover:translate-y-[-2px] transition-all"
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'আপলোড হচ্ছে...' : 'আপলোড করুন'}
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </motion.div>
             )}
 
             {/* My Crops */}

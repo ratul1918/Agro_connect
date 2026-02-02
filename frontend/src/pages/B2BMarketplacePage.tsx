@@ -2,28 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
-import { Search, Filter, MapPin, TrendingUp, Package, Plus, Store } from 'lucide-react';
-import axios, { BASE_URL } from '../api/axiosConfig';
+import { Search, Filter, Package, Plus } from 'lucide-react';
+import axios from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import BidModal from '../components/BidModal';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
+import ProductCard, { Product } from '../components/marketplace/ProductCard';
 
-interface Crop {
-    id: number;
-    title: string;
-    description: string;
-    farmerName: string;
-    cropTypeName: string;
-    quantity: number;
-    unit: string;
-    minPrice: number;
+interface Crop extends Product {
     wholesalePrice?: number;
     minWholesaleQty?: number;
-    location: string;
-    images: string[];
-    createdAt: string;
+    createdAt?: string; // Optional if not used
 }
 
 const B2BMarketplacePage: React.FC = () => {
@@ -41,7 +31,6 @@ const B2BMarketplacePage: React.FC = () => {
     const isBuyer = user?.role === 'ROLE_BUYER';
     const isAdmin = user?.role === 'ROLE_ADMIN';
     const canAddProduct = isFarmer || isAdmin;
-    const canBuyB2B = isBuyer || isAdmin;
 
     const categories = [
         "All", "Rice & Grains", "Vegetables", "Fruits", "Spices", "Pulses", "Fish"
@@ -78,19 +67,6 @@ const B2BMarketplacePage: React.FC = () => {
         return matchesSearch && matchesCategory && matchesDistrict;
     });
 
-    const getCropEmoji = (type: string) => {
-        const emojis: Record<string, string> = {
-            'Rice': '🌾',
-            'Rice & Grains': '🌾',
-            'Vegetables': '🥬',
-            'Fruits': '🍎',
-            'Spices': '🌶️',
-            'Pulses': '🫘',
-            'Fish': '🐟'
-        };
-        return emojis[type] || '🌱';
-    };
-
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -101,7 +77,7 @@ const B2BMarketplacePage: React.FC = () => {
         }
     };
 
-    const itemVariants = {
+    const itemVariants: Variants = {
         hidden: { y: 20, opacity: 0 },
         visible: {
             y: 0,
@@ -113,27 +89,41 @@ const B2BMarketplacePage: React.FC = () => {
         }
     };
 
+    const handleAction = (product: Product) => {
+        // cast product to Crop if necessary, though ProductCard passes Product
+        // For B2B, action is "Bid"
+        setSelectedCrop(product as Crop);
+        setShowBidModal(true);
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16 shadow-lg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-background transition-colors duration-300">
+            {/* Glassmorphism Header */}
+            <div className="relative pt-24 pb-12 overflow-hidden">
+                <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100/40 via-transparent to-transparent dark:from-blue-900/20"></div>
+                <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-indigo-100/40 via-transparent to-transparent dark:from-indigo-900/20"></div>
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="flex flex-col md:flex-row md:items-center justify-between mb-8"
+                        className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4"
                     >
                         <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <Package className="h-10 w-10" />
-                                <h1 className="text-4xl font-extrabold tracking-tight">{t('b2b.title')}</h1>
-                            </div>
-                            <p className="text-blue-100 mt-2 text-lg max-w-2xl">{t('b2b.subtitle')}</p>
+                            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">
+                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+                                    {t('b2b.title')}
+                                </span>
+                            </h1>
+                            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl">
+                                {t('b2b.subtitle')}
+                            </p>
                         </div>
+
                         {canAddProduct && (
-                            <Link to={isAdmin ? "/admin" : "/farmer"} className="mt-4 md:mt-0">
-                                <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold shadow-md transition-all hover:scale-105">
+                            <Link to={isAdmin ? "/admin" : "/farmer"}>
+                                <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-6 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 transition-all transform hover:scale-105">
                                     <Plus className="h-5 w-5 mr-2" />
                                     {isAdmin ? t('admin.add_product') : t('farmer.add_crop')}
                                 </Button>
@@ -146,87 +136,93 @@ const B2BMarketplacePage: React.FC = () => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className={`rounded-xl p-4 mb-8 backdrop-blur-md border border-white/20 shadow-lg ${isBuyer ? 'bg-blue-500/30' : isAdmin ? 'bg-purple-500/30' : 'bg-green-500/30'}`}
+                        className={`rounded-2xl p-4 mb-8 backdrop-blur-md border border-white/20 shadow-md ${isBuyer ? 'bg-blue-100/50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800' : isAdmin ? 'bg-purple-100/50 dark:bg-purple-900/30 border-purple-200 dark:border-purple-800' : 'bg-gray-100/50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700'}`}
                     >
                         {isBuyer ? (
-                            <p className="text-white font-medium flex items-center">
+                            <p className="text-blue-800 dark:text-blue-200 font-medium flex items-center">
                                 <span className="mr-2 text-xl">💼</span> {t('b2b.buyer_msg_title')} - {t('b2b.buyer_msg_desc')}
                             </p>
                         ) : isAdmin ? (
-                            <p className="text-white font-medium flex items-center">
+                            <p className="text-purple-800 dark:text-purple-200 font-medium flex items-center">
                                 <span className="mr-2 text-xl">👨‍💼</span> {t('b2b.admin_msg')}
                             </p>
                         ) : isFarmer ? (
-                            <p className="text-white font-medium flex items-center">
+                            <p className="text-gray-800 dark:text-gray-200 font-medium flex items-center">
                                 <span className="mr-2 text-xl">🌾</span> {t('b2b.farmer_msg')}
                             </p>
                         ) : (
-                            <p className="text-white font-medium flex items-center">
+                            <div className="flex flex-wrap items-center text-gray-800 dark:text-gray-200 font-medium">
                                 <span className="mr-2 text-xl">📦</span>
-                                {t('b2b.guest_msg_1')} <Link to="/auth?tab=signup&role=farmer" className="underline font-bold hover:text-blue-200 mx-1">{t('b2b.register_farmer')}</Link> {t('b2b.or')} <Link to="/auth?tab=signup&role=buyer" className="underline font-bold hover:text-blue-200 mx-1">{t('b2b.register_buyer')}</Link> {t('b2b.guest_msg_2')}
-                            </p>
+                                <span>{t('b2b.guest_msg_1')}</span>
+                                <Link to="/auth?tab=signup&role=farmer" className="bg-white/80 dark:bg-gray-800 px-3 py-1 rounded-full text-blue-600 text-sm font-bold shadow-sm mx-2 hover:bg-white">{t('b2b.register_farmer')}</Link>
+                                <span>{t('b2b.or')}</span>
+                                <Link to="/auth?tab=signup&role=buyer" className="bg-white/80 dark:bg-gray-800 px-3 py-1 rounded-full text-blue-600 text-sm font-bold shadow-sm mx-2 hover:bg-white">{t('b2b.register_buyer')}</Link>
+                                <span>{t('b2b.guest_msg_2')}</span>
+                            </div>
                         )}
                     </motion.div>
 
-                    {/* Search Bar */}
+                    {/* Glass Search Bar */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3, duration: 0.5 }}
-                        className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 shadow-xl"
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl p-2 rounded-2xl border border-white/20 dark:border-gray-700 shadow-xl"
                     >
-                        <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex flex-col md:flex-row gap-2">
                             <div className="relative flex-1 group">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-200 group-focus-within:text-white transition-colors" />
+                                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                                 <Input
                                     type="text"
                                     placeholder={t('b2b.search_placeholder') || "Search for bulk crops..."}
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 h-12 bg-white/20 border-white/30 text-white placeholder-gray-200 focus:bg-white/30 focus:border-white focus:ring-2 focus:ring-white/50 transition-all rounded-lg"
+                                    className="pl-12 h-12 bg-white/50 dark:bg-gray-900/50 border-none shadow-none focus:ring-0 text-lg"
                                 />
                             </div>
+                            <div className="h-full w-px bg-gray-200 dark:bg-gray-700 hidden md:block mx-2"></div>
                             <select
                                 value={selectedDistrict}
                                 onChange={(e) => setSelectedDistrict(e.target.value)}
-                                className="h-12 px-4 rounded-lg border-white/30 bg-white/20 text-white font-medium focus:ring-2 focus:ring-white/50 cursor-pointer hover:bg-white/30 transition-colors"
+                                className="h-12 px-4 rounded-xl border-none bg-transparent dark:text-white font-medium focus:ring-0 cursor-pointer hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors md:w-48"
                             >
                                 {districts.map((district) => (
-                                    <option key={district} value={district} className="text-gray-900 font-medium">
+                                    <option key={district} value={district} className="dark:bg-gray-800">
                                         {district === "All Districts" ? t('retail.all_districts') : district}
                                     </option>
                                 ))}
                             </select>
+                            <Button size="lg" className="rounded-xl bg-blue-600 hover:bg-blue-700 h-12 px-8 shadow-md">
+                                {t('retail.search')}
+                            </Button>
                         </div>
                     </motion.div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Sidebar Filters */}
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5 }}
+                        transition={{ delay: 0.4 }}
                         className="lg:w-64 flex-shrink-0"
                     >
-                        <Card className="sticky top-24 border-none shadow-md bg-white dark:bg-gray-800 overflow-hidden">
-                            <CardHeader className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
-                                <CardTitle className="flex items-center text-lg font-bold text-gray-800 dark:text-white">
+                        <div className="sticky top-24 space-y-4">
+                            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-2xl p-6 border border-white/20 dark:border-gray-700 shadow-lg">
+                                <h3 className="flex items-center text-lg font-bold text-gray-900 dark:text-white mb-6">
                                     <Filter className="h-5 w-5 mr-3 text-blue-600" />
                                     {t('retail.categories')}
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-3">
-                                <div className="space-y-1">
+                                </h3>
+                                <div className="space-y-2">
                                     {categories.map((category) => (
                                         <button
                                             key={category}
                                             onClick={() => setSelectedCategory(category === 'All' ? '' : category)}
-                                            className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between group ${(category === 'All' && !selectedCategory) || selectedCategory === category
-                                                ? 'bg-blue-600 text-white shadow-md'
-                                                : 'hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                                            className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center justify-between group ${(category === 'All' && !selectedCategory) || selectedCategory === category
+                                                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                                                : 'text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-gray-700/50 hover:text-blue-600 dark:hover:text-blue-400'
                                                 }`}
                                         >
                                             <span className="font-medium">{category === "All" ? t('retail.all_categories') : category}</span>
@@ -236,8 +232,8 @@ const B2BMarketplacePage: React.FC = () => {
                                         </button>
                                     ))}
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
                     </motion.div>
 
                     {/* Product Grid */}
@@ -251,28 +247,22 @@ const B2BMarketplacePage: React.FC = () => {
                         {loading ? (
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <Card key={i} className="animate-pulse border-none shadow-sm">
-                                        <div className="h-56 bg-gray-200 dark:bg-gray-700 rounded-t-xl"></div>
-                                        <CardContent className="pt-6 space-y-3">
-                                            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                                        </CardContent>
-                                    </Card>
+                                    <div key={i} className="h-96 rounded-2xl bg-gray-100 dark:bg-gray-800/50 animate-pulse"></div>
                                 ))}
                             </div>
                         ) : filteredCrops.length === 0 ? (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-dashed border-gray-300 dark:border-gray-700"
+                                className="text-center py-24 bg-white/40 dark:bg-gray-800/40 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700 backdrop-blur-sm"
                             >
-                                <div className="text-6xl mb-4">🔍</div>
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('retail.no_products')}</h3>
-                                <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">{t('retail.no_products_desc')}</p>
+                                <div className="text-8xl mb-6 opacity-80">🔍</div>
+                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('retail.no_products')}</h3>
+                                <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">{t('retail.no_products_desc')}</p>
                                 <Button
                                     variant="outline"
                                     onClick={() => { setSearchTerm(''); setSelectedCategory(''); setSelectedDistrict(''); }}
-                                    className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                                    className="border-blue-500 text-blue-600 hover:bg-blue-50 rounded-full px-8"
                                 >
                                     {t('retail.clear_filters')}
                                 </Button>
@@ -286,87 +276,13 @@ const B2BMarketplacePage: React.FC = () => {
                             >
                                 <AnimatePresence>
                                     {filteredCrops.map((crop) => (
-                                        <motion.div
-                                            key={crop.id}
-                                            variants={itemVariants}
-                                            layout
-                                            className="h-full"
-                                        >
-                                            <Link to={`/crop/${crop.id}`} className="block h-full">
-                                                <Card className="group h-full hover:shadow-xl transition-all duration-300 border-none shadow-sm bg-white dark:bg-gray-800 overflow-hidden ring-1 ring-gray-100 dark:ring-gray-700 hover:ring-blue-200 dark:hover:ring-blue-900">
-                                                    {/* Wholesale badge */}
-                                                    <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-xs font-bold bg-blue-600 text-white shadow-md">
-                                                        {t('b2b.wholesale')}
-                                                    </div>
-
-                                                    <div className="relative h-56 overflow-hidden bg-gray-100 dark:bg-gray-700">
-                                                        {crop.images && crop.images.length > 0 ? (
-                                                            <img
-                                                                src={crop.images[0].startsWith('http') ? crop.images[0] : `${BASE_URL}${crop.images[0]}`}
-                                                                alt={crop.title}
-                                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700">
-                                                                <span className="text-8xl transform group-hover:scale-110 transition-transform duration-300 drop-shadow-lg">{getCropEmoji(crop.cropTypeName)}</span>
-                                                            </div>
-                                                        )}
-                                                        <div className="absolute top-3 left-3">
-                                                            <span className="px-3 py-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-blue-700 dark:text-blue-400 text-xs font-bold rounded-full shadow-sm flex items-center gap-1">
-                                                                {getCropEmoji(crop.cropTypeName)} {crop.cropTypeName}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <CardContent className="pt-5 p-5">
-                                                        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                                            <MapPin className="h-3 w-3 mr-1 text-blue-500" />
-                                                            <span className="truncate max-w-[150px]">{crop.location}</span>
-                                                            <span className="mx-2">•</span>
-                                                            <span className="truncate text-blue-600 dark:text-blue-400 font-medium">{crop.farmerName}</span>
-                                                        </div>
-                                                        <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{crop.title}</h3>
-                                                        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2 leading-relaxed h-10">{crop.description}</p>
-
-                                                        <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                                                            <div>
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">{t('b2b.min_price')}</p>
-                                                                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                                                    ৳{crop.minPrice}<span className="text-sm font-normal text-gray-500">/{crop.unit}</span>
-                                                                </p>
-                                                                {crop.minWholesaleQty && (
-                                                                    <p className="text-xs text-blue-500 dark:text-blue-300 font-medium mt-1">
-                                                                        Min: {crop.minWholesaleQty} {crop.unit}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400">{t('retail.stock')}</p>
-                                                                <p className="font-semibold text-gray-700 dark:text-gray-200">{crop.quantity} {crop.unit}</p>
-                                                            </div>
-                                                        </div>
-                                                    </CardContent>
-                                                    <CardFooter className="p-5 pt-0">
-                                                        {canBuyB2B ? (
-                                                            <Button
-                                                                className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md group-hover:shadow-lg transition-all duration-300 transform group-hover:translate-y-[-2px]"
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    setSelectedCrop(crop);
-                                                                    setShowBidModal(true);
-                                                                }}
-                                                            >
-                                                                <TrendingUp className="h-4 w-4 mr-2" />
-                                                                {t('b2b.place_bid')}
-                                                            </Button>
-                                                        ) : (
-                                                            <Button variant="outline" className="w-full border-dashed" disabled>
-                                                                {t('b2b.login_to_bid')}
-                                                            </Button>
-                                                        )}
-                                                    </CardFooter>
-                                                </Card>
-                                            </Link>
+                                        <motion.div key={crop.id} variants={itemVariants} layout>
+                                            <ProductCard
+                                                product={crop}
+                                                variant="b2b"
+                                                onAction={handleAction}
+                                                t={t}
+                                            />
                                         </motion.div>
                                     ))}
                                 </AnimatePresence>

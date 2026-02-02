@@ -4,7 +4,8 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { useNotification } from '../../context/NotificationContext';
-import { Package } from 'lucide-react';
+import { Package, Upload, X, Check, Globe, DollarSign, Layers } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AdminAddProductProps {
     onSuccess: () => void;
@@ -25,6 +26,22 @@ const AdminAddProduct: React.FC<AdminAddProductProps> = ({ onSuccess }) => {
         marketType: 'BOTH' // RETAIL, B2B, or BOTH
     });
     const [images, setImages] = useState<FileList | null>(null);
+    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setImages(e.target.files);
+            const urls = Array.from(e.target.files).map(file => URL.createObjectURL(file));
+            setPreviewUrls(urls);
+        }
+    };
+
+    const removeImage = (index: number) => {
+        // Note: validating FileList manipulation is complex in React/JS without creating a new DataTransfer
+        // For simple preview removal, we just clear previews. In a real app we'd manage a separate file array.
+        setImages(null);
+        setPreviewUrls([]);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -50,6 +67,7 @@ const AdminAddProduct: React.FC<AdminAddProductProps> = ({ onSuccess }) => {
             success(`Product added to ${formData.marketType} marketplace!`);
             setFormData({ title: '', description: '', cropTypeId: '1', quantity: '', unit: 'kg', minPrice: '', location: '', marketType: 'BOTH' });
             setImages(null);
+            setPreviewUrls([]);
             onSuccess();
         } catch (err: any) {
             error(err.message || 'Failed to add product');
@@ -59,154 +77,222 @@ const AdminAddProduct: React.FC<AdminAddProductProps> = ({ onSuccess }) => {
     };
 
     return (
-        <div className="animate-in slide-in-from-bottom-4 duration-500">
-            <div className="card bg-white dark:bg-gray-800 shadow-xl max-w-3xl border border-gray-100 dark:border-gray-700">
-                <div className="card-body">
-                    <div className="flex items-center gap-3 mb-4">
-                        <Package className="w-8 h-8 text-primary dark:text-primary-foreground" />
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-4xl mx-auto"
+        >
+            <div className="relative glass-card overflow-hidden rounded-3xl border border-white/20 dark:border-gray-800 shadow-2xl">
+                {/* Decorative background gradients */}
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-green-500/10 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
+
+                <div className="relative p-8">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/20 text-white">
+                            <Package className="w-6 h-6" />
+                        </div>
                         <div>
-                            <h2 className="card-title text-2xl dark:text-white">Add Product</h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Add products to Retail and/or B2B marketplace</p>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add New Product</h2>
+                            <p className="text-gray-500 dark:text-gray-400">List products on Retail and B2B marketplaces</p>
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text font-medium dark:text-gray-300">Product Name</span>
-                            </label>
-                            <Input
-                                placeholder="e.g., Premium Basmati Rice"
-                                value={formData.title}
-                                onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                required
-                                className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                            />
-                        </div>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Basic Info Section */}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                <Layers className="w-4 h-4" />
+                                Basic Information
+                            </h3>
 
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text font-medium dark:text-gray-300">Description</span>
-                            </label>
-                            <Textarea
-                                placeholder="Product details, quality, origin..."
-                                value={formData.description}
-                                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                rows={3}
-                                className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text font-medium dark:text-gray-300">Category</span>
-                                </label>
-                                <select
-                                    className="select select-bordered w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                                    value={formData.cropTypeId}
-                                    onChange={e => setFormData({ ...formData, cropTypeId: e.target.value })}
-                                >
-                                    <option value="1">Rice & Grains</option>
-                                    <option value="2">Wheat</option>
-                                    <option value="3">Vegetables</option>
-                                    <option value="4">Fruits</option>
-                                    <option value="5">Spices</option>
-                                    <option value="6">Pulses</option>
-                                </select>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Product Name</label>
+                                    <Input
+                                        placeholder="e.g., Premium Basmati Rice"
+                                        value={formData.title}
+                                        onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                        required
+                                        className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                                    <select
+                                        className="w-full h-10 px-3 rounded-md border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                                        value={formData.cropTypeId}
+                                        onChange={e => setFormData({ ...formData, cropTypeId: e.target.value })}
+                                    >
+                                        <option value="1">Rice & Grains</option>
+                                        <option value="2">Wheat</option>
+                                        <option value="3">Vegetables</option>
+                                        <option value="4">Fruits</option>
+                                        <option value="5">Spices</option>
+                                        <option value="6">Pulses</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text font-medium dark:text-gray-300">Quantity</span>
-                                </label>
-                                <Input
-                                    type="number"
-                                    placeholder="100"
-                                    value={formData.quantity}
-                                    onChange={e => setFormData({ ...formData, quantity: e.target.value })}
-                                    required
-                                    className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                                />
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text font-medium dark:text-gray-300">Unit</span>
-                                </label>
-                                <select
-                                    className="select select-bordered w-full dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                                    value={formData.unit}
-                                    onChange={e => setFormData({ ...formData, unit: e.target.value })}
-                                >
-                                    <option value="kg">Kilogram (kg)</option>
-                                    <option value="ton">Ton</option>
-                                    <option value="maund">Maund</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text font-medium dark:text-gray-300">Price (৳ per unit)</span>
-                                </label>
-                                <Input
-                                    type="number"
-                                    placeholder="5000"
-                                    value={formData.minPrice}
-                                    onChange={e => setFormData({ ...formData, minPrice: e.target.value })}
-                                    required
-                                    className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
-                                />
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text font-medium dark:text-gray-300">Location</span>
-                                </label>
-                                <Input
-                                    placeholder="District/Region"
-                                    value={formData.location}
-                                    onChange={e => setFormData({ ...formData, location: e.target.value })}
-                                    required
-                                    className="dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                                <Textarea
+                                    placeholder="Describe the quality, origin, and key features..."
+                                    value={formData.description}
+                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                    rows={3}
+                                    className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-800 transition-all resize-none"
                                 />
                             </div>
                         </div>
 
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text font-medium dark:text-gray-300">Product Images</span>
-                            </label>
-                            <Input
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                onChange={e => setImages(e.target.files)}
-                                className="file-input file-input-bordered w-full dark:bg-gray-700 dark:text-white dark:border-gray-600 cursor-pointer"
-                            />
-                            <label className="label">
-                                <span className="label-text-alt dark:text-gray-400">Max 5 images, JPG/PNG</span>
-                            </label>
+                        <div className="border-t border-gray-100 dark:border-gray-800/50 my-6"></div>
+
+                        {/* Inventory & Pricing */}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                <DollarSign className="w-4 h-4" />
+                                Inventory & Pricing
+                            </h3>
+
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Quantity</label>
+                                        <Input
+                                            type="number"
+                                            placeholder="0"
+                                            value={formData.quantity}
+                                            onChange={e => setFormData({ ...formData, quantity: e.target.value })}
+                                            required
+                                            className="bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Unit</label>
+                                        <select
+                                            className="w-full h-10 px-3 rounded-md border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20"
+                                            value={formData.unit}
+                                            onChange={e => setFormData({ ...formData, unit: e.target.value })}
+                                        >
+                                            <option value="kg">kg</option>
+                                            <option value="ton">ton</option>
+                                            <option value="maund">maund</option>
+                                            <option value="pcs">pcs</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Unit Price (BDT)</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-2.5 text-gray-500">৳</span>
+                                        <Input
+                                            type="number"
+                                            placeholder="0.00"
+                                            value={formData.minPrice}
+                                            onChange={e => setFormData({ ...formData, minPrice: e.target.value })}
+                                            required
+                                            className="pl-8 bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
+                                <div className="relative">
+                                    <Globe className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                    <Input
+                                        placeholder="District, Region"
+                                        value={formData.location}
+                                        onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                        required
+                                        className="pl-9 bg-white/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="alert alert-info bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6 text-blue-600 dark:text-blue-400"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span className="text-blue-800 dark:text-blue-200">Products will be available in both Retail and B2B marketplaces</span>
+                        <div className="border-t border-gray-100 dark:border-gray-800/50 my-6"></div>
+
+                        {/* Image Upload */}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                <Upload className="w-4 h-4" />
+                                Media
+                            </h3>
+
+                            <div className="bg-white/50 dark:bg-gray-800/50 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-8 text-center hover:border-green-500/50 transition-colors cursor-pointer relative group">
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <div className="space-y-2 pointer-events-none">
+                                    <div className="w-12 h-12 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                                        <Upload className="w-6 h-6" />
+                                    </div>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                        Click to upload or drag and drop
+                                    </p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        SVG, PNG, JPG or GIF (max. 5MB)
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Image Previews */}
+                            <AnimatePresence>
+                                {previewUrls.length > 0 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        className="grid grid-cols-4 gap-4 mt-4"
+                                    >
+                                        {previewUrls.map((url, idx) => (
+                                            <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group border border-gray-200 dark:border-gray-700">
+                                                <img src={url} alt="Preview" className="w-full h-full object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeImage(idx)}
+                                                    className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
 
-                        <Button
-                            type="submit"
-                            className="w-full bg-primary hover:bg-primary/90"
-                            disabled={loading}
-                        >
-                            {loading ? 'Adding Product...' : 'Add Product'}
-                        </Button>
+                        {/* Submit Button */}
+                        <div className="pt-4">
+                            <Button
+                                type="submit"
+                                className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-green-600/20 transform hover:translate-y-[-2px] transition-all"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <span className="flex items-center gap-2">
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Adding Product...
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-2">
+                                        <Check className="w-5 h-5" />
+                                        Add Product to Marketplace
+                                    </span>
+                                )}
+                            </Button>
+                        </div>
                     </form>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

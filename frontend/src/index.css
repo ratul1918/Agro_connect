@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&family=Baloo+Da+2:wght@400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Martian+Mono:wght@100..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 @import './styles/mobile.css';
 
 @tailwind base;
@@ -7,85 +7,117 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Base: Clean White / Slate */
+    --background: 210 40% 98%; /* slighly cool white */
+    --foreground: 222.2 84% 4.9%; /* deep slate text */
+    
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
+ 
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
+ 
+    /* Primary: Emerald/Green - Professional & Trusted */
+    --primary: 158 64% 52%; /* Emerald 500 */
     --primary-foreground: 210 40% 98%;
+ 
+    /* Secondary: Slate/Cool Gray */
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
+ 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
+ 
+    --accent: 158 64% 96%; /* Very light emerald tint */
     --accent-foreground: 222.2 47.4% 11.2%;
+ 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
+    --ring: 158 64% 52%;
+ 
+    --radius: 0.75rem;
+
+    /* Chart Colors */
+    --chart-1: 158 64% 52%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+ 
+  /* Professional Dark Mode */
+  [data-theme="dark"] {
+    --background: 222.2 47% 11%;    /* Slate 950 */
+    --foreground: 210 40% 98%;
+ 
+    --card: 222.2 47% 13%;          /* Slate 900 */
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222.2 47% 11%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 158 64% 52%;         /* Keep Emerald Pop */
+    --primary-foreground: 222.2 47.4% 1.2%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 158 64% 52%;
+
+    /* Chart Colors Dark */
+    --chart-1: 158 64% 52%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
 
-  /* Dark Theme */
-  [data-theme="dark"] {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
-
-  /* Forest Theme */
+  /* Forest Theme (Deep Green) */
   [data-theme="forest"] {
-    --background: 192 24% 10%;
-    --foreground: 60 30% 96%;
-    --card: 192 16% 14%;
-    --card-foreground: 60 30% 96%;
-    --popover: 192 16% 14%;
-    --popover-foreground: 60 30% 96%;
-    --primary: 142 70% 45%;
-    --primary-foreground: 144 61% 11%;
-    --secondary: 192 24% 22%;
-    --secondary-foreground: 60 30% 96%;
-    --muted: 192 16% 20%;
-    --muted-foreground: 180 9% 62%;
-    --accent: 192 24% 22%;
-    --accent-foreground: 60 30% 96%;
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 60 30% 96%;
-    --border: 192 16% 20%;
-    --input: 192 16% 20%;
-    --ring: 142 70% 45%;
+    --background: 164 50% 7%;      /* Very dark green */
+    --foreground: 164 20% 95%;     /* Off-white */
+    
+    --card: 164 50% 10%;           /* Dark green card */
+    --card-foreground: 164 20% 95%;
+
+    --popover: 164 50% 10%;
+    --popover-foreground: 164 20% 95%;
+
+    --primary: 158 64% 52%;         /* Emerald */
+    --primary-foreground: 164 50% 5%;
+
+    --secondary: 164 30% 20%;
+    --secondary-foreground: 164 20% 95%;
+
+    --muted: 164 30% 20%;
+    --muted-foreground: 164 10% 70%;
+
+    --accent: 164 30% 20%;
+    --accent-foreground: 158 64% 52%;
+
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 164 20% 95%;
+
+    --border: 164 30% 20%;
+    --input: 164 30% 20%;
+    --ring: 158 64% 52%;
   }
 
-  /* Emerald Theme */
+  /* Emerald Light Theme */
   [data-theme="emerald"] {
     --background: 0 0% 100%;
     --foreground: 160 84% 10%;
@@ -113,14 +145,26 @@
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
   }
 }
 
-/* Custom Select Dropdown Styles */
+/* Custom Utilities */
 @layer components {
+    .glass-effect {
+        @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg border border-white/20 dark:border-gray-800/50 shadow-xl;
+    }
+    
+    .glass-card {
+         @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-100 dark:border-gray-700 shadow-sm rounded-xl;
+    }
+
+    /* Custom Select Dropdown Styles - Modern */
   select {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
     background-position: right 0.5rem center;
@@ -129,12 +173,10 @@
     padding-right: 2.5rem;
   }
 
-  /* Scrollable dropdown for browsers that support it */
   select option {
     padding: 0.5rem;
   }
 
-  /* Fix for Firefox dropdown height */
   @-moz-document url-prefix() {
     select {
       scrollbar-width: thin;

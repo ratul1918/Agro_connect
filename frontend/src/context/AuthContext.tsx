@@ -66,13 +66,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (storedToken) {
                 await refreshUser();
             } else {
-                 // Try to load from cache if network fails or on first rapid load
+                // Try to load from cache if network fails or on first rapid load
                 const storedUser = localStorage.getItem('user');
                 if (storedUser) {
-                     try {
+                    try {
                         setUser(JSON.parse(storedUser));
                     } catch (e) {
-                         console.error('Failed to parse cached user', e);
+                        console.error('Failed to parse cached user', e);
                     }
                 }
             }
@@ -90,26 +90,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Enhanced redirect based on role with mobile considerations
         const getRoleBasedPath = (role: string) => {
             switch (role) {
-                case 'ROLE_ADMIN': return '/admin';
-                case 'ROLE_FARMER': return '/farmer';
-                case 'ROLE_AGRONOMIST': return '/agronomist';
+                case 'ROLE_ADMIN': return '/admin/overview';
+                case 'ROLE_FARMER': return '/farmer/overview';
+                case 'ROLE_AGRONOMIST': return '/agronomist/overview';
+                case 'ROLE_BUYER': return '/buyer/overview';
                 case 'ROLE_GENERAL_CUSTOMER':
-                case 'ROLE_CUSTOMER': return '/customer';
-                case 'ROLE_BUYER': return '/buyer';
-                default: return '/';
+                case 'ROLE_CUSTOMER': return '/marketplace/retail';
+                default: return '/marketplace/retail';
             }
         };
 
         const targetPath = getRoleBasedPath(userData.role);
-        
-        // Check if mobile device and adjust redirect if needed
-        const isMobile = window.innerWidth < 768;
-        if (isMobile) {
-            // For mobile, we might want to add a welcome screen or tutorial
-            navigate(targetPath);
-        } else {
-            navigate(targetPath);
-        }
+        console.log(`Loggin in as ${userData.role}, redirecting to: ${targetPath}`);
+
+        navigate(targetPath);
     };
 
     const logout = () => {
