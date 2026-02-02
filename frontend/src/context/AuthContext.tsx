@@ -84,6 +84,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const login = (newToken: string, userData: User) => {
         localStorage.setItem('token', newToken);
         localStorage.setItem('user', JSON.stringify(userData));
+        // Set login time for timeout calculation
+        localStorage.setItem('lastActivity', Date.now().toString());
         setToken(newToken);
         setUser(userData);
 
@@ -109,10 +111,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('lastActivity');
         setToken(null);
         setUser(null);
         navigate('/'); // Redirect to home page
     };
+
+    // Inactivity Timeout Logic (10 minutes)
+    useEffect(() => {
+        const TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+        const isAuthenticated = !!token;
+
+        const checkActivity = () => {
+            const lastActivity = localStorage.getItem('lastActivity');
+            if (lastActivity && isAuthenticated) {
+                const now = Date.now();
+                if (now - parseInt(lastActivity) > TIMEOUT_MS) {
+                    console.warn('Session expired due to inactivity');
+                    logout();
+                }
+            }
+        };
+
+        const updateActivity = () => {
+            if (isAuthenticated) {
+                localStorage.setItem('lastActivity', Date.now().toString());
+            }
+        };
+
+        // Check on mount (refresh)
+        checkActivity();
+
+        // Check continuously
+        const interval = setInterval(checkActivity, 60000); // Check every minute
+
+        // Listen for user activity
+        const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+        events.forEach(event => window.addEventListener(event, updateActivity));
+
+        return () => {
+            clearInterval(interval);
+            events.forEach(event => window.removeEventListener(event, updateActivity));
+        };
+    }, [token]);
 
     return (
         <AuthContext.Provider value={{ user, token, login, logout, refreshUser, isAuthenticated: !!token, isLoading }}>

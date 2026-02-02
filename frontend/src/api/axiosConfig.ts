@@ -31,15 +31,9 @@ api.interceptors.response.use(
     (error) => {
         // Log authentication errors but avoid auto-redirect loop for now
         if (error.response && error.response.status === 401) {
-            console.error('Authentication error (401):', error.config.url);
-            // We are temporarily disabling auto-logout to debug a potential race condition
-            // where valid logins are being invalidated immediately.
-
-            // localStorage.removeItem('token');
-            // localStorage.removeItem('user');
-            // if (!window.location.pathname.includes('/auth')) {
-            //     window.location.href = '/auth?tab=login';
-            // }
+            // Auto logout disabled as per request to allow 10 min session timeout
+            // instead of immediate logout on single API failure.
+            console.warn('Authentication error (401):', error.config.url);
         }
         return Promise.reject(error);
     }
