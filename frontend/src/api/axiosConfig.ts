@@ -25,5 +25,25 @@ api.interceptors.request.use(
     }
 );
 
+// Add a response interceptor to handle 401 errors
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        // Log authentication errors but avoid auto-redirect loop for now
+        if (error.response && error.response.status === 401) {
+            console.error('Authentication error (401):', error.config.url);
+            // We are temporarily disabling auto-logout to debug a potential race condition
+            // where valid logins are being invalidated immediately.
+
+            // localStorage.removeItem('token');
+            // localStorage.removeItem('user');
+            // if (!window.location.pathname.includes('/auth')) {
+            //     window.location.href = '/auth?tab=login';
+            // }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export { BASE_URL, API_URL };
 export default api;
