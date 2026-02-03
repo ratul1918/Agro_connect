@@ -1,14 +1,15 @@
 import React from 'react';
+import { login as loginApi } from '@/api/endpoints';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useTheme } from '@/context/ThemeContext';
+// import { useTheme } from '@/context/ThemeContext';
 
 const loginSchema = z.object({
     username: z.string().min(1, 'Username is required'),
@@ -19,41 +20,41 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const LoginPage = () => {
     const { login } = useAuth();
-    const navigate = useNavigate();
-    const { theme } = useTheme();
+    // const navigate = useNavigate(); // Navigation is handled in AuthContext
+    // const { theme } = useTheme(); // Not used currently
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
     });
 
     const onSubmit = async (data: LoginFormValues) => {
-        // Simulate API Call
         try {
             console.log("Logging in with", data);
 
-            // Mock Login Success logic
-            // In real app, call axios.post('/auth/login', data)
+            // Call Real API
+            // Map username to email as backend expects 'email'
+            const response = await loginApi({
+                email: data.username,
+                password: data.password
+            });
 
-            const mockUser = {
-                id: 1,
-                username: data.username,
-                role: 'FARMER', // Default to Farmer for now to test Dashboard
-                language: 'BN',
-            };
-            const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy";
+            console.log("Login successful", response.data);
 
-            // Allow admin login simulation
-            if (data.username === 'admin') mockUser.role = 'ADMIN';
-            if (data.username === 'buyer') mockUser.role = 'BUYER';
+            const { token, ...userData } = response.data;
 
-            setTimeout(() => {
-                // @ts-ignore
-                login(mockToken, mockUser);
-                navigate('/');
-            }, 1000);
+            // Update Auth Context
+            login(token, userData);
 
-        } catch (error) {
+            // Navigation is handled inside login() but we can ensure it here if needed
+            // context.login() calls navigate()
+
+        } catch (error: any) {
             console.error("Login failed", error);
+            const errorMessage = error.response?.data?.message || "Login failed. Please check your credentials.";
+
+            // You might want to set a form error or show a toast here
+            // For now, let's just log it or alert
+            alert(errorMessage);
         }
     };
 

@@ -45,13 +45,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 localStorage.setItem('user', JSON.stringify(userData));
             } catch (error: any) {
                 console.error('Failed to refresh user:', error);
-                // Clear token if it's invalid/expired (401)
-                if (error.status === 401 || (error.response && error.response.status === 401)) {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    setToken(null);
-                    setUser(null);
-                }
+                // Don't auto-logout on 401 during refresh - the user might just have network issues
+                // or the token might still be valid for other endpoints.
+                // Only clear if we're 100% sure the token is invalid.
+                // Let the user continue with cached data instead.
+                console.warn('Using cached user data due to refresh failure');
             } finally {
                 setIsLoading(false);
             }
@@ -63,18 +61,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const initAuth = async () => {
             const storedToken = localStorage.getItem('token');
+            const storedUser = localStorage.getItem('user');
+
+            // Load cached user immediately to prevent flash of unauthenticated state
+            if (storedUser) {
+                try {
+                    setUser(JSON.parse(storedUser));
+                } catch (e) {
+                    console.error('Failed to parse cached user', e);
+                }
+            }
+
+            // Then refresh from server if we have a token
             if (storedToken) {
+                // Ensure lastActivity is set if token exists but lastActivity doesn't
+                // This prevents false timeout on first load after login
+                if (!localStorage.getItem('lastActivity')) {
+                    localStorage.setItem('lastActivity', Date.now().toString());
+                }
                 await refreshUser();
             } else {
-                // Try to load from cache if network fails or on first rapid load
-                const storedUser = localStorage.getItem('user');
-                if (storedUser) {
-                    try {
-                        setUser(JSON.parse(storedUser));
-                    } catch (e) {
-                        console.error('Failed to parse cached user', e);
-                    }
-                }
+                setIsLoading(false);
             }
         };
 
@@ -117,9 +124,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         navigate('/'); // Redirect to home page
     };
 
-    // Inactivity Timeout Logic (10 minutes)
+    // Session Timeout Logic (24 hours to match backend JWT expiry)
     useEffect(() => {
-        const TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+        const TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
         const isAuthenticated = !!token;
 
         const checkActivity = () => {

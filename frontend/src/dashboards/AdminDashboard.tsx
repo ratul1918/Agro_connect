@@ -227,7 +227,7 @@ const AdminDashboard: React.FC = () => {
             setAgronomistMessage('✅ Created');
             setAgronomistForm({ fullName: '', email: '', password: '', phone: '' });
             fetchData();
-        } catch (err: any) { setAgronomistMessage('❌ ' + (err.message || 'Error')); }
+        } catch (err: any) { setAgronomistMessage('❌ ' + (err.response?.data?.message || err.message || 'Error')); }
         finally { setLoading(false); }
     };
 
