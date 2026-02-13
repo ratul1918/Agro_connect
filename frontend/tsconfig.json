@@ -34,10 +34,5 @@
     ],
     "exclude": [
         "src/NOTIFICATION_EXAMPLES.tsx"
-    ],
-    "references": [
-        {
-            "path": "./tsconfig.node.json"
-        }
     ]
 }
