@@ -242,6 +242,7 @@ const translations: Translations = {
     'b2b.login_to_bid': { en: 'Login to Bid', bn: 'বিড করতে লগইন করুন' },
     'b2b.categories': { en: 'Categories', bn: 'বিভাগসমূহ' },
     'b2b.all_categories': { en: 'All Categories', bn: 'সব বিভাগ' },
+    'b2b.search': { en: 'Search', bn: 'অনুসন্ধান' },
 
     // Retail Marketplace
     'retail.title': { en: 'Retail Shop', bn: 'খুচরা দোকান' },

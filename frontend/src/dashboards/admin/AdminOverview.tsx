@@ -6,7 +6,7 @@ import {
     AreaChart, Area
 } from 'recharts';
 import {
-    Users, Sprout, ShoppingCart, Globe, ArrowUpRight, TrendingUp, AlertCircle
+    Users, Sprout, ShoppingCart, ArrowUpRight, TrendingUp, AlertCircle
 } from 'lucide-react';
 
 interface AdminOverviewProps {
@@ -111,8 +111,8 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({
                             <Users className="w-5 h-5 text-green-600" />
                             User Distribution
                         </h2>
-                        <div className="h-[300px] w-full mt-4">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div style={{ height: '300px', width: '100%', marginTop: '1rem' }}>
+                            <ResponsiveContainer width="100%" height={300}>
                                 <PieChart>
                                     <Pie
                                         data={roleData}

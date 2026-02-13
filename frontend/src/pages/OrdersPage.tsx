@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios, { BASE_URL } from '../api/axiosConfig';
-import { Loader2, Package, Calendar, MapPin, DollarSign, CheckCircle, Truck, Clock } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Loader2, Package, MapPin, DollarSign } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Search, Filter, Package, Plus } from 'lucide-react';
+import { Search, Filter, Plus } from 'lucide-react';
 import axios from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -31,14 +31,18 @@ const B2BMarketplacePage: React.FC = () => {
     const isBuyer = user?.role === 'ROLE_BUYER';
     const isAdmin = user?.role === 'ROLE_ADMIN';
     const canAddProduct = isFarmer || isAdmin;
-
-    const categories = [
-        "All", "Rice & Grains", "Vegetables", "Fruits", "Spices", "Pulses", "Fish"
-    ];
+    const [categories, setCategories] = useState<string[]>(['All']);
 
     const districts = [
         "All Districts", "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur"
     ];
+
+    useEffect(() => {
+        axios.get('/shop/crop-types').then(res => {
+            const names = res.data.map((ct: any) => ct.nameEn || ct.name_en);
+            setCategories(['All', ...names]);
+        }).catch(() => {});
+    }, []);
 
     useEffect(() => {
         fetchCrops();
@@ -193,7 +197,7 @@ const B2BMarketplacePage: React.FC = () => {
                                 ))}
                             </select>
                             <Button size="lg" className="rounded-xl bg-blue-600 hover:bg-blue-700 h-12 px-8 shadow-md">
-                                {t('retail.search')}
+                                {t('b2b.search')}
                             </Button>
                         </div>
                     </motion.div>

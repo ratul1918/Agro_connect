@@ -3,6 +3,8 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 *.class
+*.jar
+!gradle-wrapper.jar
 
 # Spring Boot
 .mvn/
@@ -16,6 +18,8 @@ logs/
 *.classpath
 *.project
 *.settings/
+.factorypath
+nbproject/
 
 # Frontend (Node.js/React)
 node_modules/
@@ -23,6 +27,9 @@ dist/
 dist-ssr/
 coverage/
 *.local
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
 
 # Environment Variables
 .env
@@ -38,5 +45,4 @@ Thumbs.db
 # Other
 *.sw?
 *uploads/
-*.txt
-*.pdf
+/package-lock.json

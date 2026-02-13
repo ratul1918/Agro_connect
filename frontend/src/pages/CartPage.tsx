@@ -19,7 +19,7 @@ interface CartItem {
 }
 
 const CartPage: React.FC = () => {
-    const { user, isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth();
     const { error, success } = useNotification();
     const navigate = useNavigate();
     const [items, setItems] = useState<CartItem[]>([]);

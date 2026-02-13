@@ -37,14 +37,18 @@ const MarketplacePage: React.FC = () => {
 
     // Determine if user is a wholesale buyer or retail customer
     const isWholesaleBuyer = user?.role === 'ROLE_BUYER';
-
-    const categories = [
-        "All", "Rice & Grains", "Vegetables", "Fruits", "Spices", "Pulses", "Fish"
-    ];
+    const [categories, setCategories] = useState<string[]>(['All']);
 
     const districts = [
         "All Districts", "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur"
     ];
+
+    useEffect(() => {
+        axios.get('/shop/crop-types').then(res => {
+            const names = res.data.map((ct: any) => ct.nameEn || ct.name_en);
+            setCategories(['All', ...names]);
+        }).catch(() => {});
+    }, []);
 
     useEffect(() => {
         fetchCrops();

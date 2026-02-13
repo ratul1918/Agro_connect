@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Menu, X, Sun, Moon, Leaf, Monitor } from 'lucide-react';
+import { Menu, X, Sun, Moon, Leaf } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 // We will replace these with actual shadcn components later if needed, using raw for now for speed or generic html
-import { Button } from "@/components/ui/button"
 
 // Placeholder sidebar items - these will be dynamic based on role later
 const sidebarItems = [
@@ -60,7 +59,7 @@ const MainLayout = () => {
                     <div className="flex gap-2">
                         <button onClick={() => setTheme('dark')} className={cn("p-2 rounded-md hover:bg-muted", theme === 'dark' && "bg-muted")}><Moon size={16} /></button>
                         <button onClick={() => setTheme('light')} className={cn("p-2 rounded-md hover:bg-muted", theme === 'light' && "bg-muted")}><Sun size={16} /></button>
-                        <button onClick={() => setTheme('green')} className={cn("p-2 rounded-md hover:bg-muted", theme === 'green' && "bg-muted")}><Leaf size={16} /></button>
+                        <button onClick={() => setTheme('forest')} className={cn("p-2 rounded-md hover:bg-muted", theme === 'forest' && "bg-muted")}><Leaf size={16} /></button>
                     </div>
                 </div>
             </aside>

@@ -31,7 +31,7 @@ const Login: React.FC = () => {
                 <h2 className="text-2xl font-bold text-center">Login</h2>
                 {error && <p className="text-red-500 text-center">{error}</p>}
                 <Input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-                <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+                <Input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required />
                 <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Logging in...' : 'Login'}
                 </Button>

@@ -28,6 +28,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Development logging utility
+const isDev = import.meta.env.DEV;
+const log = {
+    info: (msg: string, data?: any) => isDev && console.log(msg, data),
+    warn: (msg: string, data?: any) => isDev && console.warn(msg, data),
+    error: (msg: string, data?: any) => isDev && console.error(msg, data),
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
@@ -36,24 +44,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const refreshUser = async () => {
         const storedToken = localStorage.getItem('token');
+        log.info('🔄 REFRESH USER - Token in storage:', !!storedToken ? `${storedToken.substring(0, 20)}...` : 'NONE');
         if (storedToken) {
             try {
+                log.info('🔄 Calling getCurrentUser() with token...');
                 const response = await getCurrentUser();
                 const userData = response.data;
-                console.log('Refreshed user data:', userData);
+                log.info('✅ Refreshed user data:', userData);
                 setUser(userData);
                 localStorage.setItem('user', JSON.stringify(userData));
             } catch (error: any) {
-                console.error('Failed to refresh user:', error);
-                // Don't auto-logout on 401 during refresh - the user might just have network issues
-                // or the token might still be valid for other endpoints.
-                // Only clear if we're 100% sure the token is invalid.
-                // Let the user continue with cached data instead.
-                console.warn('Using cached user data due to refresh failure');
+                log.error('❌ Failed to refresh user:', error);
+                log.error('❌ Error details:', {
+                    status: error.response?.status,
+                    message: error.message,
+                    headers: error.config?.headers
+                });
+
+                // Don't auto-logout - keep cached data
+                log.warn('Using cached user data due to refresh failure');
             } finally {
                 setIsLoading(false);
             }
         } else {
+            log.warn('⚠️ No token in storage, skipping refresh');
             setIsLoading(false);
         }
     };
@@ -68,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 try {
                     setUser(JSON.parse(storedUser));
                 } catch (e) {
-                    console.error('Failed to parse cached user', e);
+                    log.error('Failed to parse cached user', e);
                 }
             }
 
@@ -89,12 +103,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const login = (newToken: string, userData: User) => {
+        log.info('🔐 LOGIN - Storing token:', newToken.substring(0, 20) + '...');
         localStorage.setItem('token', newToken);
         localStorage.setItem('user', JSON.stringify(userData));
         // Set login time for timeout calculation
         localStorage.setItem('lastActivity', Date.now().toString());
+        
+        // Verify token was stored
+        const storedToken = localStorage.getItem('token');
+        log.info('✅ Token stored successfully:', !!storedToken);
+        log.info('🔍 Token in state before set:', token);
+        
         setToken(newToken);
         setUser(userData);
+        
+        log.info('🔍 Token in state after set:', newToken);
 
         // Enhanced redirect based on role with mobile considerations
         const getRoleBasedPath = (role: string) => {
@@ -110,7 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
 
         const targetPath = getRoleBasedPath(userData.role);
-        console.log(`Loggin in as ${userData.role}, redirecting to: ${targetPath}`);
+        log.info(`Loggin in as ${userData.role}, redirecting to: ${targetPath}`);
 
         navigate(targetPath);
     };

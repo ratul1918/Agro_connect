@@ -9,7 +9,7 @@ import api from '../api/axios';
 import { KeyRound, Eye, EyeOff } from 'lucide-react';
 
 const ChangePasswordPage: React.FC = () => {
-    const { user } = useAuth();
+    useAuth();
     const { success, error } = useNotification();
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState({

@@ -1,4 +1,3 @@
-import React from 'react';
 import { login as loginApi } from '@/api/endpoints';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -84,6 +83,7 @@ const LoginPage = () => {
                                 id="password"
                                 type="password"
                                 placeholder="******"
+                                autoComplete="current-password"
                                 {...register('password')}
                             />
                             {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}

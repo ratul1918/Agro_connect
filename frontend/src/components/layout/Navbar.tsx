@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Menu, X, User, LogOut, Leaf, Globe, Palette, ShoppingCart, MessageSquare, ChevronDown, LayoutDashboard } from 'lucide-react';
-import api from '../../api/axios';
+import { getChats } from '../../api/endpoints';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -35,7 +35,7 @@ const Navbar: React.FC = () => {
         if (isAuthenticated) {
             const fetchUnreadCount = async () => {
                 try {
-                    const res = await api.get('/messenger/chats');
+                    const res = await getChats();
                     const total = res.data.reduce((sum: number, chat: any) => sum + (chat.unread_count || 0), 0);
                     setUnreadCount(total);
                 } catch {

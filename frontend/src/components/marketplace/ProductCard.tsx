@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, ShoppingCart, TrendingUp, Package } from 'lucide-react';
+import { MapPin, ShoppingCart, TrendingUp } from 'lucide-react';
 import { Button } from '../ui/button';
 import { BASE_URL } from '../../api/axiosConfig';
 import { motion } from 'framer-motion';

@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { getAllUsers, deleteUser, deleteCropAdmin, updateCrop } from '../api/endpoints';
+import { 
+    getAllUsers, deleteUser, getAllAdminCrops, deleteCropAdmin, updateCrop,
+    getAllAdminBlogs, getAllExportApplications, getAllAdminOrders, getAllAdminBids,
+    getAdminConfig, updateCropStockOut, updateCropBackInStock, updateBulkQuantitySettings,
+    updateExportApplicationStatus
+} from '../api/endpoints';
 import { useNotification } from '../context/NotificationContext';
 import { useConfirm, usePrompt } from '../components/ConfirmDialog';
 import api, { BASE_URL } from '../api/axios';
@@ -36,7 +41,7 @@ const AdminDashboard: React.FC = () => {
     const [orders, setOrders] = useState<any[]>([]);
     const [bids, setBids] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [fetchError, setFetchError] = useState(false);
+    const [fetchError, _setFetchError] = useState(false);
     const [cashoutRefresh, setCashoutRefresh] = useState(false);
 
     // Forms & Settings
@@ -102,13 +107,20 @@ const AdminDashboard: React.FC = () => {
     const fetchData = async () => {
         try {
             const [usersRes, cropsRes, blogsRes, exportsRes, ordersRes, bidsRes] = await Promise.all([
-                getAllUsers(),
-                api.get('/admin/crops'),
-                api.get('/admin/blogs').catch(() => ({ data: [] })),
-                api.get('/admin/export-applications').catch(() => ({ data: [] })),
-                api.get('/admin/orders').catch(() => ({ data: [] })),
-                api.get('/admin/bids').catch(() => ({ data: [] }))
+                getAllUsers().catch((err) => { console.error('Failed to fetch users:', err); return { data: [] }; }),
+                getAllAdminCrops().catch((err) => { console.error('Failed to fetch crops:', err); return { data: [] }; }),
+                getAllAdminBlogs().catch(() => ({ data: [] })),
+                getAllExportApplications().catch(() => ({ data: [] })),
+                getAllAdminOrders().catch(() => ({ data: [] })),
+                getAllAdminBids().catch(() => ({ data: [] }))
             ]);
+
+            console.log('Admin Dashboard Data:', {
+                users: usersRes.data?.length || 0,
+                crops: cropsRes.data?.length || 0,
+                blogs: blogsRes.data?.length || 0,
+                orders: ordersRes.data?.length || 0
+            });
 
             setUsers(usersRes.data);
             setCrops(cropsRes.data);
@@ -123,7 +135,7 @@ const AdminDashboard: React.FC = () => {
 
     const fetchConfig = async () => {
         try {
-            const res = await api.get('/admin/config');
+            const res = await getAdminConfig();
             setConfig(res.data);
             if (res.data.default_min_wholesale_qty) {
                 setBulkSettings({
@@ -153,7 +165,7 @@ const AdminDashboard: React.FC = () => {
     const handleStockOut = async (id: number) => {
         showConfirm('Mark as Stock Out?', 'Product will be hidden from marketplace.', async () => {
             try {
-                await api.put(`/admin/crops/${id}/stock-out`);
+                await updateCropStockOut(id);
                 success('Product marked as stock out');
                 fetchData();
             }
@@ -163,7 +175,7 @@ const AdminDashboard: React.FC = () => {
 
     const handleBackInStock = async (id: number) => {
         try {
-            await api.put(`/admin/crops/${id}/back-in-stock`);
+            await updateCropBackInStock(id);
             success('Product is back in stock');
             fetchData();
         }
@@ -174,7 +186,7 @@ const AdminDashboard: React.FC = () => {
         showConfirm('Apply Bulk Settings?', 'Update all crops?', async () => {
             setLoading(true);
             try {
-                await api.put('/admin/crops/bulk-quantity-settings', bulkSettings);
+                await updateBulkQuantitySettings(bulkSettings);
                 success('Updated crops'); fetchData();
             } catch { error('Update failed'); }
             finally { setLoading(false); }
@@ -184,7 +196,7 @@ const AdminDashboard: React.FC = () => {
     const handleExportAction = async (id: number, action: 'approve' | 'reject') => {
         showPrompt(`Note for ${action}:`, async (notes) => {
             try {
-                await api.put(`/admin/export-applications/${id}/${action}`, { notes });
+                await updateExportApplicationStatus(id, action, notes);
                 success(`Application ${action}d`); fetchData();
             } catch { error('Action failed'); }
         });
@@ -454,130 +466,159 @@ const AdminDashboard: React.FC = () => {
 
             {/* Edit Crop Modal */}
             {editingCrop && (
-                <div className="modal modal-open">
-                    <div className="modal-box max-w-2xl bg-white dark:bg-gray-800 dark:text-white">
-                        <h3 className="font-bold text-lg mb-4">Edit Product</h3>
-                        <form onSubmit={handleSaveCrop} className="space-y-4">
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Product Name</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    className="input input-bordered dark:bg-gray-700 dark:text-white"
-                                    value={editingCrop.title || ''}
-                                    onChange={e => setEditingCrop({ ...editingCrop, title: e.target.value })}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Description</span>
-                                </label>
-                                <textarea
-                                    className="textarea textarea-bordered dark:bg-gray-700 dark:text-white"
-                                    rows={3}
-                                    value={editingCrop.description || ''}
-                                    onChange={e => setEditingCrop({ ...editingCrop, description: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="form-control">
-                                    <label className="label">
-                                        <span className="label-text">Quantity</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        className="input input-bordered dark:bg-gray-700 dark:text-white"
-                                        value={editingCrop.quantity || 0}
-                                        onChange={e => setEditingCrop({ ...editingCrop, quantity: parseFloat(e.target.value) })}
-                                        required
-                                    />
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+                    <div className="glass-card rounded-3xl border border-white/20 dark:border-gray-800 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                        {/* Header */}
+                        <div className="sticky top-0 z-10 bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border-b border-white/20 dark:border-gray-800 p-6 sm:p-8">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Product</h2>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Update product details below</p>
                                 </div>
+                                <button
+                                    onClick={() => setEditingCrop(null)}
+                                    disabled={loading}
+                                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
 
-                                <div className="form-control">
-                                    <label className="label">
-                                        <span className="label-text">Unit</span>
-                                    </label>
-                                    <select
-                                        className="select select-bordered dark:bg-gray-700 dark:text-white"
-                                        value={editingCrop.unit || 'kg'}
-                                        onChange={e => setEditingCrop({ ...editingCrop, unit: e.target.value })}
-                                    >
-                                        <option value="kg">Kilogram (kg)</option>
-                                        <option value="ton">Ton</option>
-                                        <option value="maund">Maund</option>
-                                    </select>
+                        {/* Form Content */}
+                        <form onSubmit={handleSaveCrop} className="p-6 sm:p-8 space-y-8">
+                            {/* Product Name & Category */}
+                            <div className="bg-white/50 dark:bg-gray-800/30 rounded-2xl p-6 border border-white/20 dark:border-gray-700/50">
+                                <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-6">Basic Information</h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Name</label>
+                                        <input
+                                            type="text"
+                                            className="w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                            value={editingCrop.title || ''}
+                                            onChange={e => setEditingCrop({ ...editingCrop, title: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                                        <textarea
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all resize-none"
+                                            rows={4}
+                                            value={editingCrop.description || ''}
+                                            onChange={e => setEditingCrop({ ...editingCrop, description: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="form-control">
-                                    <label className="label">
-                                        <span className="label-text">Price (৳ per unit)</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        className="input input-bordered dark:bg-gray-700 dark:text-white"
-                                        value={editingCrop.minPrice || 0}
-                                        onChange={e => setEditingCrop({ ...editingCrop, minPrice: parseFloat(e.target.value) })}
-                                        required
-                                    />
-                                </div>
+                            {/* Inventory & Pricing */}
+                            <div className="bg-white/50 dark:bg-gray-800/30 rounded-2xl p-6 border border-white/20 dark:border-gray-700/50">
+                                <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-6">Inventory & Pricing</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quantity</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            className="w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-mono"
+                                            value={editingCrop.quantity || 0}
+                                            onChange={e => setEditingCrop({ ...editingCrop, quantity: parseFloat(e.target.value) })}
+                                            required
+                                        />
+                                    </div>
 
-                                <div className="form-control">
-                                    <label className="label">
-                                        <span className="label-text">Location</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        className="input input-bordered dark:bg-gray-700 dark:text-white"
-                                        value={editingCrop.location || ''}
-                                        onChange={e => setEditingCrop({ ...editingCrop, location: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                            </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Unit</label>
+                                        <select
+                                            className="w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                            value={editingCrop.unit || 'kg'}
+                                            onChange={e => setEditingCrop({ ...editingCrop, unit: e.target.value })}
+                                        >
+                                            <option value="kg">Kilogram (kg)</option>
+                                            <option value="ton">Ton</option>
+                                            <option value="maund">Maund</option>
+                                            <option value="pcs">Pieces (pcs)</option>
+                                        </select>
+                                    </div>
 
-                            {/* Show existing images */}
-                            {editingCrop.images && editingCrop.images.length > 0 && (
-                                <div className="form-control">
-                                    <label className="label">
-                                        <span className="label-text">Current Images</span>
-                                    </label>
-                                    <div className="flex gap-2 flex-wrap">
-                                        {editingCrop.images.map((img: string, idx: number) => (
-                                            <img
-                                                key={idx}
-                                                src={`${BASE_URL}${img}`}
-                                                alt={`Product ${idx + 1}`}
-                                                className="w-20 h-20 object-cover rounded border"
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Price (৳ per unit)</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">৳</span>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                className="w-full h-12 pl-8 pr-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-mono"
+                                                value={editingCrop.minPrice || 0}
+                                                onChange={e => setEditingCrop({ ...editingCrop, minPrice: parseFloat(e.target.value) })}
+                                                required
                                             />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
+                                        <input
+                                            type="text"
+                                            className="w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                            value={editingCrop.location || ''}
+                                            onChange={e => setEditingCrop({ ...editingCrop, location: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Current Images */}
+                            {editingCrop.images && editingCrop.images.length > 0 && (
+                                <div className="bg-white/50 dark:bg-gray-800/30 rounded-2xl p-6 border border-white/20 dark:border-gray-700/50">
+                                    <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-6">Current Images</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                        {editingCrop.images.map((img: string, idx: number) => (
+                                            <div key={idx} className="relative group">
+                                                <img
+                                                    src={`${BASE_URL}${img}`}
+                                                    alt={`Product ${idx + 1}`}
+                                                    className="w-full aspect-square object-cover rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
+                                                />
+                                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
+                                                    <p className="text-white text-xs font-semibold">Image #{idx + 1}</p>
+                                                </div>
+                                            </div>
                                         ))}
                                     </div>
-                                    <label className="label">
-                                        <span className="label-text-alt text-gray-500">Note: Image editing not supported yet</span>
-                                    </label>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">💡 Note: Image editing not yet supported. Delete and re-add product to change images.</p>
                                 </div>
                             )}
 
-                            <div className="modal-action">
+                            {/* Actions */}
+                            <div className="flex gap-3 justify-end pt-6 border-t border-gray-100 dark:border-gray-800">
                                 <button
                                     type="button"
-                                    className="btn dark:bg-gray-700 dark:text-white"
                                     onClick={() => setEditingCrop(null)}
                                     disabled={loading}
+                                    className="px-6 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold transition-colors disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="btn btn-primary"
                                     disabled={loading}
+                                    className="px-8 h-12 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold shadow-lg shadow-green-600/20 hover:shadow-green-600/30 transition-all disabled:opacity-50 flex items-center gap-2"
                                 >
-                                    {loading ? 'Saving...' : 'Save Changes'}
+                                    {loading ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        <>Save Changes</>
+                                    )}
                                 </button>
                             </div>
                         </form>

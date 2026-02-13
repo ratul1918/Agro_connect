@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import axios from '../api/axiosConfig';
-import { Loader2, ArrowLeft, Send } from 'lucide-react';
+import { Loader2, Send } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -97,7 +97,7 @@ const CheckoutPage: React.FC = () => {
 
         setPlacingOrder(true);
         try {
-            const response = await axios.post('/customer/orders/checkout', {
+            await axios.post('/customer/orders/checkout', {
                 mobile: formData.mobile,
                 address: formData.address,
                 paymentMethod: formData.paymentMethod,

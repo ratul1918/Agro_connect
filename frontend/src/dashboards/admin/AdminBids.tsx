@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Gavel, User, Calendar, Clock, ArrowUpRight, Filter } from 'lucide-react';
+import { Search, Gavel, Calendar, Clock, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AdminBidsProps {

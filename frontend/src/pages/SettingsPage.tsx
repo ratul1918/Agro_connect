@@ -6,7 +6,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useNotification } from '../context/NotificationContext';
 import api from '../api/axios';
-import { User, KeyRound, Shield, Bell, Palette } from 'lucide-react';
+import { User, KeyRound, Bell, Palette } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import { ThemeSelectorSidebar } from '../components/ThemeSelectorSidebar';
@@ -19,7 +19,7 @@ const SettingsPage: React.FC = () => {
 
     // Profile form
     const [fullName, setFullName] = useState(user?.fullName || '');
-    const [phone, setPhone] = useState(user?.mobileNumber || '');
+    const [phone, setPhone] = useState(user?.phone || '');
 
     // Password form
     const [currentPassword, setCurrentPassword] = useState('');
@@ -140,15 +140,15 @@ const SettingsPage: React.FC = () => {
                                         <form onSubmit={handleChangePassword} className="space-y-4">
                                             <div className="space-y-2">
                                                 <Label>বর্তমান পাসওয়ার্ড</Label>
-                                                <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
+                                                <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} autoComplete="current-password" required />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label>নতুন পাসওয়ার্ড</Label>
-                                                <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                                                <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} autoComplete="new-password" required />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label>নতুন পাসওয়ার্ড নিশ্চিত করুন</Label>
-                                                <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                                                <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} autoComplete="new-password" required />
                                             </div>
                                             <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">
                                                 {loading ? 'পরিবর্তন হচ্ছে...' : 'পাসওয়ার্ড পরিবর্তন করুন'}

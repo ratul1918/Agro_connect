@@ -21,9 +21,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
 
-    // Public paths that don't need JWT processing
-    private static final List<String> PUBLIC_PATHS = List.of(
-            "/",
+    // Public paths that don't need JWT processing (prefix match)
+    private static final List<String> PUBLIC_PATH_PREFIXES = List.of(
             "/api/auth/login",
             "/api/auth/signup",
             "/api/auth/forgot-password",
@@ -33,8 +32,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/ws/",
             "/error",
             "/favicon.ico",
-            "/health",
             "/uploads/");
+
+    // Paths that must match exactly (not prefix)
+    private static final List<String> PUBLIC_EXACT_PATHS = List.of(
+            "/",
+            "/health");
 
     public JwtAuthFilter(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
@@ -44,7 +47,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
+        if (PUBLIC_EXACT_PATHS.contains(path)) {
+            return true;
+        }
+        return PUBLIC_PATH_PREFIXES.stream().anyMatch(path::startsWith);
     }
 
     @Override

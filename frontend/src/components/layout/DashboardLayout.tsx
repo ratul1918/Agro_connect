@@ -5,9 +5,10 @@ import { useLanguage } from '../../context/LanguageContext';
 import { Button } from '../ui/button';
 import {
     Menu, X, LogOut, ChevronLeft, ChevronRight, KeyRound, Home, Package, MessageSquare, Wallet, Settings, LayoutDashboard,
-    Sun, Moon, Bell, Search
+    Bell, Search
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { Badge } from '../ui/badge';
 import Footer from './Footer';
 import { ThemeSelectorSidebar } from '../ThemeSelectorSidebar';
 import Navbar from './Navbar';

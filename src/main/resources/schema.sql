@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS orders (
     total_amount DECIMAL(10,2) NOT NULL,
     advance_amount DECIMAL(10,2) NOT NULL, -- 20%
     due_amount DECIMAL(10,2) NOT NULL,
-    status ENUM('PENDING', 'PENDING_ADVANCE', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING',
+    status ENUM('PENDING', 'PENDING_ADVANCE', 'PENDING_DELIVERY', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (buyer_id) REFERENCES users(id),
     FOREIGN KEY (farmer_id) REFERENCES users(id),
@@ -747,13 +747,16 @@ DEALLOCATE PREPARE stmt;
 INSERT IGNORE INTO crop_type (id, name_en, name_bn) VALUES
 (1, 'Rice', 'ধান'),
 (2, 'Wheat', 'গম'),
-(3, 'Potato', 'আলু'),
-(4, 'Tomato', 'টমেটো'),
-(5, 'Onion', 'পেঁয়াজ'),
-(6, 'Jute', 'পাট'),
-(7, 'Corn', 'ভুট্টা'),
-(8, 'Vegetables', 'শাকসবজি'),
-(9, 'Fruits', 'ফল'),
-(10, 'Spices', 'মসলা');
+(3, 'Pulses & Legumes', 'ডাল ও শিম'),
+(4, 'Potato', 'আলু'),
+(5, 'Vegetables', 'শাকসবজি'),
+(6, 'Fruits', 'ফল'),
+(7, 'Spices', 'মসলা'),
+(8, 'Oils & Seeds', 'তেল ও বীজ'),
+(9, 'Sugarcane & Sweeteners', 'আখ ও মিষ্টি'),
+(10, 'Corn', 'ভুট্টা'),
+(11, 'Jute', 'পাট'),
+(12, 'Tea', 'চা'),
+(13, 'Coffee', 'কফি');
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -681,7 +681,7 @@ const BuyerDashboard: React.FC = () => {
     );
 };
 
-const StatCard: React.FC<{ title: string; value: number; icon: string; color: string }> = ({ title, value, icon, color }) => {
+export const _StatCard: React.FC<{ title: string; value: number; icon: string; color: string }> = ({ title, value, icon, color }) => {
     const colors: Record<string, string> = {
         blue: 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800',
         green: 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800',

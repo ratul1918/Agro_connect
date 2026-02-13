@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Search, Filter, Store, Plus } from 'lucide-react';
@@ -12,21 +12,26 @@ import ProductCard, { Product } from '../components/marketplace/ProductCard';
 const RetailMarketplacePage: React.FC = () => {
     const { user } = useAuth();
     const { t } = useLanguage();
+    const navigate = useNavigate();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [categories, setCategories] = useState<string[]>(['All']);
 
     const isAdmin = user?.role === 'ROLE_ADMIN';
-
-    const categories = [
-        "All", "Rice & Grains", "Vegetables", "Fruits", "Spices", "Pulses", "Fish"
-    ];
 
     const districts = [
         "All Districts", "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur"
     ];
+
+    useEffect(() => {
+        axios.get('/shop/crop-types').then(res => {
+            const names = res.data.map((ct: any) => ct.nameEn || ct.name_en);
+            setCategories(['All', ...names]);
+        }).catch(() => {});
+    }, []);
 
     useEffect(() => {
         fetchProducts();
@@ -234,15 +239,7 @@ const RetailMarketplacePage: React.FC = () => {
                                                 product={product}
                                                 variant="retail"
                                                 onAction={(p) => {
-                                                    // Add to cart logic here
-                                                    // Note: We might need to lift the addToCart function or use CartContext directly in the card if intended
-                                                    // But for now, let's keep it simple. The ProductCard uses onAction.
-                                                    // In the future, we should probably pass the addToCart handler.
-                                                    console.log('Add to cart:', p.id);
-                                                    // Since the original code has `addToCart` defined inside the component (which I can't easily see right now without reading more lines), 
-                                                    // I will assume I need to pass a handler.
-                                                    // Note: The previous view of RetailMarketplacePage didn't show `addToCart` implementation in the snippet.
-                                                    // I'll assume standard cart context usage or similar.
+                                                    navigate(`/crop/${p.id}`);
                                                 }}
                                                 t={t}
                                             />

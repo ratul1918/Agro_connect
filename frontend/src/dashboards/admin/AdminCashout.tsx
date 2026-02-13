@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, X, AlertCircle, Clock, CheckCircle, XCircle, DollarSign, Wallet, ArrowUpRight, FileText } from 'lucide-react';
+import { Check, X, AlertCircle, Clock, CheckCircle, Wallet, FileText } from 'lucide-react';
 import api, { BASE_URL } from '../../api/axios';
 import { Button } from '../../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,10 +10,10 @@ interface AdminCashoutProps {
 }
 
 const AdminCashout: React.FC<AdminCashoutProps> = ({ handleCashoutAction, key }) => {
-    const [requests, setRequests] = useState<any[]>([]);
+    const [_requests, setRequests] = useState<any[]>([]);
     const [pendingRequests, setPendingRequests] = useState<any[]>([]);
     const [historyRequests, setHistoryRequests] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [_loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchRequests();

@@ -250,7 +250,15 @@ public class CropRepository {
                 "JOIN users u ON c.farmer_id = u.id " +
                 "JOIN crop_type ct ON c.crop_type_id = ct.id " +
                 "ORDER BY c.created_at DESC";
-        return jdbcTemplate.query(sql, new CropRowMapper());
+        List<Crop> crops = jdbcTemplate.query(sql, new CropRowMapper());
+
+        // Populate images for each crop
+        String imgSql = "SELECT image_url FROM crop_images WHERE crop_id = ?";
+        for (Crop crop : crops) {
+            List<String> images = jdbcTemplate.queryForList(imgSql, String.class, crop.getId());
+            crop.setImages(images);
+        }
+        return crops;
     }
 
     public void updateStock(Long id, java.math.BigDecimal newQuantity) {

@@ -4,7 +4,7 @@ import { addCrop, getMarketPrices } from '../api/endpoints';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Button } from '../components/ui/button';
 import { useLanguage } from '../context/LanguageContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { useNotification } from '../context/NotificationContext';
@@ -276,14 +276,42 @@ const FarmerDashboard: React.FC = () => {
         e.preventDefault();
         if (loading) return; // Prevent duplicate submissions
         setLoading(true);
+        
+        // Validate required fields
+        if (!title.trim()) {
+            error('Product name is required');
+            setLoading(false);
+            return;
+        }
+        if (!desc.trim()) {
+            error('Description is required');
+            setLoading(false);
+            return;
+        }
+        if (!qty.trim()) {
+            error('Quantity is required');
+            setLoading(false);
+            return;
+        }
+        if (!price.trim()) {
+            error('Unit price is required');
+            setLoading(false);
+            return;
+        }
+        if (!location.trim()) {
+            error('Location is required');
+            setLoading(false);
+            return;
+        }
+        
         const formData = new FormData();
-        formData.append('title', title);
-        formData.append('description', desc);
+        formData.append('title', title.trim());
+        formData.append('description', desc.trim());
         formData.append('cropTypeId', type);
-        formData.append('quantity', qty);
+        formData.append('quantity', qty.trim());
         formData.append('unit', unit);
-        formData.append('minPrice', price);
-        formData.append('location', location);
+        formData.append('minPrice', price.trim());
+        formData.append('location', location.trim());
         formData.append('marketType', 'B2B');
 
         if (images) {
@@ -530,8 +558,8 @@ const FarmerDashboard: React.FC = () => {
                                 <CardTitle>{t('farmer.sales_overview')}</CardTitle>
                                 <CardDescription>{t('farmer.sales_desc')}</CardDescription>
                             </CardHeader>
-                            <CardContent className="h-[300px]">
-                                <ResponsiveContainer width="100%" height="100%">
+                            <CardContent style={{ height: '300px', width: '100%' }}>
+                                <ResponsiveContainer width="100%" height={300}>
                                     <BarChart data={orders.filter(o => o.status === 'COMPLETED' || o.status === 'DELIVERED').slice(0, 10)}>
                                         <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                                         <XAxis dataKey="cropTitle" fontSize={12} />
@@ -553,8 +581,8 @@ const FarmerDashboard: React.FC = () => {
                                 <CardTitle>{t('farmer.crop_dist')}</CardTitle>
                                 <CardDescription>{t('farmer.crop_dist_desc')}</CardDescription>
                             </CardHeader>
-                            <CardContent className="h-[300px]">
-                                <ResponsiveContainer width="100%" height="100%">
+                            <CardContent className="h-[300px] flex items-center justify-center">
+                                <ResponsiveContainer width="100%" height={300}>
                                     <PieChart>
                                         <Pie
                                             data={myCrops as any[]}
@@ -988,43 +1016,120 @@ const FarmerDashboard: React.FC = () => {
 
                     {/* Edit Crop Modal */}
                     {editingCrop && (
-                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                            <Card className="w-full max-w-md mx-4">
-                                <CardHeader>
-                                    <CardTitle>ফসল সম্পাদনা করুন</CardTitle>
-                                    <CardDescription>ফসলের তথ্য পরিবর্তন করুন</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <form onSubmit={handleUpdateCrop} className="space-y-4">
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">ফসলের নাম</label>
-                                            <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} required />
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+                            <div className="glass-card rounded-3xl border border-white/20 dark:border-gray-800 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                {/* Header */}
+                                <div className="sticky top-0 z-10 bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border-b border-white/20 dark:border-gray-800 p-6 sm:p-8">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">ফসল সম্পাদনা করুন</h2>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">আপনার ফসলের তথ্য আপডেট করুন</p>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium">পরিমাণ</label>
-                                                <Input type="number" value={editQty} onChange={e => setEditQty(e.target.value)} required />
+                                        <button
+                                            onClick={() => setEditingCrop(null)}
+                                            disabled={loading}
+                                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                                        >
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Form Content */}
+                                <form onSubmit={handleUpdateCrop} className="p-6 sm:p-8 space-y-6">
+                                    {/* Basic Information */}
+                                    <div className="bg-white/50 dark:bg-gray-800/30 rounded-2xl p-6 border border-white/20 dark:border-gray-700/50">
+                                        <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-6">মূল তথ্য</h3>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ফসলের নাম</label>
+                                                <Input 
+                                                    value={editTitle} 
+                                                    onChange={e => setEditTitle(e.target.value)} 
+                                                    required 
+                                                    className="h-12 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                                    placeholder="যেমন - আমন ধান, গম"
+                                                />
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium">মূল্য (টাকা)</label>
-                                                <Input type="number" value={editPrice} onChange={e => setEditPrice(e.target.value)} required />
+                                        </div>
+                                    </div>
+
+                                    {/* Inventory & Pricing */}
+                                    <div className="bg-white/50 dark:bg-gray-800/30 rounded-2xl p-6 border border-white/20 dark:border-gray-700/50">
+                                        <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-6">মূল্য এবং পরিমাণ</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">পরিমাণ (কেজিতে)</label>
+                                                <Input 
+                                                    type="number" 
+                                                    step="0.01"
+                                                    value={editQty} 
+                                                    onChange={e => setEditQty(e.target.value)} 
+                                                    required 
+                                                    className="h-12 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-mono"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">মূল্য (টাকা/একক)</label>
+                                                <div className="relative">
+                                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">৳</span>
+                                                    <Input 
+                                                        type="number" 
+                                                        step="0.01"
+                                                        value={editPrice} 
+                                                        onChange={e => setEditPrice(e.target.value)} 
+                                                        required 
+                                                        className="pl-8 h-12 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-mono"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">অবস্থান</label>
-                                            <Input value={editLocation} onChange={e => setEditLocation(e.target.value)} placeholder="জেলা/উপজেলা" />
+                                    </div>
+
+                                    {/* Location */}
+                                    <div className="bg-white/50 dark:bg-gray-800/30 rounded-2xl p-6 border border-white/20 dark:border-gray-700/50">
+                                        <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-6">অবস্থান</h3>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">জেলা/উপজেলা</label>
+                                            <Input 
+                                                value={editLocation} 
+                                                onChange={e => setEditLocation(e.target.value)} 
+                                                placeholder="যেমন - ঢাকা, চট্টগ্রাম"
+                                                className="h-12 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                            />
                                         </div>
-                                        <div className="flex gap-2 pt-4">
-                                            <Button type="submit" disabled={loading} className="flex-1 bg-green-600 hover:bg-green-700">
-                                                {loading ? 'আপডেট হচ্ছে...' : 'আপডেট করুন'}
-                                            </Button>
-                                            <Button type="button" variant="outline" onClick={() => setEditingCrop(null)} className="flex-1">
-                                                বাতিল
-                                            </Button>
-                                        </div>
-                                    </form>
-                                </CardContent>
-                            </Card>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex gap-3 justify-end pt-6 border-t border-gray-100 dark:border-gray-800">
+                                        <Button 
+                                            type="button" 
+                                            variant="outline" 
+                                            onClick={() => setEditingCrop(null)} 
+                                            disabled={loading}
+                                            className="px-6 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold transition-colors disabled:opacity-50"
+                                        >
+                                            বাতিল
+                                        </Button>
+                                        <Button 
+                                            type="submit" 
+                                            disabled={loading} 
+                                            className="px-8 h-12 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold shadow-lg shadow-green-600/20 hover:shadow-green-600/30 transition-all disabled:opacity-50 flex items-center gap-2"
+                                        >
+                                            {loading ? (
+                                                <>
+                                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    আপডেট হচ্ছে...
+                                                </>
+                                            ) : (
+                                                <>আপডেট করুন</>
+                                            )}
+                                        </Button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     )}
                 </>
@@ -1424,7 +1529,7 @@ const FarmerDashboard: React.FC = () => {
     );
 };
 
-const StatCard: React.FC<{ title: string; value: number; icon: string; color: string }> = ({ title, value, icon, color }) => {
+export const _StatCard: React.FC<{ title: string; value: number; icon: string; color: string }> = ({ title, value, icon, color }) => {
     return (
         <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-6 flex items-center justify-between">

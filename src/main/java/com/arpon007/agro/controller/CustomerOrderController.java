@@ -23,7 +23,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/customer/orders")
-@PreAuthorize("hasAnyRole('GENERAL_CUSTOMER', 'CUSTOMER', 'ADMIN')")
+@PreAuthorize("hasAnyRole('GENERAL_CUSTOMER', 'CUSTOMER', 'BUYER', 'FARMER', 'ADMIN')")
 public class CustomerOrderController {
 
     private final CartRepository cartRepository;

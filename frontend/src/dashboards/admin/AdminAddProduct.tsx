@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { useNotification } from '../../context/NotificationContext';
-import { Package, Upload, X, Check, Globe, DollarSign, Layers, Store, Building2, ShoppingBag } from 'lucide-react';
+import { Upload, X, Check, Globe, DollarSign, Layers, Store, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AdminAddProductProps {
@@ -43,7 +43,7 @@ const AdminAddProduct: React.FC<AdminAddProductProps> = ({ onSuccess, defaultMar
         }
     };
 
-    const removeImage = (index: number) => {
+    const removeImage = (_index: number) => {
         setImages(null);
         setPreviewUrls([]);
     };
@@ -52,14 +52,41 @@ const AdminAddProduct: React.FC<AdminAddProductProps> = ({ onSuccess, defaultMar
         e.preventDefault();
         setLoading(true);
 
+        // Validate required fields
+        if (!formData.title.trim()) {
+            error('Product name is required');
+            setLoading(false);
+            return;
+        }
+        if (!formData.description.trim()) {
+            error('Description is required');
+            setLoading(false);
+            return;
+        }
+        if (!formData.quantity.trim()) {
+            error('Quantity is required');
+            setLoading(false);
+            return;
+        }
+        if (!formData.minPrice.trim()) {
+            error('Unit price is required');
+            setLoading(false);
+            return;
+        }
+        if (!formData.location.trim()) {
+            error('Location is required');
+            setLoading(false);
+            return;
+        }
+
         const data = new FormData();
-        data.append('title', formData.title);
-        data.append('description', formData.description);
+        data.append('title', formData.title.trim());
+        data.append('description', formData.description.trim());
         data.append('cropTypeId', formData.cropTypeId);
-        data.append('quantity', formData.quantity);
+        data.append('quantity', formData.quantity.trim());
         data.append('unit', formData.unit);
-        data.append('minPrice', formData.minPrice);
-        data.append('location', formData.location);
+        data.append('minPrice', formData.minPrice.trim());
+        data.append('location', formData.location.trim());
         data.append('marketType', formData.marketType === 'BOTH' ? 'RETAIL' : formData.marketType); // Backend might expect specific enum, assuming logic handles it or backend defaults. 
         // NOTE: If backend has specific endpoints for B2B vs Retail, we might need logic here. 
         // Assuming 'addCrop' handles a 'marketType' or we rely on 'cropTypeId' logic from previous context. 

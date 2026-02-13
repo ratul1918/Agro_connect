@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Cloud, CloudRain, Sun, Wind, Droplets, Thermometer, CloudSnow, CloudLightning, Loader2 } from 'lucide-react';
+import { Cloud, CloudRain, Sun, Wind, Droplets, CloudSnow, CloudLightning, Loader2 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 interface WeatherData {
@@ -49,7 +49,7 @@ const getSmallWeatherIcon = (code: number): React.ReactNode => {
 };
 
 const WeatherWidget: React.FC<WeatherWidgetProps> = ({ className }) => {
-    const { t, language } = useLanguage();
+    const { language } = useLanguage();
     const [weather, setWeather] = useState<WeatherData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

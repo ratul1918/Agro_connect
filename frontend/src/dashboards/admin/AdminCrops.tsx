@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Trash2, Edit, Plus, Filter, Sprout, Search, Package, ArrowUpRight } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BASE_URL } from '../../api/axios';
 
 interface AdminCropsProps {
     crops: any[];
@@ -169,31 +170,35 @@ const AdminCrops: React.FC<AdminCropsProps> = ({
                                     exit={{ opacity: 0, scale: 0.9 }}
                                     transition={{ duration: 0.2, delay: idx * 0.05 }}
                                     key={crop.id}
-                                    className="group relative glass-card rounded-3xl border border-white/20 dark:border-gray-800 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl shadow-lg hover:shadow-2xl transition-all overflow-hidden"
+                                    className="relative glass-card rounded-3xl border border-white/20 dark:border-gray-800 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl shadow-lg hover:shadow-2xl transition-all overflow-hidden"
                                 >
-                                    {/* Action Overlay */}
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center gap-3 backdrop-blur-sm">
-                                        <button
-                                            onClick={() => handleEditCrop(crop)}
-                                            className="p-3 bg-white text-gray-900 rounded-xl hover:scale-110 transition-transform shadow-lg"
-                                        >
-                                            <Edit className="w-5 h-5" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteCrop(crop.id)}
-                                            className="p-3 bg-red-500 text-white rounded-xl hover:scale-110 transition-transform shadow-lg"
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </button>
-                                    </div>
-
                                     {/* Image */}
-                                    <div className="h-48 relative overflow-hidden bg-gray-100 dark:bg-gray-800">
+                                    <div className="group h-48 relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                                        {/* Action Overlay - Only on image area */}
+                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center gap-3 backdrop-blur-sm pointer-events-none group-hover:pointer-events-auto">
+                                            <button
+                                                onClick={() => handleEditCrop(crop)}
+                                                className="p-3 bg-white text-gray-900 rounded-xl hover:scale-110 transition-transform shadow-lg"
+                                            >
+                                                <Edit className="w-5 h-5" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteCrop(crop.id)}
+                                                className="p-3 bg-red-500 text-white rounded-xl hover:scale-110 transition-transform shadow-lg"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        </div>
+
                                         {crop.images && crop.images.length > 0 ? (
                                             <img
-                                                src={`http://localhost:8080${crop.images[0]}`}
+                                                src={crop.images[0].startsWith('http') ? crop.images[0] : `${BASE_URL}${crop.images[0]}`}
                                                 alt={crop.title}
                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = '';
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600">
@@ -239,13 +244,17 @@ const AdminCrops: React.FC<AdminCropsProps> = ({
                                         </div>
 
                                         <button
-                                            onClick={() => crop.isSold ? handleBackInStock(crop.id) : handleStockOut(crop.id)}
-                                            className={`w-full py-2.5 rounded-xl text-sm font-bold transition-colors ${crop.isSold
-                                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30'
-                                                : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30'
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                crop.isSold ? handleBackInStock(crop.id) : handleStockOut(crop.id);
+                                            }}
+                                            className={`w-full py-3 px-4 rounded-xl text-sm font-bold transition-all duration-200 transform hover:scale-105 active:scale-95 cursor-pointer ${crop.isSold
+                                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800'
+                                                : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800'
                                                 }`}
                                         >
-                                            {crop.isSold ? 'Mark as In Stock' : 'Mark as Sold Out'}
+                                            {crop.isSold ? '✓ Mark as In Stock' : '✗ Mark as Stock Out'}
                                         </button>
                                     </div>
                                 </motion.div>
@@ -276,7 +285,7 @@ const AdminCrops: React.FC<AdminCropsProps> = ({
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100">
                                                         {crop.images && crop.images.length > 0 ? (
-                                                            <img src={`http://localhost:8080${crop.images[0]}`} alt="" className="w-full h-full object-cover" />
+                                                            <img src={crop.images[0].startsWith('http') ? crop.images[0] : `${BASE_URL}${crop.images[0]}`} alt="" className="w-full h-full object-cover" />
                                                         ) : (
                                                             <div className="w-full h-full flex items-center justify-center"><Sprout className="w-6 h-6 text-gray-300" /></div>
                                                         )}

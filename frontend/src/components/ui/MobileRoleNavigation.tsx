@@ -1,10 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Button } from './button';
 import { 
-    Home, Package, MessageSquare, Wallet, Settings,
-    ShoppingBag, Store, TrendingUp, BookOpen, Users
+    Home, Package, MessageSquare, Wallet,
+    ShoppingBag, TrendingUp, BookOpen, Users
 } from 'lucide-react';
 
 interface MobileRoleNavigationProps {
