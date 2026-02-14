@@ -40,7 +40,8 @@ const MarketplacePage: React.FC = () => {
     const [categories, setCategories] = useState<string[]>(['All']);
 
     const districts = [
-        "All Districts", "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur"
+        "All Districts", "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur",
+        "Mymensingh", "Comilla", "Gazipur", "Narayanganj", "Jessore", "Bogra", "Dinajpur"
     ];
 
     useEffect(() => {

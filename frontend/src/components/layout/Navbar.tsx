@@ -8,6 +8,7 @@ import { getChats } from '../../api/endpoints';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import CartSidebar from '../CartSidebar';
 
 const Navbar: React.FC = () => {
     const { user, isAuthenticated, logout } = useAuth();
@@ -19,6 +20,7 @@ const Navbar: React.FC = () => {
     const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [scrolled, setScrolled] = useState(false);
+    const [cartOpen, setCartOpen] = useState(false);
     const location = useLocation();
 
     // Handle scroll effect
@@ -28,6 +30,13 @@ const Navbar: React.FC = () => {
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Auto-open cart sidebar when items are added
+    useEffect(() => {
+        const handler = () => setCartOpen(true);
+        window.addEventListener('cart-updated', handler);
+        return () => window.removeEventListener('cart-updated', handler);
     }, []);
 
     // Fetch unread message count
@@ -168,9 +177,9 @@ const Navbar: React.FC = () => {
                         </div>
 
                         {/* Cart */}
-                        <Link to="/cart" className="relative p-2 rounded-full text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <button onClick={() => setCartOpen(true)} className="relative p-2 rounded-full text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                             <ShoppingCart className="h-5 w-5" />
-                        </Link>
+                        </button>
 
                         {/* Messages */}
                         {isAuthenticated && (
@@ -250,9 +259,9 @@ const Navbar: React.FC = () => {
                                 {unreadCount > 0 && <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white" />}
                             </Link>
                         )}
-                        <Link to="/cart" className="relative text-gray-500 dark:text-gray-400">
+                        <button onClick={() => setCartOpen(true)} className="relative text-gray-500 dark:text-gray-400">
                             <ShoppingCart className="h-6 w-6" />
-                        </Link>
+                        </button>
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="text-gray-700 dark:text-gray-200 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
@@ -345,6 +354,9 @@ const Navbar: React.FC = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Cart Sidebar */}
+            <CartSidebar isOpen={cartOpen} onClose={() => setCartOpen(false)} />
         </nav>
     );
 };

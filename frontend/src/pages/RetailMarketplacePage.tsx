@@ -6,12 +6,15 @@ import { Search, Filter, Store, Plus } from 'lucide-react';
 import axios from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useNotification } from '../context/NotificationContext';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import ProductCard, { Product } from '../components/marketplace/ProductCard';
+import CartSidebar from '../components/CartSidebar';
 
 const RetailMarketplacePage: React.FC = () => {
-    const { user } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const { t } = useLanguage();
+    const { success, error: showError } = useNotification();
     const navigate = useNavigate();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -19,11 +22,13 @@ const RetailMarketplacePage: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedDistrict, setSelectedDistrict] = useState('');
     const [categories, setCategories] = useState<string[]>(['All']);
+    const [cartOpen, setCartOpen] = useState(false);
 
     const isAdmin = user?.role === 'ROLE_ADMIN';
 
     const districts = [
-        "All Districts", "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur"
+        "All Districts", "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur",
+        "Mymensingh", "Comilla", "Gazipur", "Narayanganj", "Jessore", "Bogra", "Dinajpur"
     ];
 
     useEffect(() => {
@@ -47,6 +52,40 @@ const RetailMarketplacePage: React.FC = () => {
             setProducts([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleBuyNow = async (product: Product) => {
+        try {
+            if (isAuthenticated) {
+                await axios.post('/cart/items', {
+                    cropId: product.id,
+                    quantity: 1,
+                });
+            } else {
+                const guestCart = JSON.parse(localStorage.getItem('guest_cart') || '[]');
+                const existingIndex = guestCart.findIndex((item: any) => item.cropId === product.id);
+                if (existingIndex >= 0) {
+                    guestCart[existingIndex].quantity += 1;
+                } else {
+                    guestCart.push({
+                        cropId: product.id,
+                        cropTitle: product.title,
+                        cropImage: product.images?.[0],
+                        price: product.minPrice,
+                        quantity: 1,
+                        unit: product.unit,
+                        maxQuantity: product.quantity,
+                        farmerName: product.farmerName,
+                    });
+                }
+                localStorage.setItem('guest_cart', JSON.stringify(guestCart));
+            }
+            success('Added to cart!');
+            window.dispatchEvent(new Event('cart-updated'));
+            setCartOpen(true);
+        } catch (err: any) {
+            showError(err.response?.data?.message || 'Failed to add to cart');
         }
     };
 
@@ -238,9 +277,7 @@ const RetailMarketplacePage: React.FC = () => {
                                             <ProductCard
                                                 product={product}
                                                 variant="retail"
-                                                onAction={(p) => {
-                                                    navigate(`/crop/${p.id}`);
-                                                }}
+                                                onAction={handleBuyNow}
                                                 t={t}
                                             />
                                         </motion.div>
@@ -251,6 +288,9 @@ const RetailMarketplacePage: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Cart Sidebar */}
+            <CartSidebar isOpen={cartOpen} onClose={() => setCartOpen(false)} />
         </div>
     );
 };

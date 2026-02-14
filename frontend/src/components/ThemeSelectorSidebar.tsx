@@ -32,7 +32,7 @@ export const ThemeSelectorSidebar: React.FC<ThemeSelectorSidebarProps> = ({ isSi
                 {isOpen && (
                     <>
                         <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-                        <div className="absolute left-full bottom-0 ml-2 z-50 bg-card border rounded-lg shadow-lg p-2 min-w-[180px]">
+                        <div className="absolute left-full bottom-0 ml-2 z-50 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-2 min-w-[180px]" style={{ backgroundColor: theme === 'light' || theme === 'emerald' ? '#ffffff' : theme === 'forest' ? '#0d1f17' : '#1f2937', isolation: 'isolate' }}>
                             {themes.map((t) => (
                                 <button
                                     key={t.id}
@@ -74,7 +74,7 @@ export const ThemeSelectorSidebar: React.FC<ThemeSelectorSidebarProps> = ({ isSi
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-                    <div className="absolute bottom-full left-2 right-2 mb-2 z-50 bg-card border rounded-lg shadow-lg p-2">
+                    <div className="absolute bottom-full left-2 right-2 mb-2 z-50 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-2" style={{ backgroundColor: theme === 'light' || theme === 'emerald' ? '#ffffff' : theme === 'forest' ? '#0d1f17' : '#1f2937', isolation: 'isolate' }}>
                         {themes.map((t) => (
                             <button
                                 key={t.id}

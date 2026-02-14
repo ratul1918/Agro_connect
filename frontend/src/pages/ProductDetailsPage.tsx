@@ -86,6 +86,7 @@ const ProductDetailsPage: React.FC = () => {
 
                 localStorage.setItem('guest_cart', JSON.stringify(guestCart));
                 success('Added to guest cart! Login to checkout.');
+                window.dispatchEvent(new Event('cart-updated'));
             } catch (err) {
                 console.error(err);
                 error('Failed to add to cart');
@@ -102,6 +103,7 @@ const ProductDetailsPage: React.FC = () => {
                 quantity: quantityInKg
             });
             success('Added to cart successfully!');
+            window.dispatchEvent(new Event('cart-updated'));
         } catch (err: any) {
             console.error(err);
             error(err.response?.data?.message || 'Failed to add to cart');
@@ -236,17 +238,44 @@ const ProductDetailsPage: React.FC = () => {
                                 {/* Quantity Input */}
                                 <div className="flex items-center gap-4">
                                     <div className="flex-1">
-                                        <div className="relative">
+                                        <div className="relative flex items-center">
+                                            <button
+                                                type="button"
+                                                onClick={() => setQuantity(prev => Math.max(isB2B ? 1 : 0.1, prev - (isB2B ? 1 : (unit === 'gram' ? 50 : 0.5))))}
+                                                className={`absolute left-2 z-10 w-8 h-8 flex items-center justify-center rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-bold text-xl transition-colors`}
+                                            >
+                                                −
+                                            </button>
                                             <input
-                                                type="number"
-                                                min={isB2B ? (product.minWholesaleQty || 1) : 0.001}
-                                                step={isB2B ? '1' : (unit === 'gram' ? '1' : '0.1')}
+                                                type="text"
+                                                inputMode="decimal"
                                                 value={quantity}
-                                                onChange={(e) => setQuantity(Math.max(0.001, parseFloat(e.target.value) || 0))}
-                                                className={`w-full px-4 py-3 text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-${themeColor}-500 focus:ring-2 focus:ring-${themeColor}-200 outline-none transition-all bg-white text-gray-900`}
-                                                placeholder={`Enter quantity in ${isB2B ? product.unit : unit}`}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === '' || val === '.' || /^\d*\.?\d*$/.test(val)) {
+                                                        const num = parseFloat(val);
+                                                        if (!isNaN(num)) {
+                                                            setQuantity(num);
+                                                        } else if (val === '' || val === '.') {
+                                                            setQuantity(0);
+                                                        }
+                                                    }
+                                                }}
+                                                onBlur={() => {
+                                                    const minVal = isB2B ? (product.minWholesaleQty || 1) : 0.1;
+                                                    if (quantity < minVal) setQuantity(minVal);
+                                                }}
+                                                className={`w-full pl-12 pr-20 py-3 text-lg text-center font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-${themeColor}-500 focus:ring-2 focus:ring-${themeColor}-200 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
+                                                placeholder={`Qty in ${isB2B ? product.unit : unit}`}
                                             />
-                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                                            <button
+                                                type="button"
+                                                onClick={() => setQuantity(prev => prev + (isB2B ? 1 : (unit === 'gram' ? 50 : 0.5)))}
+                                                className={`absolute right-12 z-10 w-8 h-8 flex items-center justify-center rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-bold text-xl transition-colors`}
+                                            >
+                                                +
+                                            </button>
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium text-sm">
                                                 {isB2B ? product.unit : unit}
                                             </span>
                                         </div>

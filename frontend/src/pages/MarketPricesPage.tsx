@@ -21,7 +21,8 @@ const MarketPricesPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const districts = [
-        "All", "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh"
+        "All", "Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur",
+        "Mymensingh", "Comilla", "Gazipur", "Narayanganj", "Jessore", "Bogra", "Dinajpur"
     ];
 
     useEffect(() => {
@@ -69,22 +70,22 @@ const MarketPricesPage: React.FC = () => {
     });
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 transition-colors">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
+                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                         <BarChart3 className="h-10 w-10 text-green-600" />
                         Current Market Prices
                     </h1>
-                    <p className="mt-2 text-gray-600">Real-time agricultural commodity prices across Bangladesh</p>
+                    <p className="mt-2 text-gray-600 dark:text-gray-400">Real-time agricultural commodity prices across Bangladesh</p>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 p-6 mb-8 border border-transparent dark:border-gray-800">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Search Crop</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Crop</label>
                             <Input
                                 placeholder="Search by crop name..."
                                 value={searchTerm}
@@ -93,14 +94,14 @@ const MarketPricesPage: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Select District</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select District</label>
                             <select
                                 value={selectedDistrict}
                                 onChange={(e) => setSelectedDistrict(e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
                             >
                                 {districts.map(district => (
-                                    <option key={district} value={district}>{district}</option>
+                                    <option key={district} value={district} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">{district}</option>
                                 ))}
                             </select>
                         </div>
@@ -113,34 +114,34 @@ const MarketPricesPage: React.FC = () => {
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md dark:shadow-gray-900/50 overflow-hidden border border-transparent dark:border-gray-800">
                         <table className="w-full">
-                            <thead className="bg-gray-100 border-b">
+                            <thead className="bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Crop Name</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">District</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Wholesale Price (৳/kg)</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Retail Price (৳/kg)</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Change</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Updated</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Crop Name</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">District</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Wholesale Price (৳/kg)</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Retail Price (৳/kg)</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Change</th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Updated</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y">
+                            <tbody className="divide-y dark:divide-gray-800">
                                 {filteredData.map((item, index) => (
-                                    <tr key={index} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.cropName}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">{item.district}</td>
-                                        <td className="px-6 py-4 text-sm font-semibold text-blue-600">৳{item.wholesalePrice}</td>
-                                        <td className="px-6 py-4 text-sm font-semibold text-orange-600">৳{item.retailPrice}</td>
+                                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">{item.cropName}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{item.district}</td>
+                                        <td className="px-6 py-4 text-sm font-semibold text-blue-600 dark:text-blue-400">৳{item.wholesalePrice}</td>
+                                        <td className="px-6 py-4 text-sm font-semibold text-orange-600 dark:text-orange-400">৳{item.retailPrice}</td>
                                         <td className="px-6 py-4 text-sm">
                                             <span className={`flex items-center gap-1 font-semibold ${
-                                                item.trend === 'up' ? 'text-red-600' : item.trend === 'down' ? 'text-green-600' : 'text-gray-600'
+                                                item.trend === 'up' ? 'text-red-600 dark:text-red-400' : item.trend === 'down' ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'
                                             }`}>
                                                 {item.trend === 'up' ? <TrendingUp className="h-4 w-4" /> : item.trend === 'down' ? <TrendingDown className="h-4 w-4" /> : <span>—</span>}
                                                 {item.change > 0 ? '+' : ''}{item.change.toFixed(1)}%
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500 flex items-center gap-1">
+                                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                             <Calendar className="h-4 w-4" />
                                             {new Date(item.lastUpdated).toLocaleDateString()}
                                         </td>
@@ -149,7 +150,7 @@ const MarketPricesPage: React.FC = () => {
                             </tbody>
                         </table>
                         {filteredData.length === 0 && (
-                            <div className="text-center py-8 text-gray-500">
+                            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                                 No prices found matching your search
                             </div>
                         )}
@@ -163,7 +164,7 @@ const MarketPricesPage: React.FC = () => {
                             <CardTitle className="text-lg">Wholesale Prices</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-600">Bulk purchase prices for wholesale buyers and traders</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Bulk purchase prices for wholesale buyers and traders</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -171,7 +172,7 @@ const MarketPricesPage: React.FC = () => {
                             <CardTitle className="text-lg">Retail Prices</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-600">Consumer prices available in local markets</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Consumer prices available in local markets</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -179,7 +180,7 @@ const MarketPricesPage: React.FC = () => {
                             <CardTitle className="text-lg">Live Updates</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-600">Prices updated daily from market reports</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Prices updated daily from market reports</p>
                         </CardContent>
                     </Card>
                 </div>
