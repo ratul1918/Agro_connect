@@ -9,7 +9,7 @@ A comprehensive digital platform connecting farmers, buyers, and agricultural ex
 ![React](https://img.shields.io/badge/React-18-blue)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
-
+ 
 ---
 
 ## 📋 Table of Contents
